@@ -1,0 +1,22 @@
+//
+//  YLReleaseWorksCell.h
+//  maoGang
+//
+//  Created by zhangzhen on 2018/12/4.
+//  Copyright © 2018 bilin. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+NS_ASSUME_NONNULL_BEGIN
+
+@interface YLReleaseWorksCell : UITableViewCell
+
+@property (weak, nonatomic) IBOutlet UILabel *L_title;
+
+
+
+
+@end
+
+NS_ASSUME_NONNULL_END

@@ -1,0 +1,86 @@
+//
+//  GXWaterCVCell.m
+//  GXUICollectionView
+//
+//  Created by GuoShengyong on 2017/12/11.
+//  Copyright © 2017年 cong. All rights reserved.
+//
+
+#import "GXWaterCVCell.h"
+
+@implementation GXWaterCVCell
+
+- (void)awakeFromNib {
+    [super awakeFromNib];
+    // Initialization code
+}
+
+- (void)setAlertModel:(CustomAlertModel *)alertModel {
+    _alertModel = alertModel;
+    //1 字体的颜色
+    self.textTitle.textColor = [UIColor colorWithHexString:alertModel.alphaDic[[NSString stringWithFormat:@"%.2f",alertModel.percent]]];
+    
+
+
+    
+    
+    //3 图片的颜色
+    NSArray *geziColorArray = alertModel.geziColorArray;
+    NSDictionary *dic = geziColorArray[alertModel.tiziGeIndex.integerValue -100];
+    NSInteger colorindex = alertModel.colorIndex.integerValue;
+    colorindex = colorindex - 100;
+    NSString *photoImage = dic[@(colorindex).stringValue];
+    self.imageView.image = [UIImage imageNamed:photoImage];
+//    //4 配置文字
+    if (self.array == nil) {// 单个分区
+        //2 字体
+        //2.1 获取到下表
+        NSInteger index = alertModel.fontSizeIndex - 100;
+        switch (index) {
+            case 0:// 小
+            {
+                self.textTitle.font = [UIFont fontWithName:FontName size:18];// 这里是在编辑页面里面的 钢笔毛笔的行列数不变
+
+            }
+                break;
+            case 1:// 中
+            {
+                self.textTitle.font = [UIFont fontWithName:FontName size:20];// 这里是在编辑页面里面的 钢笔毛笔的行列数不变
+//                self.textTitle.layer.borderWidth = 2;
+//                self.textTitle.layer.borderColor = [UIColor redColor].CGColor;
+
+            }
+                break;
+            case 2:// 大
+            {
+                self.textTitle.font = [UIFont fontWithName:FontName size:25];// 这里是在编辑页面里面的 钢笔毛笔的行列数不变
+
+            }
+                break;
+            default:
+                break;
+        }
+        
+        
+        // 对字体大小的适配
+        if (alertModel.txt.length > self.indexPath.row) {
+            NSString *jjj = [alertModel.txt substringWithRange:NSMakeRange(self.indexPath.row, 1)];
+            NSLog(@"%@",jjj);
+            self.textTitle.text = jjj;
+        } else {
+            self.textTitle.text = @"";
+        }
+    } else {// 多个分区
+        NSString *singTxt = @"";
+        if (self.array.count > self.indexPath.section) {
+            NSString *txt = self.array[self.indexPath.section];
+            if (txt.length > self.indexPath.row) {
+               singTxt  = [txt substringWithRange:NSMakeRange(self.indexPath.row, 1)];
+            }
+        }
+        self.textTitle.text = singTxt;
+    }
+    
+}
+
+@end

@@ -1,0 +1,628 @@
+//
+//  YXHTTPRequst.m
+//  JS_Block&Networking
+//
+//  Created by 向乾操 on 16/2/29.
+//  Copyright © 2016年 向乾操. All rights reserved.
+//
+
+#import "YXHTTPRequst.h"
+#import "AFNetworking.h"
+#import "SVProgressHUD.h"
+#import "PageModel.h"
+#import "YLRootViewController.h"
+#import "NSString+NTES.h"
+#import <sys/utsname.h>
+#define SignKey @"58a1cac311fa4b38c5682297b821fddb"
+#import "PromptNetworkBadManager.h"
+#import "GiFHUD.h"
+@implementation YXHTTPRequst
+
++ (YXHTTPRequst *)shareInstance {
+    static YXHTTPRequst * requst = nil;
+    if (!requst) {
+        requst = [[YXHTTPRequst alloc] init];
+    }
+    return requst;
+}
+- (void)YXHTTPRequstCachePolicy:(NSURLRequestCachePolicy)cachePolicy
+{
+    _mamager.requestSerializer.cachePolicy = cachePolicy;
+}
+
+- (instancetype)init {
+    if (self = [super init]) {
+        _mamager = [AFHTTPSessionManager manager];
+        _mamager.responseSerializer = [AFHTTPResponseSerializer serializer];
+        AFHTTPRequestSerializer *requestSerializer =  [AFHTTPRequestSerializer serializer];
+        _mamager.requestSerializer = requestSerializer;
+        _mamager.requestSerializer.timeoutInterval = 60.f;
+        }
+    return self;
+}
+- (NSString*)getCurrentTime{
+    
+    time_t now;
+    time(&now);
+    NSString *timeStamp = [NSString stringWithFormat:@"%ld", now];
+    return timeStamp;
+    
+
+}
+-(NSString *)paixun:(NSMutableDictionary *)dic{
+    // NOTE: 排序，得出最终请求字串
+    NSArray* sortedKeyArray = [[dic allKeys] sortedArrayUsingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
+        return [obj1 compare:obj2];
+    }];
+    
+    NSMutableArray *tmpArray = [NSMutableArray new];
+    for (NSString* key in sortedKeyArray) {
+        NSString* orderItem = [self itemWithKey:key andValue:[dic objectForKey:key]];
+        if (orderItem.length > 0) {
+            [tmpArray addObject:orderItem];
+        }
+    }
+    return [tmpArray componentsJoinedByString:@"&"];
+}
+- (NSString*)itemWithKey:(NSString*)key andValue:(NSString*)value
+{
+    
+    NSString * valueStr = [NSString stringWithFormat:@"%@",value];
+    if (key.length > 0 && valueStr.length > 0&& ![valueStr isEqualToString:@"(null)"]) {
+        return [NSString stringWithFormat:@"%@=%@", key, value];
+    }
+    return nil;
+}
+
+- (void)noSignNetworking:(NSString *)urlString
+              parameters:(NSDictionary *)parame
+                  method:(YXRequstMethodType)TYPE
+                 success:(void (^) (NSDictionary *))success
+                failsure:(void (^) (NSError *))failsure
+{
+    NSMutableDictionary *xDic = [NSMutableDictionary dictionaryWithDictionary:parame];
+    switch (TYPE) {
+        case YXRequstMethodTypeGET:
+        {
+            [self.mamager GET:urlString parameters:xDic success:^(NSURLSessionDataTask *task, id responseObject) {
+                
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    NSDictionary *dic = [NSJSONSerialization JSONObjectWithData:responseObject options:NSJSONReadingAllowFragments error:nil];
+                    DLog(@"%@", [NSString stringWithFormat:@"%@%@", task.currentRequest.URL, [self nini:xDic]]);
+                    if (success) {
+                        success(dic);
+                    }
+                    [SVProgressHUD dismiss];
+                });
+                
+            } failure:^(NSURLSessionDataTask *task, NSError *error) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    DLog(@"%@ error = %@", [NSString stringWithFormat:@"%@%@", task.currentRequest.URL, [self nini:parame]] ,error);
+                    failsure(error);
+                    [SVProgressHUD dismiss];
+                    /** 处理没有网络的时候的提示*/
+                    //                                        [PromptNetworkBadManager promptNetworkBadWithCode:error.code withVC:nil];
+                });
+                
+            }];
+        }
+            break;
+        case YXRequstMethodTypePOST:
+        {
+            [self.mamager POST:urlString parameters:xDic success:^(NSURLSessionDataTask *task, id responseObject) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    NSDictionary *dic = [NSJSONSerialization JSONObjectWithData:responseObject options:NSJSONReadingAllowFragments error:nil];
+                    DLog(@"%@ %@", [NSString stringWithFormat:@"%@%@", task.currentRequest.URL, [self nini:xDic]] ,dic);
+                    if (success) {
+                        success(dic);
+                    }
+                    [SVProgressHUD dismiss];
+                });
+                
+            } failure:^(NSURLSessionDataTask *task, NSError *error) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    failsure(error);
+                    DLog(@"%@ error = %@", [NSString stringWithFormat:@"%@%@", task.currentRequest.URL, [self nini:parame]] ,error);
+                    [SVProgressHUD dismiss];
+                    /** 处理没有网络的时候的提示*/
+                    //                    [PromptNetworkBadManager promptNetworkBadWithCode:error.code withVC:nil];
+                    
+                    
+                    
+                    
+                    
+                    
+                });
+            }];
+        }
+            break;
+        default:
+            break;
+    }
+}
+
+
+- (void)networking:(NSString *)urlString
+        parameters:(NSDictionary *)parame
+            method:(YXRequstMethodType)TYPE
+           success:(void (^) (NSDictionary *))success
+          failsure:(void (^) (NSError *))failsure
+{
+    NSString * time = [NSString stringWithFormat:@"%@",[self getCurrentTime]];
+    NSMutableDictionary *xDic = [NSMutableDictionary dictionaryWithDictionary:parame];
+    [xDic setObject:time forKey:@"timestamp"];
+//    [xDic setObject:@"2.0" forKey:@"v"];
+   
+//    NSString * str=[NSString new];
+//    str = [self paixun:xDic];
+//    str =[str stringByAppendingString:SignKey];
+//    NSString * sign = [str MD5String];
+//    if (IS_VALID_STRING(sign)) {
+//        [xDic setValue:sign forKey:@"sign"];
+//    }
+//     DLog(@"xDic:%@",xDic);
+    switch (TYPE) {
+        case YXRequstMethodTypeGET:
+        {
+            [self.mamager GET:urlString parameters:xDic success:^(NSURLSessionDataTask *task, id responseObject) {
+                
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    NSDictionary *dic = [NSJSONSerialization JSONObjectWithData:responseObject options:NSJSONReadingAllowFragments error:nil];
+                    DLog(@"%@", [NSString stringWithFormat:@"%@%@", task.currentRequest.URL, [self nini:xDic]]);
+                    if (success) {
+                        success(dic);
+                    }
+                    [SVProgressHUD dismiss];
+                });
+                
+            } failure:^(NSURLSessionDataTask *task, NSError *error) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    DLog(@"%@ error = %@", [NSString stringWithFormat:@"%@%@", task.currentRequest.URL, [self nini:parame]] ,error);
+                    failsure(error);
+                    [SVProgressHUD dismiss];
+                    /** 处理没有网络的时候的提示*/
+                    //                                        [PromptNetworkBadManager promptNetworkBadWithCode:error.code withVC:nil];
+                });
+                
+            }];
+            
+        }
+            break;
+        case YXRequstMethodTypePOST:
+        {
+            [self.mamager POST:urlString parameters:xDic success:^(NSURLSessionDataTask *task, id responseObject) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    NSDictionary *dic = [NSJSONSerialization JSONObjectWithData:responseObject options:NSJSONReadingAllowFragments error:nil];
+                    DLog(@"%@ %@", [NSString stringWithFormat:@"%@%@", task.currentRequest.URL, [self nini:xDic]] ,dic);
+                    if (success) {
+                        success(dic);
+                    }
+                    [SVProgressHUD dismiss];
+                });
+                
+            } failure:^(NSURLSessionDataTask *task, NSError *error) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    failsure(error);
+                    DLog(@"%@ error = %@", [NSString stringWithFormat:@"%@%@", task.currentRequest.URL, [self nini:parame]] ,error);
+                    [SVProgressHUD dismiss];
+                    /** 处理没有网络的时候的提示*/
+                    //                    [PromptNetworkBadManager promptNetworkBadWithCode:error.code withVC:nil];
+                    
+                    
+                    
+                    
+                    
+                    
+                });
+            }];
+        }
+            break;
+            
+        default:
+            break;
+    }
+    
+}
+
+
+// 显示动画
+- (void)visualAnimation:(UIViewController *)vc withModel:(PageModel *)model
+{
+    
+    if (vc) {
+#warning 后期添加
+        if (IS_VALID_STRING(model.page) && [model.page isEqualToString:@"1"] ) {
+             [GiFHUD hideHUDForView:vc.view];//防止重复加载 加载视图不消失
+             [GiFHUD setGifWithMBProgress:@"" toView:vc.view];
+        }
+        
+        
+        
+    }
+}
+// 隐藏动画
+- (void)hiddenAnimation:(UIViewController *)vc
+{
+    if (vc) {
+        [GiFHUD hideHUDForView:vc.view];
+#warning 待解放  处理没有网络的时候的提示
+//        if ([vc isKindOfClass:[YLRootViewController class]]) {
+//            ((YLRootViewController *)vc).netWorkCustomView.hidden = YES;
+//        }
+        
+        
+    }
+    
+    // 整屏幕隐藏
+    
+}
+- (void)networking:(NSString *)urlString
+        parameters:(NSDictionary *)parame
+            method:(YXRequstMethodType)TYPE
+          withView:(UIViewController *)VC
+           success:(void (^) (NSDictionary *))success
+          failsure:(void (^) (NSError *))failsure {
+    NSMutableDictionary *xDic = [NSMutableDictionary dictionaryWithDictionary:parame];
+    
+    NSString * time = [NSString stringWithFormat:@"%@",[self getCurrentTime]];
+    [xDic setObject:time forKey:@"timestamp"];
+
+    DLog(@"xDic:%@",xDic);
+    NSString * str=[NSString new];
+    str = [self paixun:xDic];
+    str =[str stringByAppendingString:SignKey];
+    NSString * sign = [str MD5String];
+    
+    
+    if (IS_VALID_STRING(sign)) {
+        [xDic setValue:sign forKey:@"sign"];
+ 
+    }
+    
+    PageModel *model = [PageModel loadModelWithDictionary:xDic];
+    
+    [self visualAnimation:VC withModel:model];
+    switch (TYPE) {
+        case YXRequstMethodTypeGET:
+        {
+            [self.mamager GET:urlString parameters:xDic success:^(NSURLSessionDataTask *task, id responseObject) {
+                
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    // 隐藏动画
+                    [self hiddenAnimation:VC];
+                    NSDictionary *dic = [NSJSONSerialization JSONObjectWithData:responseObject options:NSJSONReadingAllowFragments error:nil];
+                    DLog(@"%@", [NSString stringWithFormat:@"%@%@", task.currentRequest.URL, [self nini:xDic]]);
+                    if (success) {
+                        success(dic);
+                    }
+                    // 拦截方法 提前知道错误码
+                    [SVProgressHUD dismiss];
+                    [self alertAction:VC withDic:dic];
+                });
+                
+            } failure:^(NSURLSessionDataTask *task, NSError *error) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    // 隐藏动画
+                     [SVProgressHUD dismiss];
+                    [self hiddenAnimation:VC];
+                    DLog(@"%@ error = %@", [NSString stringWithFormat:@"%@%@", task.currentRequest.URL, [self nini:parame]] ,error);
+                    /** 处理没有网络的时候的提示*/
+                    BOOL isok =   [PromptNetworkBadManager promptNetworkBadWithCode:error.code withVC:VC];
+
+                    if (isok) {
+
+
+                        if ([VC isKindOfClass:[YLRootViewController class]]) {
+//                            ((YLRootViewController *)VC).xlQuanXian = xForChuChuo;
+                            ((YLRootViewController *)VC).netWorkCustomView.networkEnum = AlertCustomViewForNetworError;// 出错了
+                            ((YLRootViewController *)VC).netWorkCustomView.hidden = NO;
+
+                        }
+                        if ([VC isKindOfClass:[UIViewController class]]) {
+                            [VC.view endEditing:YES];
+                        }
+                    } else {
+
+                    }
+                    failsure(error);
+
+                });
+                
+            }];
+            
+        }
+            break;
+        case YXRequstMethodTypePOST:
+        {
+            [self.mamager POST:urlString parameters:xDic success:^(NSURLSessionDataTask *task, id responseObject) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    // 隐藏动画
+                     [SVProgressHUD dismiss];
+                      [self hiddenAnimation:VC];
+
+                    NSDictionary *dic = [NSJSONSerialization JSONObjectWithData:responseObject options:NSJSONReadingAllowFragments error:nil];
+                    DLog(@"%@ %@", [NSString stringWithFormat:@"%@%@", task.currentRequest.URL, [self nini:xDic]] ,dic);
+                    if (success) {
+                        success(dic);
+                    }
+                    // 拦截方法 提前知道错误码
+                    [self alertAction:VC withDic:dic];
+                    
+                    
+                    
+                });
+                
+            } failure:^(NSURLSessionDataTask *task, NSError *error) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    // 隐藏动画
+                     [SVProgressHUD dismiss];
+                    [self hiddenAnimation:VC];
+
+                    DLog(@"%@ error = %@", [NSString stringWithFormat:@"%@%@", task.currentRequest.URL, [self nini:parame]] ,error);
+
+                    [SVProgressHUD dismiss];
+                    /** 处理没有网络的时候的提示*/
+                   BOOL isok =  [PromptNetworkBadManager promptNetworkBadWithCode:error.code withVC:VC];
+                    if (isok) {
+                        if ([VC isKindOfClass:[YLRootViewController class]]) {
+//                            ((YLRootViewController *)VC).xlQuanXian = xForChuChuo;
+                            ((YLRootViewController *)VC).netWorkCustomView.networkEnum = AlertCustomViewForNetworError;// 出错了
+                            ((YLRootViewController *)VC).netWorkCustomView.hidden = NO;
+                        }
+                        if ([VC isKindOfClass:[UIViewController class]]) {
+                            [VC.view endEditing:YES];
+                        }
+                    }
+                    failsure(error);
+
+                });
+            }];
+        }
+            break;
+            
+        default:
+            break;
+    }
+    
+}
+
+- (void)alertAction:(UIViewController *)VC withDic:(NSDictionary *)dic
+{
+    BaseModel *baseModel = [BaseModel loadModelWithDictionary:dic];
+    
+    if ([VC isKindOfClass:[YLRootViewController class]]) {
+        YLRootViewController *xllVC = (YLRootViewController *)VC;
+#warning 待添加  超时 无网络  出错  弹框
+//        xllVC.netWorkCustomView.hidden = YES;
+    }
+    switch ([baseModel.Result intValue]) {
+            
+        case 200:
+        case 201:
+        {
+            
+        }
+            break;
+            
+        default:
+        {
+            if (![baseModel.state isEqualToString:@"success"]) {
+#warning 后期添加
+                [GiFHUD show:baseModel.message view:nil];
+               
+            }
+            
+        }
+            
+            break;
+    }
+    
+}
+
+- (NSString *)nini:(NSDictionary *)dic
+{
+    NSMutableString *re = [NSMutableString stringWithFormat:@"?"];
+    for (NSString *key in dic) {
+        NSString *value = dic[key];
+        [re appendFormat:@"%@=%@&", key, value];
+    }
+    return re;
+}
+- (NSData *)appendingWithParameters:(NSDictionary *)parame {
+    NSMutableString * retValue = [NSMutableString string];
+    for (NSString * key in parame.allKeys) {
+        NSString * value = parame[key];
+        [retValue appendFormat:@"%@=%@&",key,value];
+    }
+    return [retValue dataUsingEncoding:NSUTF8StringEncoding];
+}
+
+
+- (void)uploadImagesWithURL:(NSString *)URL
+                 parameters:(id)parameters
+                       name:(id)name
+                     images:(NSArray<UIImage *> *)images
+                  fileNames:(NSArray<NSString *> *)fileNames
+                 imageScale:(CGFloat)imageScale
+                  imageType:(NSString *)imageType
+                   progress:(PPHttpProgress)progress
+                    success:(PPHttpRequestSuccess)success
+                    failure:(PPHttpRequestFailed)failure
+{
+    DLog(@"%@-%@",URL,parameters);
+    NSMutableDictionary *xDic = [NSMutableDictionary dictionaryWithDictionary:parameters];
+    
+//    NSString * time = [NSString stringWithFormat:@"%@",[self getCurrentTime]];
+//    [xDic setObject:time forKey:@"timestamp"];
+////    [xDic setObject:@"2.0" forKey:@"v"];
+//    DLog(@"xDic:%@",xDic);
+//    NSString * str=[NSString new];
+//    str = [self paixun:xDic];
+//    str =[str stringByAppendingString:SignKey];
+//    NSString * sign = [str MD5String];
+//    //    NSLog(@"str:%@---sign:%@",str,sign);
+//
+//    if (IS_VALID_STRING(sign)) {
+//        //        if (parame) {
+//        [xDic setValue:sign forKey:@"sign"];
+//
+//        //        }
+//    }
+    
+    [PPNetworkHelper uploadImagesWithURL:URL parameters:xDic name:name images:images fileNames:fileNames imageScale:imageScale imageType:imageType progress:progress success:success failure:failure];
+    
+}
+
+
+
+-(NSString*)iphoneType{
+    
+    
+    
+    struct utsname systemInfo;
+    
+    uname(&systemInfo);
+    
+    NSString*platform = [NSString stringWithCString: systemInfo.machine encoding:NSASCIIStringEncoding];
+    
+    if([platform isEqualToString:@"iPhone1,1"])  return@"iPhone2G";
+    
+    if([platform isEqualToString:@"iPhone1,2"])  return@"iPhone3G";
+    
+    if([platform isEqualToString:@"iPhone2,1"])  return@"iPhone3GS";
+    
+    if([platform isEqualToString:@"iPhone3,1"])  return@"iPhone4";
+    
+    if([platform isEqualToString:@"iPhone3,2"])  return@"iPhone4";
+    
+    if([platform isEqualToString:@"iPhone3,3"])  return@"iPhone4";
+    
+    if([platform isEqualToString:@"iPhone4,1"])  return@"iPhone4S";
+    
+    if([platform isEqualToString:@"iPhone5,1"])  return@"iPhone5";
+    
+    if([platform isEqualToString:@"iPhone5,2"])  return@"iPhone5";
+    
+    if([platform isEqualToString:@"iPhone5,3"])  return@"iPhone5c";
+    
+    if([platform isEqualToString:@"iPhone5,4"])  return@"iPhone5c";
+    
+    if([platform isEqualToString:@"iPhone6,1"])  return@"iPhone5s";
+    
+    if([platform isEqualToString:@"iPhone6,2"])  return@"iPhone5s";
+    
+    if([platform isEqualToString:@"iPhone7,1"])  return@"iPhone6Plus";
+    
+    if([platform isEqualToString:@"iPhone7,2"])  return@"iPhone6";
+    
+    if([platform isEqualToString:@"iPhone8,1"])  return@"iPhone6s";
+    
+    if([platform isEqualToString:@"iPhone8,2"])  return@"iPhone6sPlus";
+    
+    if([platform isEqualToString:@"iPhone8,4"])  return@"iPhoneSE";
+    
+    if([platform isEqualToString:@"iPhone9,1"])  return@"iPhone7";
+    
+    if([platform isEqualToString:@"iPhone9,2"])  return@"iPhone7Plus";
+    
+    if([platform isEqualToString:@"iPhone10,1"]) return@"iPhone8";
+    
+    if([platform isEqualToString:@"iPhone10,4"]) return@"iPhone8";
+    
+    if([platform isEqualToString:@"iPhone10,2"]) return@"iPhone8Plus";
+    
+    if([platform isEqualToString:@"iPhone10,5"]) return@"iPhone8Plus";
+    
+    if([platform isEqualToString:@"iPhone10,3"]) return@"iPhoneX";
+    
+    if([platform isEqualToString:@"iPhone10,6"]) return@"iPhoneX";
+    
+    if([platform isEqualToString:@"iPod1,1"])  return@"iPodTouch1G";
+    
+    if([platform isEqualToString:@"iPod2,1"])  return@"iPodTouch2G";
+    
+    if([platform isEqualToString:@"iPod3,1"])  return@"iPodTouch3G";
+    
+    if([platform isEqualToString:@"iPod4,1"])  return@"iPodTouch4G";
+    
+    if([platform isEqualToString:@"iPod5,1"])  return@"iPodTouch5G";
+    
+    if([platform isEqualToString:@"iPad1,1"])  return@"iPad1G";
+    
+    if([platform isEqualToString:@"iPad2,1"])  return@"iPad2";
+    
+    if([platform isEqualToString:@"iPad2,2"])  return@"iPad2";
+    
+    if([platform isEqualToString:@"iPad2,3"])  return@"iPad2";
+    
+    if([platform isEqualToString:@"iPad2,4"])  return@"iPad2";
+    
+    if([platform isEqualToString:@"iPad2,5"])  return@"iPadMini1G";
+    
+    if([platform isEqualToString:@"iPad2,6"])  return@"iPadMini1G";
+    
+    if([platform isEqualToString:@"iPad2,7"])  return@"iPadMini1G";
+    
+    if([platform isEqualToString:@"iPad3,1"])  return@"iPad3";
+    
+    if([platform isEqualToString:@"iPad3,2"])  return@"iPad3";
+    
+    if([platform isEqualToString:@"iPad3,3"])  return@"iPad3";
+    
+    if([platform isEqualToString:@"iPad3,4"])  return@"iPad4";
+    
+    if([platform isEqualToString:@"iPad3,5"])  return@"iPad4";
+    
+    if([platform isEqualToString:@"iPad3,6"])  return@"iPad4";
+    
+    if([platform isEqualToString:@"iPad4,1"])  return@"iPadAir";
+    
+    if([platform isEqualToString:@"iPad4,2"])  return@"iPadAir";
+    
+    if([platform isEqualToString:@"iPad4,3"])  return@"iPadAir";
+    
+    if([platform isEqualToString:@"iPad4,4"])  return@"iPadMini2G";
+    
+    if([platform isEqualToString:@"iPad4,5"])  return@"iPadMini2G";
+    
+    if([platform isEqualToString:@"iPad4,6"])  return@"iPadMini2G";
+    
+    if([platform isEqualToString:@"iPad4,7"])  return@"iPadMini3";
+    
+    if([platform isEqualToString:@"iPad4,8"])  return@"iPadMini3";
+    
+    if([platform isEqualToString:@"iPad4,9"])  return@"iPadMini3";
+    
+    if([platform isEqualToString:@"iPad5,1"])  return@"iPadMini4";
+    
+    if([platform isEqualToString:@"iPad5,2"])  return@"iPadMini4";
+    
+    if([platform isEqualToString:@"iPad5,3"])  return@"iPadAir2";
+    
+    if([platform isEqualToString:@"iPad5,4"])  return@"iPadAir2";
+    
+    if([platform isEqualToString:@"iPad6,3"])  return@"iPadPro9.7";
+    
+    if([platform isEqualToString:@"iPad6,4"])  return@"iPadPro9.7";
+    
+    if([platform isEqualToString:@"iPad6,7"])  return@"iPadPro12.9";
+    
+    if([platform isEqualToString:@"iPad6,8"])  return@"iPadPro12.9";
+    
+    if([platform isEqualToString:@"i386"])  return@"iPhoneSimulator";
+    
+    if([platform isEqualToString:@"x86_64"])  return@"iPhoneSimulator";
+    
+    return platform;
+    
+}
+
+
+@end
+
+
+
+
+
+
+

@@ -1,0 +1,52 @@
+//
+//  GroupView.h
+//  maoGang
+//
+//  Created by xl on 2018/11/26.
+//  Copyright © 2018年 bilin. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+extern const CGFloat alertViewHeight;
+
+@interface CustomAlertView : UIView
+@property (nonatomic, strong) UILabel *titleLb;
+
+@end
+
+
+@interface AlpheraAlertView : CustomAlertView
+@property (nonatomic, copy) void(^alphaBlock)(CGFloat alpha);
+
+@end
+
+@interface TiziGeAlertView : CustomAlertView
+@property (nonatomic, copy) void(^tiziGeBlock)(id);
+
+@end
+
+@interface FontAlertView : CustomAlertView
+@property (nonatomic, copy) void(^fontBlock)(NSInteger alpha);
+
+@end
+
+@interface ColorAlertView : CustomAlertView
+@property (nonatomic, copy) void(^colorBlock)(id);
+
+@end
+
+@interface CustomAlertPool : CustomAlertView
+
+// 第几个下表
+@property (nonatomic, assign) NSInteger tagesNumber;
+
++ (instancetype)customAlertPool;
+-(CustomAlertPool *(^)(NSInteger tagesNumber))tagNumber;
+- (CustomAlertPool *)color:(void(^)(id))colorBlock;
+- (CustomAlertPool *)tiziGe:(void(^)(id))tiziGeBlock;
+- (CustomAlertPool *)font:(void(^)(NSInteger font))fontBlock;
+- (CustomAlertPool *)alpha:(void(^)(CGFloat alpha))alphaBlock;
+- (CustomAlertPool *)alertShow;
+@end
+

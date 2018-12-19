@@ -1,0 +1,79 @@
+//
+//  MyZiTieViewController.m
+//  maoGang
+//
+//  Created by xl on 2018/11/30.
+//  Copyright © 2018年 bilin. All rights reserved.
+//
+
+#import "MyZiTieViewController.h"
+#import "ZiTieCollectionCell.h"
+@interface MyZiTieViewController ()<UICollectionViewDataSource,UICollectionViewDelegateFlowLayout>
+@property (weak, nonatomic) IBOutlet UIView *contentView;
+@property (nonatomic,strong) UICollectionView *collectionView;
+
+@end
+
+@implementation MyZiTieViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view from its nib.
+    
+    UIBarButtonItem *rightBarbutton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"icon_tianjia"] style:(UIBarButtonItemStylePlain) target:self action:@selector(addBarbutton:)];
+    self.navigationItem.rightBarButtonItem = rightBarbutton;
+    UICollectionViewFlowLayout *flowLayout = [[UICollectionViewFlowLayout alloc] init];
+    self.collectionView = [[UICollectionView alloc] initWithFrame:self.contentView.bounds collectionViewLayout:flowLayout];
+    [self.contentView addSubview:self.collectionView];
+    self.collectionView.dataSource = self;
+    self.collectionView.delegate = self;
+    [self.collectionView registerNib:[UINib nibWithNibName:@"ZiTieCollectionCell" bundle:nil] forCellWithReuseIdentifier:@"ZiTieCollectionCell"];
+    self.collectionView.backgroundColor = BACKCOLOR;
+    self.collectionView.contentInset = UIEdgeInsetsMake(40, 20, 40, 20);
+}
+
+- (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
+    return 40;
+}
+- (__kindof UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
+    ZiTieCollectionCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"ZiTieCollectionCell" forIndexPath:indexPath];
+
+    
+    cell.placeHoldImageView.image = [self image];
+    return cell;
+}
+
+- (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath {
+    return CGSizeMake((kScreenWidth - 100)/ 3.f, (kScreenWidth - 100)/3.f * 227/160.f);
+}
+
+#pragma mark -- +
+- (void)addBarbutton:(UIBarButtonItem *)barbutton {
+    
+}
+
+- (UIImage *)image {
+    UIImage *image1 = [UIImage imageNamed:@"zitie_beiying"];
+    UIImage *image2 = [UIImage imageNamed:@"zitie_beiying"];
+    UIGraphicsBeginImageContext(CGSizeMake((kScreenWidth - 100)/ 3.f +20,(kScreenWidth - 100)/3.f * 227/160.f +20));
+//    画1
+    [image1 drawInRect:CGRectMake(20,0,(kScreenWidth - 100)/ 3.f,(kScreenWidth - 100)/3.f * 227/160.f)];
+//     画2
+    [image2 drawInRect:CGRectMake(0,20,(kScreenWidth - 100)/ 3.f,(kScreenWidth - 100)/3.f * 227/160.f )];
+    //根据图形上下文拿到图片
+    UIImage*image =UIGraphicsGetImageFromCurrentImageContext();
+    
+    //关闭上下文
+    UIGraphicsEndImageContext();
+    return image;
+    
+}
+
+
+// In a storyboard-based application, you will often want to do a little preparation before navigation
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    // Get the new view controller using [segue destinationViewController].
+    // Pass the selected object to the new view controller.
+}
+
+@end

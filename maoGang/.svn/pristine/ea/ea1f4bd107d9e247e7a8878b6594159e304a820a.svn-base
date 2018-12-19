@@ -1,0 +1,251 @@
+//
+//  ForgetPassWordViewController.m
+//  LvJie
+//
+//  Created by bilin on 2017/1/5.
+//  Copyright © 2017年 Bilin-Apple. All rights reserved.
+//
+
+#import "ForgetPassWordViewController.h"
+#import "ResetPassWordViewController.h"
+@interface ForgetPassWordViewController ()
+@property (weak, nonatomic) IBOutlet UITextField *VerifcationCode;
+@property (weak, nonatomic) IBOutlet UITextField *userName;
+
+@property (weak, nonatomic) IBOutlet NSLayoutConstraint *distanceToTop;
+
+@property (weak, nonatomic) IBOutlet UILabel *verficationLabel;
+
+@property (weak, nonatomic) IBOutlet UIButton *netBtn;
+@property (nonatomic, assign) BOOL canNext;
+@property (weak, nonatomic) IBOutlet UIButton *verficationBtn;
+@property (weak, nonatomic) IBOutlet NSLayoutConstraint *backBtnToTop;
+
+
+@end
+
+@implementation ForgetPassWordViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view from its nib.
+    _canNext = NO;
+    self.view.backgroundColor = [UIColor whiteColor];
+    [self addNotificationCenter];
+    [self LightColor:self.netBtn];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(textFieldDidChange) name:UITextFieldTextDidChangeNotification object:nil];
+
+     self.netBtn.userInteractionEnabled = NO;
+    self.netBtn.layer.cornerRadius = 5.0f;
+    self.netBtn.layer.masksToBounds = YES;
+    
+    if (iPhoneX) {
+        self.backBtnToTop.constant = 44;
+    } else {
+        self.backBtnToTop.constant = 20;
+    }
+
+    
+}
+
+- (void)viewWillAppear:(BOOL)animated
+{
+    [super viewWillAppear:animated];
+    [self.navigationController setNavigationBarHidden:NO animated:NO];
+}
+
+- (void)viewWillDisappear:(BOOL)animated
+{
+    [super viewWillDisappear:animated];
+    [self.navigationController setNavigationBarHidden:YES animated:NO];
+}
+- (void)dealloc {
+ 
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
+- (void)textFieldDidChange
+{
+//    if (self.view.window) {
+//
+//        if (IS_VALID_STRING(self.userName.text) && [self.userName.text isTelephone] && IS_VALID_STRING(self.VerifcationCode.text)) {
+//            [self normalColor:self.netBtn];
+//        } else {
+//            [self LightColor:self.netBtn];
+//        }
+//        
+//    }
+}
+- (void)startTime{
+    __block int timeout=90; //倒计时时间
+    __weak typeof(self)wsSelf = self;
+    dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+    dispatch_source_t _timer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0,queue);
+    dispatch_source_set_timer(_timer,dispatch_walltime(NULL, 0),1.0*NSEC_PER_SEC, 0); //每秒执行
+    dispatch_source_set_event_handler(_timer, ^{
+        if(timeout<=0){ //倒计时结束，关闭
+            dispatch_source_cancel(_timer);
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [wsSelf.verficationBtn setTitle:@"获取验证码" forState:UIControlStateNormal];
+                [wsSelf.verficationBtn setTitleColor:RGBCOLOR(0, 128, 252) forState:UIControlStateNormal];
+                wsSelf.verficationBtn.userInteractionEnabled = YES;
+            });
+        }else{
+            int seconds = timeout ;
+            NSString *strTime = [NSString stringWithFormat:@"%.2d", seconds];
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [wsSelf.verficationBtn setTitle:[NSString stringWithFormat:@"%@秒后重新发送", strTime] forState:UIControlStateNormal];
+                [wsSelf.verficationBtn setTitleColor:[UIColor colorWithWhite:0.702 alpha:1.000] forState:UIControlStateNormal];
+                wsSelf.verficationBtn.userInteractionEnabled = NO;
+            });
+            timeout--;
+        }
+    });
+    dispatch_resume(_timer);
+    
+}
+
+// 这个颜色是浅色的 下一步 不能点击的 没有交互
+- (void)LightColor:(UIButton *)button
+{
+    if (self.view.window) {
+        [UIView animateWithDuration:0.3 delay:0.2 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+            button.backgroundColor = RGBCOLOR(166, 211, 254);
+            
+        } completion:^(BOOL finished) {
+            button.userInteractionEnabled = NO;
+        }];
+        
+    }
+}
+// 这个颜色是正常的 下一步 能点击的 有交互
+- (void)normalColor:(UIButton *)button
+{
+    if (self.view.window) {
+        [UIView animateWithDuration:0.3 delay:0.2 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+            button.backgroundColor = ButtonBackGroudRGB;
+            
+        } completion:^(BOOL finished) {
+            button.userInteractionEnabled = YES;
+        }];
+    }
+   
+}
+
+
+// 获取验证码的方法
+- (IBAction)getVerifcationCodeAction:(UIButton *)sender {
+//    if (IS_VALID_STRING(self.userName.text) && [self.userName.text isTelephone]) {
+//        sender.userInteractionEnabled = NO;
+//        NSString *time = [LCMD5Tool returnsTheTimestamp];
+//        NSString *code = [LCMD5Tool returnsTheMD5EncryptionTimestamp:time];
+//        [self netWorkHelperWithPOST:GetBackCode parameters:@{@"phone" : self.userName.text,@"time":time,@"code":code} success:^(id responseObject) {
+//            NSDictionary *dic = responseObject;
+//            BaseModel *baseModel = [BaseModel loadModelWithDictionary:dic];
+//            switch ([baseModel.Result integerValue]) {/** 网络请求的返回的状态 200 ---成功， 500 -- 系统内部错误， 404 ---- 信息不存在， 300 ---- 信息不存在*/
+//                case 200://成功
+//                {
+//
+//                    [self startTime];
+//                }
+//                    break;
+//
+//                default:{
+//
+//                  sender.userInteractionEnabled = YES;
+//
+//                }
+//                    break;
+//            }
+//
+//        } failure:^(NSError *error) {
+//            sender.userInteractionEnabled = YES;
+//        }];
+//    } else {
+//        [AlertPool alertMessage:@"请输入有效的手机号" xlViewController:self WithBlcok:nil];
+//    }
+    
+    
+}
+// 下一步
+- (IBAction)netStepAction:(UIButton *)sender {
+
+//    [self.view endEditing:YES];
+//    ResetPassWordViewController *resetPassWordVC = [[ResetPassWordViewController alloc] initWithNibName:@"ResetPassWordViewController" bundle:nil];
+//    resetPassWordVC.userModel = [UserModel new];
+//    resetPassWordVC.userModel.userName = self.userName.text;// 用户名 -->手机号
+//    resetPassWordVC.userModel.verificationCode = self.VerifcationCode.text; // 验证码
+//    [self.navigationController pushViewController:resetPassWordVC animated:YES];
+    
+}
+
+- (void)addNotificationCenter
+{
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(willShowKeyBoard) name:UIKeyboardWillShowNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(willHiddenKeyBoard) name:UIKeyboardWillHideNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(beginEding:) name:UITextFieldTextDidBeginEditingNotification object:nil];
+}
+- (void)willShowKeyBoard
+{
+    
+    self.verficationLabel.hidden = YES;
+    
+}
+
+- (void)beginEding:(NSNotification *)notification
+{
+    
+    if (self.view.window) {
+        [UIView animateWithDuration:0.1 delay:0.1 options:UIViewAnimationOptionCurveLinear animations:^{
+            if (kScreenHeight == 480.0) {
+                _distanceToTop.constant = 60;
+                return ;
+            }
+            
+            if (iPhone4 | iPhone5) {
+                _distanceToTop.constant = 80;
+            } else {
+                _distanceToTop.constant = 80;
+            }
+            
+            
+        } completion:^(BOOL finished) {
+            
+        }];
+    }
+    
+    
+}
+- (void)willHiddenKeyBoard
+{
+    self.verficationLabel.hidden = NO;
+
+    if (self.view.window) {
+        [UIView animateWithDuration:0.1 delay:0.1 options:UIViewAnimationOptionCurveLinear animations:^{
+            _distanceToTop.constant = 200;
+            
+        } completion:^(BOOL finished) {
+            
+        }];
+    }
+   
+
+}
+
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+/*
+#pragma mark - Navigation
+
+// In a storyboard-based application, you will often want to do a little preparation before navigation
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    // Get the new view controller using [segue destinationViewController].
+    // Pass the selected object to the new view controller.
+}
+*/
+
+@end

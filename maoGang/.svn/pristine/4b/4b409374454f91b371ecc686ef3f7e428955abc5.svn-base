@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>step3</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="keywords" content="">
+    <meta name="description" content="">
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <link href="css/css.css" rel="stylesheet" type="text/css">
+<style type="text/css">
+    #step3{
+        /*width: 2100px;*/
+        /*overflow: hidden;*/
+        /*padding: 10px;*/
+        background: #fff;
+        box-sizing: border-box;
+        margin: 0 auto;
+    }
+    #step3 ul{
+        width: 100%;
+        clear: both;
+        /*padding:  0 20px;*/
+        /*writing-mode: tb-lr;*/
+        margin: 0 auto;
+        page-break-inside:avoid;
+    }
+    /*#step3 ul:first-child{*/
+        /*padding-top: 0;*/
+    /*}*/
+    #step3 li{
+        display: inline-block;
+        /*float: right;*/
+        text-align: center;
+        background: url("../zitie/img/mi-red.png") no-repeat ;
+        background-size: cover;
+
+        /*writing-mode: tb-lr;*/
+    }
+    .tbrl{
+        writing-mode: vertical-rl;/*从左向右 从右向左是 writing-mode: vertical-rl;*/
+        writing-mode: tb-rl;/*IE浏览器的从左向右 从右向左是 writing-mode: tb-rl；*/
+    }
+
+</style>
+</head>
+<body>
+<section id="step3"></section>
+<!--<a href="javascript:;" class="changebtn" onclick="paixu('2')"></a>-->
+<script src="js/jquery.2.1.4.min.js"></script>
+<script src="js/text.js"></script>
+<script>
+
+    /**
+     *
+     * @param type 类型：1=钢笔 or 2=毛笔
+     * @param bg   格子类型：例（mi-red.png）
+     * @param font 字体：例（shoujin）
+     * @param fontSize 字号：小、中、大、特大
+     * @param text 字帖内容 string类型
+     */
+    var textNumber
+    function showText(type, bg,bgColor, font, fontSize, text,paperType,fontColor,paixu) {
+        var setSize = ''
+        var hang,lie
+        //根据笔型、纸型设置一页字数
+       var textNew = text
+        if(type === '1'){//钢笔只有a4纸型
+            textNumber = 216
+            hang = 18
+            lie = 12
+        }else {//毛笔
+            switch (paperType) {
+                case 'a4':
+                    if(fontSize === '1'){//小
+                        textNumber = 24
+                        hang = 6
+                        lie = 4
+                    }else if(fontSize === '2'){//中
+                        textNumber = 12
+                        hang = 4
+                        lie = 3
+                    }else {//大
+                        textNumber = 6
+                        hang = 3
+                        lie = 2
+                    }
+
+                    break
+                case 'a3':
+                    if(fontSize === '1'){//小
+                        textNumber = 70
+                        hang = 7
+                        lie = 10
+                    }else if(fontSize === '2'){//中
+                        textNumber = 40
+                        hang = 5
+                        lie = 8
+                    }else {//大
+                        textNumber = 15
+                        hang = 3
+                        lie = 5
+                    }
+
+                    break
+                // case 'c0':
+                //     textNumber = 580
+                //     hang = 29
+                //     lie = 20
+                //     break
+            }
+        }
+
+        console.log('一页字数：',textNumber)
+        if(paixu === '2'){
+            textNew = tbrl(textNew,hang,textNumber)
+        }
+        //根据一页字数
+
+        var step3Arr = textNew.split('')
+
+        if(step3Arr.length < 1){
+            console.log('空白字帖：'+step3Arr,textNumber)
+            for(var y = 0 ;y<textNumber;y++){
+                step3Arr.push('&nbsp;')
+            }
+        }
+        console.log(step3Arr)
+        step3Arr = sliceArray(step3Arr,textNumber)
+        console.log(step3Arr)
+        var textHtml = ''
+
+        for(var i = 0;i<step3Arr.length;i++){
+            textHtml+='<ul class="">'
+            if(step3Arr[i].length < textNumber){
+                var times = textNumber -step3Arr[i].length
+                for(var z =0 ; z<times;z++){
+                    step3Arr[i].push('&nbsp;')
+                }
+            }
+            for(var x = 0;x<step3Arr[i].length;x++){
+                if(step3Arr[i][x] === ' '){
+                    textHtml+='<li>&nbsp;</li>'
+                }else {
+
+                    textHtml+='<li>'+step3Arr[i][x]+'</li>'
+                }
+            }
+            textHtml+='</ul>'
+        }
+        $('#step3').html(textHtml)
+
+        if(type === '1'){//钢笔只有a4纸型
+            $('#step3 ul').css('width','1400px')
+            $('#step3 ul').css('height','2100px')
+            $('#step3 li').css('width',(1400/12)+'px')
+            $('#step3 li').css('height',(1400/12)+'px')
+            setSize = (1400/12*0.8)
+        }else {
+            switch (paperType) {
+                case 'a4':
+                    if(fontSize === '1'){
+                        $('#step3 ul').css('width','1400px')
+                        $('#step3 ul').css('height','2100px')
+                        $('#step3 li').css('width',(1400/4)+'px')
+                        $('#step3 li').css('height',(1400/4)+'px')
+                        // $('#step3 ul').css('width','1400px')
+                        // $('#step3 ul').css('height','2100px')
+                        // $('#step3 li').css('width',(1360/4)+'px')
+                        // $('#step3 li').css('height',(1360/4)+'px')
+                        setSize = (1400/4*0.8)
+                    }else if(fontSize === '2'){
+                        $('#step3 ul').css('width','1400px')
+                        $('#step3 ul').css('height','2100px')
+                        $('#step3 li').css('width',(1400/3)+'px')
+                        $('#step3 li').css('height',(1400/3)+'px')
+                        setSize = (1400/3*0.8)
+                    }else {
+                        $('#step3 ul').css('width','1400px')
+                        $('#step3 ul').css('height','2100px')
+                        $('#step3 li').css('width',(1400/2)+'px')
+                        $('#step3 li').css('height',(1400/2)+'px')
+                        setSize = (1400/2*0.8)
+                    }
+                    break
+                case 'a3':
+                    if(fontSize === '1'){
+                        $('#step3 ul').css('width','4800px')
+                        $('#step3 ul').css('height','3360px')
+                        $('#step3 li').css('width',(4800/10)+'px')
+                        $('#step3 li').css('height',(4800/10)+'px')
+                        setSize = (4800/10*0.8)
+                    }else if(fontSize === '2'){
+
+                        $('#step3 ul').css('width','4800px')
+                        $('#step3 ul').css('height','3300px')
+                        $('#step3 li').css('width',(4800/8)+'px')
+                        $('#step3 li').css('height',(4800/8)+'px')
+                        setSize = (4800/8*0.8)
+                    }else {
+                        $('#step3 ul').css('width','4800px')
+                        $('#step3 ul').css('height','3300px')
+                        $('#step3 li').css('width',(4800/5)+'px')
+                        $('#step3 li').css('height',(4800/5)+'px')
+                        setSize = (4800/5*0.8)
+                    }
+                    // $('#step3 ul').css('width','4800px')
+                    // $('#step3 ul').css('height','3600px')
+                    // $('#step3 li').css('width','520px')
+                    // $('#step3 li').css('height','520px')
+                    break
+                // case 'c0':
+                //     $('#step3 ul').css('width','10830px')
+                //     $('#step3 ul').css('height','15320px')
+                //     $('#step3 li').css('width','520px')
+                //     $('#step3 li').css('height','520px')
+                //     break
+            }
+        }
+
+
+
+        var color = bgColor
+
+        switch (bg) {
+            //1:无线格  2：回字格  3：口字格  4：田字格  5：米字格
+            case '1'://无线格
+                bgImg = ''
+                color = ''
+                break
+            case '2'://
+                bgImg='img/hui-'
+                break
+            case '3':
+                bgImg = 'img/kou-'
+                break
+            case '4':
+                bgImg = 'img/tian-'
+                break
+            case '5':
+                bgImg = 'img/mi-'
+                break
+            default:
+                break
+        }
+        var  bgurl = ''
+        if(bg === '1'){
+            bgurl = ''
+        }else {
+            bgurl = bgImg+color+'.png'
+        }
+        $('#step3 li').css("background-image","url("+bgurl+")")
+        var liH = $('#step3 li').width()
+        $('#step3 li').css('height',liH+'px')
+        $('#step3 li').css('line-height',liH+'px')
+        $('#step3').css('font-family',font)
+        $('#step3').css('color',fontColor)
+        $('#step3').css('font-size',setSize+'px')
+        if(paixu === '2'){
+            $('#step3 li').addClass('fr')
+        }else {
+            $('#step3 li').removeClass('fr')
+        }
+    }
+
+    showText('2','5','green','debiao','1',string,'a4','#4d4d4d','1')
+
+
+
+</script>
+</body>
+</html>

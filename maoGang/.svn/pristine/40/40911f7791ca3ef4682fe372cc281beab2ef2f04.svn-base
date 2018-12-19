@@ -1,0 +1,212 @@
+//
+//  MessageViewController.m
+//  maoGang
+//
+//  Created by xl on 2018/11/29.
+//  Copyright © 2018年 bilin. All rights reserved.
+//
+
+#import "MessageViewController.h"
+#import "MessageCell.h"
+@interface MessageModel : BaseModel
+//Created = 1543828579;
+//FormMemberHeadPci = "http://192.168.0.155:9051/Upload/Member/HeadPic/e500ead756864aeb836f1f9bfa5ed4cd.png";
+//FormMemberId = 8;
+//FormMemberNick = "\U54e6\U5a46\U5a466767\U2299\U2200\U2299\Uff01";
+//IsRead = 10;
+//MessageId = 3;
+//MsgContent = "\U7ed9\U4f60\U7684\U4f5c\U54c1\U70b9\U51fb\U4e86\U4e00\U4e2a\U201c\U8d5e\U201d";
+//MsgType = 1;
+//RelativeId = 0;
+//ToMemberId = 1;
+@property (nonatomic, copy) NSString * Created;
+@property (nonatomic, copy) NSString * FormMemberHeadPci;
+@property (nonatomic, copy) NSString * FormMemberId;
+@property (nonatomic, copy) NSString * FormMemberNick;
+@property (nonatomic, copy) NSString * IsRead;
+@property (nonatomic, copy) NSString * MessageId;
+@property (nonatomic, copy) NSString * MsgContent;
+@property (nonatomic, copy) NSString * MsgType;
+@property (nonatomic, copy) NSString * RelativeId;
+@property (nonatomic, copy) NSString * ToMemberId;
+@end
+@implementation MessageModel
+@end
+@interface MessageViewController ()<UITableViewDataSource,UITableViewDelegate>
+@property (nonatomic, assign) NSInteger page;
+
+@property (nonatomic, strong) NSMutableArray *messageArray;
+@property (nonatomic, strong) UITableView *mytableView;
+
+@end
+
+@implementation MessageViewController
+
+- (NSMutableArray *)messageArray {
+    if (!_messageArray) {
+        _messageArray = [NSMutableArray array];
+    }
+    return _messageArray;
+}
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    [self downRefsh];
+}
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view from its nib.
+    self.navigationItem.title = @"消息中心";
+    self.page = 1;
+    self.mytableView = [[UITableView alloc] initWithFrame:self.view.bounds style:UITableViewStylePlain];
+    self.mytableView.delegate = self;
+    self.mytableView.dataSource = self;
+    [self.mytableView registerNib:[UINib nibWithNibName:@"MessageCell" bundle:nil] forCellReuseIdentifier:@"MessageCell"];
+    [self.view addSubview:self.mytableView];
+    [self.mytableView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.edges.mas_equalTo(self.view);
+    }];
+    if (iOS11) {
+        self.mytableView.estimatedSectionFooterHeight = 0;
+        self.mytableView.estimatedSectionFooterHeight = 0;
+        self.mytableView.estimatedRowHeight = 0;
+    }
+        self.mytableView.mj_header = [MJRefreshNormalHeader headerWithRefreshingTarget:self refreshingAction:@selector(downRefsh)];
+    
+        MJRefreshAutoGifFooter * footer = [MJRefreshAutoGifFooter footerWithRefreshingTarget:self refreshingAction:@selector(laodMoreRefsh)];
+        // 设置文字
+        [footer setTitle:@"" forState:MJRefreshStateIdle];
+        [footer setTitle:@"正在加载 ..." forState:MJRefreshStateRefreshing];
+        [footer setTitle:@"没有更多内容" forState:MJRefreshStateNoMoreData];
+    
+        // 设置字体
+        footer.stateLabel.font = [UIFont fontWithName:FontName size:14];
+    
+    
+        // 设置颜色
+        footer.stateLabel.textColor = [UIColor blackColor];
+        self.mytableView.mj_footer = footer;
+    self.mytableView.tableFooterView = [UIView new];
+}
+- (void)downRefsh {
+    self.page = 1;
+    [self.messageArray removeAllObjects];
+    [self network];
+}
+
+- (void)laodMoreRefsh {
+    self.page++;
+    [self network];
+}
+
+- (void)network {
+//    @"868c7f5a5683085d99bc8f1e6a34a768"
+    NSString *token = @"868c7f5a5683085d99bc8f1e6a34a768";
+    [self netWorkHelperWithPOST:MyMyMsg parameters:@{@"token":token,@"page":@(self.page)} success:^(id responseObject) {
+        NSArray *array = responseObject[@"Info"];
+        for (NSDictionary *info in array) {
+            MessageModel *infoModel = [MessageModel loadModelWithDictionary:info];
+            [self.messageArray addObject:infoModel];
+        }
+        [self.mytableView reloadData];
+        [self.mytableView.mj_header endRefreshing];
+        [self.mytableView.mj_footer endRefreshing];
+    } failure:^(NSError *error) {
+        [self.mytableView.mj_header endRefreshing];
+        [self.mytableView.mj_footer endRefreshing];
+    }];
+}
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
+    return 80;
+}
+
+
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    return self.messageArray.count;
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    MessageCell *cell = [tableView dequeueReusableCellWithIdentifier:@"MessageCell" forIndexPath:indexPath];
+    if (self.messageArray.count > indexPath.row) {
+        MessageModel *model = self.messageArray[indexPath.row];
+        [cell.picImageView sd_setImageWithURL:[NSURL URLWithString:model.FormMemberHeadPci] placeholderImage:nil];
+        cell.nameL.text = model.FormMemberNick;
+        cell.desL.text = model.MsgContent;
+        cell.timeL.text = @"1";
+        cell.redView.hidden = (IS_VALID_STRING(model.IsRead) && [model.IsRead isEqualToString:@"1"])?YES:NO;
+        NSCalendar *calendar = [self currentCalendar];
+        NSUInteger unitFlags = NSCalendarUnitYear| NSCalendarUnitMonth | NSCalendarUnitDay |NSCalendarUnitHour |NSCalendarUnitMinute;
+        NSDate *lastData = [NSDate dateWithTimeIntervalSince1970:model.Created.longLongValue];
+        NSLog(@"%@",lastData);
+        NSDateComponents *cmp1 = [calendar components:unitFlags fromDate:lastData];
+        NSDateComponents *cmp2 = [calendar components:unitFlags fromDate:[NSDate date]];
+        // 2.格式化日期
+        NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+        NSString *timeStr = nil;
+        BOOL isCustomTime = NO;
+        if ([cmp1 year] == [cmp2 year] && [cmp1 month] == [cmp2 month] && ([cmp2 day] - [cmp1 day] <= 2)) { // 最近三天内
+            isCustomTime = YES;
+            NSInteger dayLength = [cmp2 day] - [cmp1 day];
+            switch (dayLength) {
+                case 0://                    0 今天
+                {
+                    if ([cmp1 hour] == [cmp2 hour]) {// 同一个小时
+                        NSInteger minue =  [cmp2 minute] - [cmp1 minute];
+                        if (minue < 3) {// 刚刚
+                            timeStr = @"刚刚";
+                        } else {// 今天
+                            timeStr = @"今天";
+                        }
+                    } else {
+                        timeStr = @"今天";
+
+                    }
+            
+                }
+                    break;
+                case 1://                    1 昨天
+                {timeStr = @"昨天";}
+                    break;
+                case 2://                    2 两天前
+                {timeStr = @"两天前";}
+                    break;
+                    
+                default:
+                {}
+                    break;
+            }
+        } else {// 显示日期
+            formatter.dateFormat = @"yyyy-MM-dd";
+        }
+        if (!isCustomTime) {
+            timeStr = [formatter stringFromDate:lastData];
+        }
+        cell.timeL.text = timeStr;
+    }
+    cell.selectionStyle =  UITableViewCellSelectionStyleNone;
+    return cell;
+}
+
+- (NSCalendar *)currentCalendar {
+    if ([NSCalendar respondsToSelector:@selector(calendarWithIdentifier:)]) {
+        return [NSCalendar calendarWithIdentifier:NSCalendarIdentifierGregorian];
+    }
+    return [NSCalendar currentCalendar];
+}
+
+/*
+#pragma mark - Navigation
+
+// In a storyboard-based application, you will often want to do a little preparation before navigation
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    // Get the new view controller using [segue destinationViewController].
+    // Pass the selected object to the new view controller.
+}
+*/
+
+@end

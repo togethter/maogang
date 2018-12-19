@@ -1,0 +1,195 @@
+//
+//  YLACollectionOfPersonalTableViewCell.m
+//  maoGang
+//
+//  Created by zhangzhen on 2018/12/1.
+//  Copyright © 2018 bilin. All rights reserved.
+//
+
+#import "YLACollectionOfPersonalTableViewCell.h"
+
+@implementation YLACollectionOfPersonalTableViewCell
+
+- (void)awakeFromNib {
+    [super awakeFromNib];
+    // Initialization code
+    self.selectionStyle = UITableViewCellSelectionStyleNone;
+    
+    self.L_time = [TTTAttributedLabel new];
+    [self.V_bg_time addSubview:self.L_time];
+    [self.L_time mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.edges.mas_equalTo(self.V_bg_time);
+    }];
+    
+    
+    
+}
+
+-(void)addCircleModel:(CircleItem *)model{
+    
+    if (IS_VALID_STRING(model.Created)) {
+        NSString * createdTime =[NSString YLaddSecondDateTimes:model.Created] ;
+        NSString * time_show = [createdTime stringByReplacingOccurrencesOfString:@" " withString:@""];
+        [self.L_time setText:time_show afterInheritingLabelAttributesAndConfiguringWithBlock:^NSMutableAttributedString *(NSMutableAttributedString *mutableAttributedString) {
+            NSArray * titleARR = [createdTime componentsSeparatedByString:@" "];
+            NSRange fontRange = [[mutableAttributedString string]rangeOfString:titleARR.firstObject options:NSCaseInsensitiveSearch];
+            NSRange strokeColorRange1 = [[mutableAttributedString string]rangeOfString:titleARR.lastObject options:NSCaseInsensitiveSearch];
+            
+            UIFont * boldSystemFont = [UIFont boldSystemFontOfSize:19];
+            CTFontRef font = CTFontCreateWithName((__bridge CFStringRef)boldSystemFont.fontName, boldSystemFont.pointSize, NULL);
+            if (font) {
+                [mutableAttributedString addAttribute:(NSString *)kCTFontAttributeName value:(__bridge id)font range:fontRange];
+                [mutableAttributedString addAttribute:(NSString *)kCTForegroundColorAttributeName value:RGBCOLOR(0, 0, 0) range:fontRange];
+   
+                CFRelease(font);
+                
+            }
+            
+            UIFont * SystemFont = [UIFont systemFontOfSize:12];
+            CTFontRef fontSize = CTFontCreateWithName((__bridge CFStringRef)SystemFont.fontName, SystemFont.pointSize, NULL);
+            if (fontSize) {
+                [mutableAttributedString addAttribute:(NSString *)kCTFontAttributeName value:(__bridge id)fontSize range:strokeColorRange1];
+                [mutableAttributedString addAttribute:(NSString *)kCTForegroundColorAttributeName value:RGBCOLOR(0, 0, 0) range:strokeColorRange1];
+                
+                CFRelease(fontSize);
+                
+            }
+        
+            return mutableAttributedString;
+            
+        }];
+        
+    }
+    
+    if (IS_VALID_STRING(model.PostContent)) {
+        self.L_contect.text = model.PostContent;
+    }
+    if (IS_VALID_ARRAY(model.ThumbnailPic)) {
+        
+        if (model.ThumbnailPic.count==1) {
+            NSDictionary * dicUrl = model.ThumbnailPic[0];
+            UIImageView * imgV = [self createImgV:[dicUrl valueForKey:@"PicPath"]];
+            [self.V_bg_image addSubview:imgV];
+            [imgV mas_makeConstraints:^(MASConstraintMaker *make) {
+                make.edges.mas_equalTo(self.V_bg_image);
+            }];
+        }else if (model.ThumbnailPic.count==2){
+            NSDictionary * dicUrl = model.ThumbnailPic[0];
+            UIImageView * imgV = [self createImgV:[dicUrl valueForKey:@"PicPath"]];
+            [self.V_bg_image addSubview:imgV];
+            [imgV mas_makeConstraints:^(MASConstraintMaker *make) {
+                make.left.top.bottom.mas_equalTo(self.V_bg_image);
+                make.width.mas_equalTo(@(49/2));
+            }];
+            NSDictionary * dicUrl1 = model.ThumbnailPic[1];
+            UIImageView * imgV1 = [self createImgV:[dicUrl1 valueForKey:@"PicPath"]];
+            [self.V_bg_image addSubview:imgV1];
+            [imgV1 mas_makeConstraints:^(MASConstraintMaker *make) {
+                make.right.top.bottom.mas_equalTo(self.V_bg_image);
+                make.width.mas_equalTo(imgV);
+            }];
+     
+            
+        }else if (model.ThumbnailPic.count==3){
+            NSDictionary * dicUrl = model.ThumbnailPic[0];
+            UIImageView * imgV = [self createImgV:[dicUrl valueForKey:@"PicPath"]];
+            [self.V_bg_image addSubview:imgV];
+            [imgV mas_makeConstraints:^(MASConstraintMaker *make) {
+                make.left.top.bottom.mas_equalTo(self.V_bg_image);
+                make.width.mas_equalTo(@(49/2));
+            }];
+            NSDictionary * dicUrl1 = model.ThumbnailPic[1];
+            UIImageView * imgV1 = [self createImgV:[dicUrl1 valueForKey:@"PicPath"]];
+            [self.V_bg_image addSubview:imgV1];
+            [imgV1 mas_makeConstraints:^(MASConstraintMaker *make) {
+                make.right.top.mas_equalTo(self.V_bg_image);
+                make.width.mas_equalTo(imgV);
+                make.height.mas_equalTo(@(49/2));
+            }];
+            
+            NSDictionary * dicUrl2 = model.ThumbnailPic[2];
+            UIImageView * imgV2 = [self createImgV:[dicUrl2 valueForKey:@"PicPath"]];
+            [self.V_bg_image addSubview:imgV2];
+            [imgV2 mas_makeConstraints:^(MASConstraintMaker *make) {
+                make.right.mas_equalTo(self.V_bg_image);
+                make.top.mas_equalTo(imgV1.mas_bottom);
+                make.width.mas_equalTo(imgV1);
+                make.height.mas_equalTo(imgV1);
+            }];
+
+            
+        }else if (model.ThumbnailPic.count>=4){
+            
+            
+            NSDictionary * dicUrl = model.ThumbnailPic[0];
+            UIImageView * imgV = [self createImgV:[dicUrl valueForKey:@"PicPath"]];
+            [self.V_bg_image addSubview:imgV];
+            [imgV mas_makeConstraints:^(MASConstraintMaker *make) {
+                make.left.top.mas_equalTo(self.V_bg_image);
+                make.width.mas_equalTo(@(49/2));
+                make.height.mas_equalTo(@(49/2));
+            }];
+            NSDictionary * dicUrl1 = model.ThumbnailPic[1];
+            UIImageView * imgV1 = [self createImgV:[dicUrl1 valueForKey:@"PicPath"]];
+            [self.V_bg_image addSubview:imgV1];
+            [imgV1 mas_makeConstraints:^(MASConstraintMaker *make) {
+                make.right.mas_equalTo(self.V_bg_image);
+                make.width.mas_equalTo(imgV);
+                make.height.mas_equalTo(imgV);
+                make.top.mas_equalTo(imgV.mas_bottom);
+            }];
+            
+            NSDictionary * dicUrl2 = model.ThumbnailPic[2];
+            UIImageView * imgV2 = [self createImgV:[dicUrl2 valueForKey:@"PicPath"]];
+            [self.V_bg_image addSubview:imgV2];
+            [imgV2 mas_makeConstraints:^(MASConstraintMaker *make) {
+                make.right.mas_equalTo(self.V_bg_image);
+                make.top.mas_equalTo(imgV);
+                make.width.mas_equalTo(imgV);
+                make.height.mas_equalTo(imgV);
+            }];
+            
+            NSDictionary * dicUrl3 = model.ThumbnailPic[3];
+            UIImageView * imgV3 = [self createImgV:[dicUrl3 valueForKey:@"PicPath"]];
+            [self.V_bg_image addSubview:imgV3];
+            [imgV3 mas_makeConstraints:^(MASConstraintMaker *make) {
+                make.right.mas_equalTo(self.V_bg_image);
+                make.top.mas_equalTo(imgV1);
+                make.width.mas_equalTo(imgV);
+                make.height.mas_equalTo(imgV);
+            }];
+            
+            
+        }
+  
+        
+    }
+    
+    
+    
+    
+    
+    
+    
+}
+- (UIImageView *)createImgV:(NSString *)urlStr {
+    UIImageView * imgV = [UIImageView new];
+    imgV.backgroundColor = [UIColor lightGrayColor];
+    imgV.contentMode = UIViewContentModeScaleAspectFill;
+    imgV.clipsToBounds = YES;
+    [imgV sd_setImageWithURL:[NSURL URLWithString:urlStr]];
+//    UITapGestureRecognizer * tap = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(tapImageListView:)];
+//    [imgV addGestureRecognizer:tap];
+//    imgV.userInteractionEnabled = YES;
+    return imgV;
+    
+}
+
+
+- (void)setSelected:(BOOL)selected animated:(BOOL)animated {
+    [super setSelected:selected animated:animated];
+
+    // Configure the view for the selected state
+}
+
+@end

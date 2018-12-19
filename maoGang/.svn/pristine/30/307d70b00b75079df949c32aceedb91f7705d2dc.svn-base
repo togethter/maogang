@@ -1,0 +1,278 @@
+@charset "utf-8";
+* { margin: 0; padding: 0; box-sizing:border-box;    -webkit-overflow-scrolling: touch;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-text-size-adjust: none;
+    -webkit-touch-callout: none;
+    -webkit-font-smoothing: antialiased; }
+body { color: #666;     font-family: 'PingFangSC-Light','Helvetica Neue','Hiragino Sans GB','WenQuanYi Micro Hei','Microsoft Yahei',sans-serif;   background: #fff;}
+#body-1200{ min-width: 1200px;}
+html.hasFontSmoothing-false body { font-family: Arial, SimSun, "Lucida Grande", "Hiragino Sans GB", "Hiragino Sans GB W3", STHeiti; }
+input, select, textarea, button { font-family: Arial, "Lucida Grande", "Microsoft Yahei", "Hiragino Sans GB", "Hiragino Sans GB W3", STHeiti; }
+input[type="text"], input[type="password"], input[type="datetime"], input[type="datetime-local"], input[type="date"], input[type="month"], input[type="time"], input[type="week"], input[type="number"], input[type="email"], input[type="url"], input[type="search"], input[type="tel"], input[type="color"], .uneditable-input {
+    box-shadow: none;outline: none;
+}
+body, p, div { margin: 0; padding: 0; word-break: break-all; word-wrap: break-word; border: none; }
+/*h1, h2, h3, h4, h5, h6 { margin: 0; padding: 0; }*/
+/*ul, ol, li, dl, dd, dt { list-style: outside none none; margin: 0; padding: 0; }*/
+a { color: #4d4d4d; cursor: pointer; text-decoration: none!important; }
+a:hover { text-decoration: none; }
+td { color: #666; font-size: 12px; }
+img { border: none;  }
+input { outline: 0 none; }
+html,body{margin:0; padding:0;box-sizing: border-box;}
+body a{outline:none;blr:expression(this.onFocus=this.blur());}
+h1, h2, h3, h4, h5, h6 {
+    /*font-size: 100%;*/
+    font-weight:normal;
+}
+address, cite, dfn, em, var { font-style: normal; }
+code, kbd, pre, samp { font-family: courier new, courier, monospace; }
+small { font-size: 12px; }
+sup { vertical-align: text-top; }
+sub { vertical-align: text-bottom; }
+blockquote:before, blockquote:after, q:before, q:after { content: ""; }
+blockquote, q { quotes: "" ""; }
+legend { color: #000; }
+fieldset, img { border: 0 none; }
+/*table { border-spacing: 0; }*/
+a:focus {
+    outline: none;
+}
+input:disabled {
+    background: #f6f9fa;
+}
+button{cursor: pointer;}
+.clearfix:after{clear:both;display:block;visibility:hidden;height:0;line-height:0;content:"";}/*利用伪类清楚浮动*/
+.clearfix{zoom:1;}
+/*文字排版、颜色*/
+.f12{font-size:12px}
+.f13{font-size:13px}
+.f14{font-size:14px!important;}
+.f16{font-size:16px!important;}
+.f20{font-size:20px!important;}
+.f24{font-size:24px!important;}
+.fb{font-weight:bold}
+.fn{font-weight:normal}
+.t2{text-indent:2em}
+.red,a.red{color:#cc0031}
+.color-fff{
+    color: #ffffff!important;
+}
+.darkblue,a.darkblue{color:#039}
+.gray,a.gray{color:#878787}
+.lg100{line-height: 100%}
+.lh150{line-height:150%}
+.lh180{line-height:180%}
+.lh200{line-height:200%}
+.unl{text-decoration:underline;}
+.no_unl{text-decoration:none;}
+/*定位*/
+.tl{text-align:left!important;}
+.tc{text-align:center}
+.tr{text-align:right}
+.fl{float:left;display:inline}
+.fr{float:right;display:inline}
+.cb{clear:both}
+.cl{clear:left}
+.cr{clear:right}
+.vm{vertical-align:middle}
+.vt{vertical-align:top}
+.pr{position:relative}
+.pa{position:absolute}
+.abs-right{position:absolute;right:0}
+.zoom{zoom:1}
+.hidden{visibility:hidden}
+.none{display:none}
+
+/*长度高度*/
+.w10{width:10px}
+.w20{width:20px}
+.w50{width:50px}
+.w90{width:90px}
+.w100{width:100px}
+.w200{width:200px}
+.w250{width:250px}
+.w500{width:500px}
+.w800{width:800px}
+.w{width:100%}
+.h50{height:50px}
+.h80{height:80px}
+.h100{height:100px}
+.h200{height:200px}
+.h{height:100%}
+
+/*边距*/
+.m10{margin:10px}
+.m15{margin:15px}
+.m30{margin:30px}
+.mt5{margin-top:5px}
+.mt10{margin-top:10px!important;}
+.mt15{margin-top:15px!important;}
+.mt50{margin-top:50px}
+.mt100{margin-top:100px}
+.mb5{margin-bottom:5px}
+.mb10{margin-bottom:10px!important;}
+.mb15{margin-bottom:15px!important;}
+.mb100{margin-bottom:100px}
+.ml5{margin-left:5px}
+.ml10{margin-left:10px}
+.ml15{margin-left:15px}
+.ml20{margin-left:20px}
+.ml30{margin-left:30px}
+.ml50{margin-left:50px}
+.ml100{margin-left:100px}
+.mr5{margin-right:5px}
+.mr10{margin-right:10px}
+.mr15{margin-right:15px}
+.mr50{margin-right:50px}
+.mr100{margin-right:100px}
+.p10{padding:10px;}
+.p15{padding:15px;}
+.p30{padding:30px;}
+.pt5{padding-top:5px}
+.pt10{padding-top:10px}
+.pt15{padding-top:15px}
+.pt20{padding-top:20px}
+.pt30{padding-top:30px}
+.pt50{padding-top:50px}
+.pt60{padding-top:60px}
+.pb5{padding-bottom:5px}
+.pb10{padding-bottom:10px}
+.pb100{padding-bottom:100px}
+.pl5{padding-left:5px}
+.pl10{padding-left:10px}
+.pl50{padding-left:50px}
+.pl100{padding-left:100px}
+.pr5{padding-right:5px}
+.pr10{padding-right:10px}
+.pr15{padding-right:15px}
+.pr100{padding-right:100px}
+.text-overflow-hidden {
+    white-space: nowrap;
+    word-spacing: normal;
+    letter-spacing: normal;
+    overflow: hidden;
+}
+.box-align-center {
+    margin-right: auto;
+    margin-left: auto;
+}
+.valign {
+    display:table-cell;
+    *display: inline;
+    zoom:1;
+    vertical-align:middle;
+}
+.position-re {
+    position: relative;
+}
+.text{word-wrap:break-word;overflow:hidden;word-break:break-all;}
+.overflow-hidden{overflow:hidden!important;}         /*控制背景溢出*/
+.equal-height{margin-bottom:-32800px;padding-bottom:32800px;}
+@font-face{
+    font-family: simkai;
+    src : url('../fonts/SIMKAI.TTF');
+}
+@font-face{
+    font-family: shoujin;
+    src : url('../fonts/方正瘦金书GBK_宋徵宗瘦金体.ttf');
+}
+@font-face{
+    font-family: baoli;
+    src : url('../fonts/报隶-简常规体.ttf');
+}
+@font-face{
+    font-family: debiao;
+    src : url('../fonts/德彪钢笔行书字库.ttf');
+}
+@font-face{
+    font-family: liukai;
+    src : url('../fonts/方正苏新诗柳楷简体.TTF');
+}
+@font-face{
+    font-family: lixuke;
+    src : url('../fonts/李旭科书法1.4.ttf');
+}
+/*控制高度足够小*/
+.zt-body{
+    padding: 10px;
+    font-family:dbgb!important;
+}
+.dbgb{
+    font-family:dbgb!important;
+}
+.fangzhengshoujin{
+    font-family:fangzhengshoujin!important;
+}
+.tianyingzhangkaishu{
+    font-family:tianyingzhangkaishu!important;
+}
+.tianyingzhanggangbixingshu{
+    font-family:tianyingzhanggangbixingshu!important;
+}
+.simayanxingshu{
+    font-family:simayanxingshu!important;
+}
+.zt-ul{
+    width: 2100px;
+    /*height: 1700px;*/
+    /*display:table;*/
+    /*width: 170px;*/
+    /*width: 510px;*/
+    /*width: 100%;*/
+    /*display: flex;*/
+    /*justify-content: space-around;*/
+    /*flex-wrap: wrap;*/
+    /*writing-mode: vertical-rl;!*从左向右 从右向左是 writing-mode: vertical-rl;*!*/
+    /*writing-mode: tb-rl;!*IE浏览器的从左向右 从右向左是 writing-mode: tb-rl；*!*/
+
+}
+.tbrl{
+    writing-mode: vertical-rl;/*从左向右 从右向左是 writing-mode: vertical-rl;*/
+    writing-mode: tb-rl;/*IE浏览器的从左向右 从右向左是 writing-mode: tb-rl；*/
+}
+.zt-ul-pc{
+    width: 1200px;
+    /*display: flex;*/
+    /*justify-content: space-around;*/
+    flex-wrap: wrap;
+    padding: 20px;
+}
+
+.zt-ul li{
+    display: inline-block;
+    /*float: left;*/
+    /*width: 25%;*/
+    /*width: 510px;*/
+    width: 175px;
+    /*padding-top: 24%;*/
+    background: url("../../zitie/ztbg.png") no-repeat ;
+    background-size: 100% auto;
+    text-align: center;
+    font-size: 120px;
+    /*margin-bottom: 10px;*/
+    color: #4d4d4d;
+
+}
+.zt-ul li span{
+    /*opacity: .3;*/
+}
+
+.changebtn{
+    position: fixed;
+    display: block;
+    top:40px;
+    left: 20px;
+    width: 40px;
+    height: 40px;
+    background: #003399;
+    border-radius: 100%;
+}
+.onload{
+    position: fixed;
+    background: rgba(0,0,0,.5);
+    text-align: center;
+    margin-top: 40px;
+    font-size: 50px;
+    color: #cc0031;
+}

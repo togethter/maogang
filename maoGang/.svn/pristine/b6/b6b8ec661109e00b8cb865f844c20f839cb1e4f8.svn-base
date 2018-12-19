@@ -1,0 +1,91 @@
+//
+//  BrushViewController.m
+//  maoGang
+//
+//  Created by xl on 2018/11/23.
+//  Copyright © 2018年 bilin. All rights reserved.
+//
+
+#import "BrushViewController.h"
+#import "PenCell.h"
+@interface BrushViewController ()<UITableViewDelegate,UITableViewDataSource>
+@property (weak, nonatomic) IBOutlet UITableView *brushTableView;
+@property (nonatomic, strong) NSMutableArray *brushArray;
+
+@end
+
+@implementation BrushViewController
+- (NSMutableArray *)brushArray {
+    if (!_brushArray) {
+        _brushArray = [NSMutableArray array];
+    }
+    return _brushArray;
+}
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view from its nib.
+    self.brushTableView.delegate = self;
+    self.brushTableView.dataSource = self;
+   
+    if (iOS11) {
+        self.brushTableView.estimatedSectionFooterHeight = 0;
+        self.brushTableView.estimatedSectionFooterHeight = 0;
+        self.brushTableView.estimatedRowHeight = 0;
+    }
+    //    self.brushTableView.mj_header = [MJRefreshNormalHeader headerWithRefreshingTarget:self refreshingAction:@selector(downRefsh)];
+    //
+    //    MJRefreshAutoGifFooter * footer = [MJRefreshAutoGifFooter footerWithRefreshingTarget:self refreshingAction:@selector(laodMoreRefsh)];
+    //    // 设置文字
+    //    [footer setTitle:@"" forState:MJRefreshStateIdle];
+    //    [footer setTitle:@"正在加载 ..." forState:MJRefreshStateRefreshing];
+    //    [footer setTitle:@"没有更多内容" forState:MJRefreshStateNoMoreData];
+    //
+    //    // 设置字体
+    //    footer.stateLabel.font = [UIFont fontWithName:FontName size:14];
+    //
+    //
+    //    // 设置颜色
+    //    footer.stateLabel.textColor = [UIColor blackColor];
+    //    self.brushTableView.mj_footer = footer;
+    [self.brushTableView registerNib:[UINib nibWithNibName:@"PenCell" bundle:nil] forCellReuseIdentifier:@"PenCell"];
+}
+- (void)downRefsh {
+    
+}
+
+- (void)laodMoreRefsh {
+    
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    return 10;
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    
+    PenCell *cell = [tableView dequeueReusableCellWithIdentifier:@"PenCell" forIndexPath:indexPath];
+    
+    
+    return cell;
+}
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    return 190;
+}
+
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    
+    
+}
+/*
+#pragma mark - Navigation
+
+// In a storyboard-based application, you will often want to do a little preparation before navigation
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    // Get the new view controller using [segue destinationViewController].
+    // Pass the selected object to the new view controller.
+}
+*/
+
+@end

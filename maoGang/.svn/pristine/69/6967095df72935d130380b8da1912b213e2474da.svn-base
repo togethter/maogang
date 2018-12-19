@@ -1,0 +1,47 @@
+//
+//  SPManager.m
+//  Factory
+//
+//  Created by bilin on 2017/3/31.
+//  Copyright © 2017年 bilin. All rights reserved.
+//
+
+#import "SPManager.h"
+
+
+@implementation SPManager
+#define kScreenWidth ([UIScreen mainScreen].bounds.size.width)
+#define kScreenHeight ([UIScreen mainScreen].bounds.size.height)
+#define IPHONE4SHEIGHT [UIScreen mainScreen].bounds.size.height == 480//iphone4s 屏幕高
+#define IPHONE5HEIGHT  [UIScreen mainScreen].bounds.size.height == 568//iphone5 屏幕高
+#define IPHONE6PHEIGHT [UIScreen mainScreen].bounds.size.height == 736//iphone6p 屏幕高
+#define IPHONE6HEIGHT [UIScreen mainScreen].bounds.size.height == 667//iphone6 屏幕高
+
+
+
++ (CGFloat)horizontal
+{
+    
+    if (IPHONE5HEIGHT | IPHONE6HEIGHT | IPHONE6PHEIGHT) {// 56
+        
+        return kScreenWidth / 375;
+        
+    } else if (IPHONE4SHEIGHT) {
+        return 0.85;
+    } else {// 其他类型默认值
+        return 1;
+    }
+    return 1;
+}
++ (CGFloat)vertical
+{
+    if (IPHONE5HEIGHT | IPHONE6HEIGHT | IPHONE6PHEIGHT) {// 567
+        return kScreenHeight / 667;
+    } else if (IPHONE4SHEIGHT) {
+        return 0.85;
+    } else {// 其他类型默认值
+        return 1;
+    }
+    return 1;
+}
+@end

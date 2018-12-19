@@ -1,0 +1,520 @@
+//
+//  XLScrollowContainCommentView.m
+//  LvJie
+//
+//  Created by bilin on 2018/1/30.
+//  Copyright © 2018年 Bilin-Apple. All rights reserved.
+//
+
+#import "XLScrollowContainCommentView.h"
+#import "UIView+Frame.h"
+
+
+static CGFloat XkeyBoardH = 0.f;
+
+@interface XLScrollowContainCommentView()
+<UITableViewDataSource,
+UITableViewDelegate
+>
+{
+    UIWindow *customWindow;
+    NSInteger page;
+}
+@property (nonatomic, strong) UITableView *tableView;
+@property (nonatomic, strong) UIView *lineView;
+@property (nonatomic, strong) UIButton *cancleBtn;
+@property (nonatomic, strong) UILabel *titileLabl;
+@property (nonatomic, strong) NSMutableArray *dataArray;
+@property (nonatomic, assign) CGFloat lastOffsetY;
+//@property (nonatomic, strong) ArticleDetailBottomView *bottomView;
+
+//@property (nonatomic, strong) ArticleDetailBottomInputView *xinputView;
+
+@property (nonatomic, strong) UIView *whiteView;
+@property (nonatomic, strong) UIView *mengBanView;
+
+//@property (nonatomic, strong) XLForInforModel *InforModel;
+
+//@property (nonatomic, strong) NODataView *nodataView;
+
+
+
+
+
+
+
+
+@end
+
+
+@implementation XLScrollowContainCommentView
+
+
+- (void)setModel:(FriendCircleViewModel *)model
+{
+    _model = model;
+
+//    if (IS_VALID_STRING(model.)) {
+//        self.titileLabl.text = [NSString stringWithFormat:@"%@回复", model.ReplyNum];
+//    } else {
+        self.titileLabl.text = @"0条回复";
+//    }
+}
+// 添加通知
+- (void)addkeyBordNotification
+{
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(notificationFrameChange:) name:UIKeyboardWillChangeFrameNotification object:nil];
+}
+// 移除通知
+- (void)removeKeyBordNotification
+{
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
+
+- (void)dealloc
+{
+    [self removeKeyBordNotification];
+//    [self.model removeObserver:self forKeyPath:@"IsPraise"];
+    DLog(@"%@",NSStringFromClass(self.class));
+    
+}
+
+
+
+
+- (NSMutableArray *)dataArray
+{
+    if (!_dataArray) {
+        _dataArray = [NSMutableArray array];
+    }
+    return _dataArray;
+}
++ (instancetype)xlScrollowContainCommentViewWith:(FriendCircleViewModel *)model withDelegate:(id<XLScrollowContainCommentViewDelegate>)delegate WithIndexPath:(NSIndexPath *)indexPath
+{
+    XLScrollowContainCommentView *view = [[XLScrollowContainCommentView alloc] initWithFrame:CGRectZero withDelegate:delegate withModel:model withIndexPath:indexPath];
+    [view reuseNetWorkwithBlock:nil];
+    return view;
+    
+}
+
+
+- (void)alert:(NSString *)description
+{
+    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:[NSString stringWithFormat:@"%@",description]
+                                                        message:nil
+                                                       delegate:nil
+                                              cancelButtonTitle:@"确定"
+                                              otherButtonTitles:nil];
+    [alertView show];
+}
+- (void)network:(void(^)(void))successBlock {
+    
+//    NSString *token = [self privateToken];
+    
+//    NSString *commentid = self.model.CommentId;
+//    if (!IS_VALID_STRING(commentid)) {
+//        [self alert:@"commentid 为空"];
+//        return;
+//    }
+//    [[YXHTTPRequst shareInstance] networking:ArticleDetailNewsCommentReplyAll parameters:@{@"commentId":commentid,@"token":token,@"page":@(page)} method:(YXRequstMethodTypePOST) withView:nil success:^(NSDictionary *dic) {
+//
+//        BaseModel *baseModel = [BaseModel loadModelWithDictionary:dic];
+//        if ([baseModel.Result isEqualToString:@"200"]) {
+//            NSArray *array = dic[@"Info"];
+//            for (NSDictionary *dic in array) {
+//                XLReplyModel *model = [XLReplyModel loadModelWithDictionary:dic];
+//                [self.dataArray addObject:model];
+//            }
+//
+//            if (IS_VALID_STRING(self.model.IsPraise)) {
+//                self.bottomView.isGiveLike = [self.model.IsPraise boolValue];
+//            } else {
+//                self.bottomView.isGiveLike = NO;
+//            }
+//            // 配置是否有没有数据
+//            [self noCommentWithDataArray:self.dataArray];
+//            if (successBlock) {
+//                successBlock();
+//            }
+//        }
+//        [self stopLoadAnimation];
+//    } failsure:^(NSError *error) {
+//        [self stopLoadAnimation];
+//    }];
+    
+    
+}
+ // 配置是否有没有数据
+- (void)noCommentWithDataArray:(NSArray *)array
+{
+//    self.imageView.hidden = array.count;
+//    self.wuPinglunLb.hidden = array.count;
+    if (IS_VALID_ARRAY(array)) {
+        self.tableView.tableFooterView = nil;
+    } else {
+//        self.nodataView = [NODataView noDataViewWithImage:@"bar_wupinglun" withDescription:@"暂无评论回复"];
+//        self.tableView.tableFooterView = self.nodataView;
+
+        
+    }
+}
+
+//- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context
+//{
+//    if ([keyPath isEqualToString:@"IsPraise"]) {
+//        [self.tableView reloadData];
+//        NSString *isPraise = change[@"new"];
+//        self.bottomView.isGiveLike = [isPraise boolValue];
+//    }
+//}
+- (instancetype)initWithFrame:(CGRect)frame withDelegate:(id<XLScrollowContainCommentViewDelegate>)delegate withModel:(FriendCircleViewModel *)model withIndexPath:(NSIndexPath *)indexPath
+{
+    if (iPhoneX) {
+        frame = CGRectMake(0, kScreenHeight, kScreenWidth, kScreenHeight -44);
+    } else {
+        frame = CGRectMake(0, kScreenHeight, kScreenWidth, kScreenHeight - 20);
+        
+    }
+    self = [super initWithFrame:frame];
+    if (self) {
+        self.backgroundColor = [UIColor whiteColor];
+        UIView * top_v = [[UIView alloc]init];
+        top_v.backgroundColor = [UIColor redColor];
+        [self addSubview:top_v];
+        [top_v mas_makeConstraints:^(MASConstraintMaker *make) {
+            make.left.right.top.mas_equalTo(self);
+            make.height.mas_equalTo(@60);
+        }];
+        
+        
+        [self addSubview:self.tableView];
+        self.tableView.tableFooterView = [UIView new];
+        self.tableView.separatorStyle =  UITableViewCellSeparatorStyleNone;
+        [self.tableView registerNib:[UINib nibWithNibName:@"XLScrollowCommentCell" bundle:nil] forCellReuseIdentifier:@"XLScrollowCommentCell"];
+        [self.tableView registerNib:[UINib nibWithNibName:@"ReplayCell" bundle:nil] forCellReuseIdentifier:@"ReplayCell"];
+      
+        self.tableView.delegate = self;
+        self.tableView.dataSource = self;
+       
+        self.tableView.backgroundColor = [UIColor whiteColor];
+        
+
+        [self.tableView mas_makeConstraints:^(MASConstraintMaker *make) {
+            make.top.mas_equalTo(top_v.mas_bottom).mas_offset(0);
+            make.left.mas_equalTo(self.mas_left);
+            make.right.mas_equalTo(self.mas_right);
+            make.bottom.mas_equalTo(self);
+        }];
+        
+        page = 1;// 第一页的
+//        [self.whiteView mas_makeConstraints:^(MASConstraintMaker *make) {
+//            make.edges.mas_equalTo(self);
+//        }];
+//        self.whiteView.hidden = YES;
+        
+        UIWindow *window = [self xlWindow];
+        [window addSubview:self];
+        
+        [self changAnimationMyOrigianY];// 动画
+        
+        [self addkeyBordNotification];
+        self.layer.cornerRadius = 5;
+        self.layer.masksToBounds = YES;
+        [self configurationTableView];
+    }
+    return self;
+}
+
+
+
+
+
+
+
+- (void)configurationTableView
+{
+    if (iOS11) {
+        self.tableView.estimatedRowHeight = 0;
+        self.tableView.estimatedSectionHeaderHeight = 0;
+        self.tableView.estimatedSectionFooterHeight = 0;
+    }
+    //刷新之前你必然得有视图列表
+    MJRefreshAutoGifFooter * footer = [MJRefreshAutoGifFooter footerWithRefreshingTarget:self refreshingAction:@selector(loadMoreData)];
+    // 设置文字
+    [footer setTitle:@"" forState:MJRefreshStateIdle];
+    [footer setTitle:@"正在加载 ..." forState:MJRefreshStateRefreshing];
+    [footer setTitle:@"没有更多内容" forState:MJRefreshStateNoMoreData];
+    // 设置字体
+    footer.stateLabel.font = [UIFont fontWithName:FontName size:14];
+    // 设置颜色
+    footer.stateLabel.textColor = [UIColor blackColor];
+    self.tableView.mj_footer = footer;
+    // 加载数据
+    self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+}
+
+- (void)reuseNetWorkwithBlock:(void(^)(void))successBlock
+{
+    [self.dataArray removeAllObjects];
+    page = 1;
+    [self network:successBlock];
+    
+}
+
+- (void)loadMoreData
+{
+    page++;
+    [self network:nil];
+}
+
+
+- (void)stopLoadAnimation
+{
+    [self.tableView.mj_footer endRefreshing];
+    [self.tableView reloadData];
+}
+- (void)changAnimationMyOrigianY
+{
+    [UIView animateWithDuration:0.35 animations:^{
+        [self animation];
+    }];
+}
+
+- (void)animation
+{
+    [self configurationAnimationY];
+}
+
+- (void)configurationAnimationY
+{
+    if (iPhoneX) {
+        [self animationY:44.f];
+    } else {
+        [self animationY:20.f];
+    }
+}
+- (void)animationY:(CGFloat)y
+{
+    self.y = y;
+}
+- (void)tapGesAction:(UITapGestureRecognizer *)tapGes
+{
+//    [self.xinputView.textView resignFirstResponder];
+}
+
+
+- (void)configurationPullDownTrackingWithscrollowOriginalY:(CGFloat)y
+{
+    if (iPhoneX) {
+    [self setPullDownTrackingY:44.f withOriginalY:y];
+    } else {
+        [self setPullDownTrackingY:20.f withOriginalY:y];
+    }
+}
+
+- (void)setPullDownTrackingY:(CGFloat)trY withOriginalY:(CGFloat)y
+{
+//    if (self.y >trY) {
+//        self.y -= y;
+//        CGPoint point = self.tableView.contentOffset;
+//        point.y = 0;
+//        self.tableView.contentOffset = point;
+//    } else if (self.y ==trY) {
+//
+//    } else if (self.y <trY) {
+//        self.y = trY;
+//        CGPoint point = self.tableView.contentOffset;
+//        point.y = 0;
+//        self.tableView.contentOffset = point;
+//    }
+}
+- (void)scrollViewDidScroll:(UIScrollView *)scrollView
+{
+    if (_lastOffsetY < scrollView.contentOffset.y) {        // 向上拉
+
+        if (!scrollView.tracking) {// 手松开了
+        } else {// 手没有松开下上拉
+            [self configurationPullDownTrackingWithscrollowOriginalY:scrollView.contentOffset.y];
+        }
+
+    } else if (_lastOffsetY > scrollView.contentOffset.y) { // 向下拉
+        if (scrollView.contentOffset.y < 0) {// 向下拉
+            if (scrollView.tracking) {
+                [UIView animateWithDuration:0 animations:^{
+//                    self.y +=-scrollView.contentOffset.y;
+                    scrollView.contentOffset = CGPointZero;
+                }];
+            
+            } else {
+            }
+        } else {
+
+        }
+
+    } else if (_lastOffsetY == scrollView.contentOffset.y) {//
+      
+
+    }
+//    NSLog(@"%d %d ,%d",scrollView.tracking,scrollView.dragging,scrollView.decelerating);
+    _lastOffsetY = scrollView.contentOffset.y;
+}
+- (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate{
+//    if (self.y > (kScreenHeight)/2 - 80) {
+//        [self cancleAction:nil];
+//    } else {
+//        [self animation];
+//    }
+}
+
+
+
+- (void)cancleAction:(UIButton *)sender
+{
+//    [UIView animateWithDuration:0.35f animations:^{
+//        self.y += kScreenHeight;
+//    } completion:^(BOOL finished) {
+//        [self.mengBanView removeFromSuperview];
+//        [self removeFromSuperview];
+//    }];
+    
+}
+
+
+- (void)cancleAnimationWithblock:(void(^)(void))removeAcctionBlock
+{
+//    [UIView animateWithDuration:0.35f animations:^{
+//        self.y += kScreenHeight;
+//    } completion:^(BOOL finished) {
+//        if (removeAcctionBlock) {
+//            removeAcctionBlock();
+//        }
+//        [self.mengBanView removeFromSuperview];
+//        [self removeFromSuperview];
+//    }];
+}
+- (UIWindow *)xlWindow
+{
+    customWindow = [UIApplication sharedApplication].delegate.window;
+    return  customWindow;
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+{
+    if (section == 0) {
+        return 1;
+    }
+    return self.dataArray.count;
+}
+
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+//    if (indexPath.section == 0) {
+//        XLScrollowCommentCell *cell = [tableView dequeueReusableCellWithIdentifier:@"XLScrollowCommentCell" forIndexPath:indexPath];
+//        cell.model = self.model;
+//        cell.delegate = self;
+//        cell.selectionStyle = UITableViewCellSelectionStyleNone;
+//        if (self.InforModel) {
+//            cell.isFounse = [self.InforModel.Info integerValue];
+//        }
+//        return cell;
+//    } else {
+//        ReplayCell *cell = [tableView dequeueReusableCellWithIdentifier:@"ReplayCell" forIndexPath:indexPath];
+//        if (self.dataArray.count > indexPath.row) {
+//            cell.model = self.dataArray[indexPath.row];
+//        }
+//        cell.delegate = self;
+//        cell.selectionStyle = UITableViewCellSelectionStyleNone;
+//        return cell;
+//    }
+    return [UITableViewCell new];
+}
+
+
+//- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
+//{
+//    return 2;
+//}
+
+
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    
+//    if (indexPath.section == 0) {
+//        NSMutableAttributedString *attributedString =  [CommentTool  usecommentDescriptionrWithModel:self.model];
+//       CGFloat height = [attributedString.string getSpaceLabelHeightwithSpeace:attributedString.yy_lineSpacing withFont:attributedString.yy_font withWidth:kScreenWidth - 97.f];
+//
+//        if (height < 40.f) {
+//            height = 40.f;
+//        }
+//        return 98.f + height;
+//    }
+//    if (self.dataArray.count > indexPath.row) {
+//        XLReplyModel *model = self.dataArray[indexPath.row];
+//        CGFloat height =  [NSString setSelfH:model.ReplyContent withSize:CGSizeMake(kScreenWidth - 106.f, MAXFLOAT) withDic:@{NSFontAttributeName : [UIFont fontWithName:FontName size:15]}];
+//        if (height < 40.f) {
+//            height = 40.f;
+//        }
+//        return  20 +  20 + 15 + 38 + height;
+//    }
+    
+    return 0;
+}
+//- (nullable UIView *)tableView:(UITableView *)tableView viewForFooterInSection:(NSInteger)section
+//{
+//    XLScrollowTableViewFooterView *fotter= [tableView dequeueReusableHeaderFooterViewWithIdentifier:@"XLScrollowTableViewFooterView"];
+//    if (!fotter) {
+//        fotter = [[XLScrollowTableViewFooterView alloc] initWithReuseIdentifier:@"XLScrollowTableViewFooterView"];
+//    }
+//    return fotter;
+//}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForFooterInSection:(NSInteger)section
+{
+    if (section == 0) {
+        return 40.f;
+    } else {
+        return 0.f;
+    }
+    return 0.f;
+}
+
+ - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
+{
+//    [self didSelectIndexPath:indexPath];
+}
+
+
+//- (void)didSelectIndexPath:(NSIndexPath *)indexPath
+//{
+//
+//
+//
+//    if (indexPath.section == 1) {
+//
+//    } else {
+//        NSString *token = TOKEN;
+//        if (!IS_VALID_STRING(token)) {
+//            typeof(self)weakSelf = self;
+//            [self cancleAnimationWithblock:^{
+//                if (weakSelf.delegate && [weakSelf.delegate respondsToSelector:@selector(XLScrollowContainCommentViewLogin)]) {
+//                    [weakSelf.delegate XLScrollowContainCommentViewLogin];
+//                }
+//            }];
+//            return;
+//        }
+//        [self.xinputView.textView becomeFirstResponder];
+//        XLCommentsModel *model = self.model;
+//        self.xinputView.model = model;
+//        if (!IS_VALID_STRING(self.xinputView.textView.placeholder)|| [self.xinputView.textView.placeholder isEqualToString:@"写评论..."]) {
+//            self.xinputView.textView.placeholder = [NSString stringWithFormat:@"回复%@",model.RealName];
+//
+//        }
+//    }
+//}
+
+
+@end
+

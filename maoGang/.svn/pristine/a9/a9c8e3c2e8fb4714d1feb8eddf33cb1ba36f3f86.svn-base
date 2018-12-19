@@ -1,0 +1,283 @@
+//
+//  EditionController.m
+//  maoGang
+//
+//  Created by xl on 2018/11/24.
+//  Copyright © 2018年 bilin. All rights reserved.
+//
+
+#import "EditionController.h"
+#import "MaogangDictionaryViewController.h"
+#import "CustomAlertView.h"
+#import "TypesettingViewController.h"// 排版
+#import "EditionAddViewController.h"
+@interface EditionController ()<EditionAddViewControllerDelegate>
+{
+    
+}
+@property (weak, nonatomic) IBOutlet UIView *yView;
+@property (weak, nonatomic) IBOutlet UIView *contentView;
+@property (nonatomic, strong) WKWebView *contentWKWebView;
+
+@property (nonatomic, strong) UIButton *rightBtn;
+
+@property (weak, nonatomic) IBOutlet UIView *bottomContentView;
+@property (weak, nonatomic) IBOutlet NSLayoutConstraint *bottomMargin;
+
+//@property (nonatomic, strong) NSArray *fontTypeArray;
+@property (weak, nonatomic) IBOutlet UIImageView *ttpView;
+
+@property (nonatomic) NSInteger fontTypeIndex;// 字体大小
+@property (nonatomic, copy) NSString *text;// 网页文字
+
+@property (nonatomic, strong) CustomAlertModel *customAlertModel;
+
+
+@end
+
+//@"SIMKAI",@"方正瘦金书GBK_宋徵宗瘦金体",@"报隶-简常规体",@"德彪钢笔行书字库",@"方正苏新诗柳楷简体",@"李旭科书法"
+@implementation EditionController
+
+- (void)setFontTypeIndex:(NSInteger)xfontTypeIndex {
+    if (!self.fontModelArray.count) return;
+    if (xfontTypeIndex < 0) {
+        xfontTypeIndex = self.fontModelArray.count?(self.fontModelArray.count - 1):0;
+    } else if (xfontTypeIndex > self.fontModelArray.count - 1) {
+        xfontTypeIndex = 0;
+    }
+    _fontTypeIndex = xfontTypeIndex;
+    self.customAlertModel.fontType = @(_fontTypeIndex);
+    FontModel *fontModel = self.fontModelArray[xfontTypeIndex];
+    [self.ttpView sd_setImageWithURL:[NSURL URLWithString:fontModel.SwitchPic] placeholderImage:nil];
+    NSString *fontType = [NSString stringWithFormat:@"fontType('%@')",fontModel.TypefacesCode];//xl编码
+    [self.wkWebView evaluateJavaScript:fontType completionHandler:^(id _Nullable result, NSError * _Nullable error) {
+        DLog(@"%@ %@",result,error);
+    }];
+    
+}
+- (void)configurateTXT:(NSString *)TXT
+{
+    DLog(@"%@",TXT);
+    self.text = TXT;
+}
+
+- (IBAction)previous:(UIButton *)sender {
+    self.fontTypeIndex-=1;
+}
+
+- (IBAction)next:(UIButton *)sender {
+    self.fontTypeIndex+=1;
+}
+
+- (void)dealloc {
+    [self clearWebViewCache];
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+}
+- (NSString *)stringByTrimAllWhitespace:(NSString *)text {
+    NSCharacterSet *set = [NSCharacterSet whitespaceCharacterSet];//空格的字符集
+     return [[text componentsSeparatedByCharactersInSet:set] componentsJoinedByString:@""];
+    
+}
+- (NSString *)noWhiteSpaceString:(NSString *)text {
+    NSString *newString = text;
+    //去除掉首尾的空白字符和换行字符
+    newString = [[self stringByTrimAllWhitespace:newString] stringByReplacingOccurrencesOfString:@"\n" withString:@""];
+    
+    //    newString = [newString stringByReplacingOccurrencesOfString:@"\r" withString:@""];
+    //    newString = [newString stringByReplacingOccurrencesOfString:@"\n" withString:@""];
+    //    newString = [newString stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];  //去除掉首尾的空白字符和换行字符使用
+    //    newString = [newString stringByReplacingOccurrencesOfString:@" " withString:@""];
+    //    可以去掉空格，注意此时生成的strUrl是autorelease属性的，所以不必对strUrl进行release操作！
+    return newString;
+}
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view from its nib.
+    self.yView.layer.cornerRadius = 3;
+    self.yView.layer.masksToBounds = YES;
+    __weak typeof(self)weakSelf = self;
+    if (IS_VALID_STRING(self.fontModel.TypefaceName)) {
+        self.navigationItem.title =  self.fontModel.TypefaceName;
+    }
+    self.rightBtn = [UIButton buttonWithType:UIButtonTypeCustom];
+    [self.rightBtn setImage:[UIImage imageNamed:@"xiayibu_a"] forState:UIControlStateNormal];
+    [self.rightBtn addTarget:self action:@selector(netAction:) forControlEvents:UIControlEventTouchUpInside];
+    [self configureWkWebViewWithMinimunFontSize:0 target:self WithNameKey:nil configure:^(WKWebView *wkWebView) {
+        [weakSelf.contentView addSubview:wkWebView];
+        [weakSelf.wkWebView addSubview:weakSelf.rightBtn];
+        [weakSelf.wkWebView mas_makeConstraints:^(MASConstraintMaker *make) {
+            make.left.mas_equalTo(weakSelf.contentView.mas_left);
+            make.right.mas_equalTo(weakSelf.contentView.mas_right);
+            make.top.mas_equalTo(weakSelf.contentView.mas_top);
+            make.bottom.mas_equalTo(weakSelf.bottomContentView.mas_top);
+        }];
+        [weakSelf.rightBtn mas_makeConstraints:^(MASConstraintMaker *make) {
+            make.right.mas_equalTo(weakSelf.wkWebView.mas_right).offset(-21);
+            make.bottom.mas_equalTo(weakSelf.wkWebView.mas_bottom).offset(-40);
+        }];
+        iPhoneXR||iPhoneXM||iPhoneX?(weakSelf.bottomMargin.constant = 20):0;
+    }];
+    
+    CustomAlertModel *customAlertModel = [CustomAlertModel new];
+    customAlertModel.fontTypeArray = self.fontModelArray;
+    customAlertModel.colorIndex = @(100);
+    customAlertModel.tiziGeIndex = @(103);
+    customAlertModel.percent = 0.6f;
+    customAlertModel.a3orA4 = @"A3";
+    customAlertModel.fontSizeIndex = 100;
+    customAlertModel.maoGangType = IS_VALID_STRING(self.fontModel.PenType)?@(self.fontModel.PenType.integerValue):@(1);
+    NSInteger index = [self.fontModelArray indexOfObject:self.fontModel];
+    self.fontTypeIndex = index;
+    self.customAlertModel = customAlertModel;
+    UIBarButtonItem *rightBarbutton = [[UIBarButtonItem alloc] initWithImage:[[UIImage imageNamed:@"cidian"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal] style:UIBarButtonItemStylePlain target:self action:@selector(rightItemAction:)];
+    self.navigationItem.rightBarButtonItem = rightBarbutton;
+    
+}
+
+- (void)rightItemAction:(UIBarButtonItem *)rightBarbutton {
+    MaogangDictionaryViewController *vc = [[MaogangDictionaryViewController alloc] init];
+    [self.navigationController pushViewController:vc animated:YES];
+}
+
+- (instancetype)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil titleName:(NSString *)titlename {
+    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+    if (self) {
+        NSAssert(titlename, @"描述不能为空");
+        self.navigationItem.title = titlename;
+    }
+    return self;
+}
+
+#pragma mark -  添加字帖的文字
+- (void)editionAddViewControllerfinishWithTxt:(NSString *)txt isloop:(BOOL)loop{
+    if (loop) {// 循环的话
+        NSMutableString *mutableStr = [NSMutableString stringWithString:txt];
+        while (mutableStr.length < 20) {
+             [mutableStr appendString:txt];
+        }
+        txt = [mutableStr copy];
+    }
+    self.text = txt;
+}
+
+- (void)setText:(NSString *)text {
+    if ([_text isEqualToString:text])return;
+    self.customAlertModel.txt = [self noWhiteSpaceString:text];
+    _text = [self noWhiteSpaceString:text];
+    [self.wkWebView  loadRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:@"http://192.168.0.192/zitie/step1.html?v=1"]]];
+}
+
+#pragma mark -  编辑文字
+- (IBAction)bianji:(UIButton *)sender {
+    EditionAddViewController *edadd = [[EditionAddViewController alloc] init];
+    edadd.text = self.text;
+    edadd.delegate = self;
+    [self.navigationController pushViewController:edadd animated:YES];
+}
+
+#pragma mark -  纸张大小
+- (void)netAction:(UIButton *)sender {
+    __weak typeof(self)weakSelf = self;
+    [[[CustomSize customSizeAlertPool].index(0) selectIndex:^(NSString *A3orA4) {
+        weakSelf.customAlertModel.a3orA4 =  A3orA4;
+        TypesettingViewController *vc = [[TypesettingViewController alloc] init];
+        vc.customAlertModel = weakSelf.customAlertModel;
+        [weakSelf.navigationController pushViewController:vc animated:YES];
+    }] alertShow];
+    
+}
+
+#pragma mark -  设置字帖属性
+- (IBAction)editionClick:(UIButton *)sender {
+    __weak typeof(self)weakSelf = self;
+    [[[[[[CustomAlertPool customAlertPool].tagNumber(sender.tag) alpha:^(CGFloat alpha) {
+        weakSelf.customAlertModel.percent = alpha;
+        NSString *xalpha = self.customAlertModel.alphaDic[[NSString stringWithFormat:@"%.2f",alpha]];
+        NSString *alphaTXT = [NSString stringWithFormat:@"color('%@')",xalpha];
+        [weakSelf.wkWebView evaluateJavaScript:alphaTXT completionHandler:^(id _Nullable result, NSError * _Nullable error) {
+            
+        }];
+    }] color:^(NSNumber *colorIndex) {
+        weakSelf.customAlertModel.colorIndex = colorIndex;
+        NSInteger backgroundView = weakSelf.customAlertModel.tiziGeIndex.integerValue;// 田子
+        NSString *backTXT = [NSString stringWithFormat:@"background('%@','%@')",[NSString stringWithFormat:@"%ld",backgroundView - 100 + 1] ,[NSString stringWithFormat:@"%@",weakSelf.customAlertModel.colorNameArray[colorIndex.integerValue-100]]];
+        [weakSelf.wkWebView evaluateJavaScript:backTXT completionHandler:^(id _Nullable result, NSError * _Nullable error) {
+            DLog(@"%@ %@",result,error);
+        }];
+        
+    }] tiziGe:^(NSNumber *tiziIndex) {
+        weakSelf.customAlertModel.tiziGeIndex = tiziIndex;
+        NSInteger colorIndex = weakSelf.customAlertModel.colorIndex.integerValue;
+        NSString *backTXT = [NSString stringWithFormat:@"background('%@','%@')",[NSString stringWithFormat:@"%ld",tiziIndex.integerValue - 100 + 1] ,self.customAlertModel.colorNameArray[colorIndex-100]];
+        [weakSelf.wkWebView evaluateJavaScript:backTXT completionHandler:^(id _Nullable result, NSError * _Nullable error) {
+            DLog(@"%@ %@",result,error);
+        }];
+        
+    }] font:^(NSInteger font) {
+        weakSelf.customAlertModel.fontSizeIndex = font;
+        NSString *backTXT = [NSString stringWithFormat:@"fontSize('%@')",[NSString stringWithFormat:@"%ld",font - 100 + 1]];
+        [weakSelf.wkWebView evaluateJavaScript:backTXT completionHandler:^(id _Nullable result, NSError * _Nullable error) {
+            DLog(@"%@ %@",result,error);
+        }];
+        //
+        
+        
+    }].color(self.customAlertModel.colorIndex.integerValue).percent(self.customAlertModel.percent).tiziGe(self.customAlertModel.tiziGeIndex.integerValue).fontSize(self.customAlertModel.fontSizeIndex) alertShow];
+}
+
+- (void)webView:(WKWebView *)webView didFinishNavigation:(WKNavigation *)navigation
+{
+    [self configureWebText:self.text];// 设置文字
+    [self configureProerty:self.customAlertModel];
+}
+
+- (void)configureWebText:(NSString *)text {
+    text = IS_VALID_STRING(text)?text:@"";
+    NSString *jsTxt = [NSString stringWithFormat:@"text('%@')",text];
+    __weak typeof(self)weakSelf = self;
+    
+    [self.wkWebView evaluateJavaScript:jsTxt completionHandler:^(id _Nullable result, NSError * _Nullable error) {
+        DLog(@"%@ %@",result,error);
+        weakSelf.fontTypeIndex = weakSelf.fontTypeIndex;;// 设置字体
+    }];
+}
+
+- (void)configureProerty:(CustomAlertModel *)customAlertModel {
+    NSInteger colorIndex = customAlertModel.colorIndex.integerValue -100;
+    NSInteger tianziGeLeiXing = customAlertModel.tiziGeIndex.intValue - 100 + 1;
+    NSString *backTXT = [NSString stringWithFormat:@"background('%@','%@')",@(tianziGeLeiXing),self.customAlertModel.colorNameArray[colorIndex]];
+    [self.wkWebView evaluateJavaScript:backTXT completionHandler:^(id _Nullable result, NSError * _Nullable error) {
+        DLog(@"%@ %@",result,error);
+    }];
+    NSInteger fontIndex =  customAlertModel.fontSizeIndex - 100;
+    NSString *fonbackTXT = [NSString stringWithFormat:@"fontSize('%@')",[NSString stringWithFormat:@"%ld",fontIndex - 100 + 1]];
+    [self.wkWebView evaluateJavaScript:fonbackTXT completionHandler:^(id _Nullable result, NSError * _Nullable error) {
+        DLog(@"%@ %@",result,error);
+    }];
+    
+    NSString *alpha = self.customAlertModel.alphaDic[[NSString stringWithFormat:@"%.2f",customAlertModel.percent]];
+    
+    NSString *alphaTXT = [NSString stringWithFormat:@"color('%@')",alpha];
+    [self.wkWebView evaluateJavaScript:alphaTXT completionHandler:^(id _Nullable result, NSError * _Nullable error) {
+        
+    }];
+    
+}
+
+//AlpheraAlertView,TiziGeAlertView,FontAlertView,ColorAlertView
+
+/*
+ #pragma mark - Navigation
+ 
+ // In a storyboard-based application, you will often want to do a little preparation before navigation
+ - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+ // Get the new view controller using [segue destinationViewController].
+ // Pass the selected object to the new view controller.
+ }
+ */
+
+@end

@@ -1,0 +1,119 @@
+//
+//  TypesettingViewController.m
+//  maoGang
+//
+//  Created by xl on 2018/11/28.
+//  Copyright © 2018年 bilin. All rights reserved.
+//
+
+#import "TypesettingViewController.h"
+#import "CustomAlertView.h"
+@interface TypesettingViewController ()
+@property (weak, nonatomic) IBOutlet UIView *contentView;
+@property (weak, nonatomic) IBOutlet NSLayoutConstraint *bottomMargin;
+@property (weak, nonatomic) IBOutlet UIButton *sender1;
+@property (weak, nonatomic) IBOutlet UIButton *sender2;
+@property (weak, nonatomic) IBOutlet UIButton *sender3;
+@property (nonatomic, strong) NSMutableArray *senderArray;
+@property (weak, nonatomic) IBOutlet UIView *bottomView;
+
+
+@end
+
+@implementation TypesettingViewController
+
+- (NSMutableArray *)senderArray {
+    if (!_senderArray) {
+        _senderArray = [NSMutableArray array];
+    }
+    return _senderArray;
+}
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view from its nib.
+    self.navigationItem.title = @"排版";
+    UIBarButtonItem *right = [[UIBarButtonItem alloc] initWithTitle:@"分享" style:UIBarButtonItemStylePlain target:self action:@selector(shareAction:)];
+    self.navigationItem.rightBarButtonItem = right;
+    [self.senderArray addObjectsFromArray:@[_sender1,_sender2,_sender3]];
+    __weak typeof(self)weakSelf = self;
+    [self configureWkWebViewWithMinimunFontSize:12 target:self WithNameKey:nil configure:^(WKWebView *wkWebView) {
+        [weakSelf.contentView addSubview:wkWebView];
+        [weakSelf.wkWebView mas_makeConstraints:^(MASConstraintMaker *make) {
+            make.left.mas_equalTo(weakSelf.contentView.mas_left);
+            make.right.mas_equalTo(weakSelf.contentView.mas_right);
+            make.top.mas_equalTo(weakSelf.contentView.mas_top);
+            make.bottom.mas_equalTo(weakSelf.bottomView.mas_top);
+        }];
+        iPhoneXR||iPhoneXM||iPhoneX?(weakSelf.bottomMargin.constant = 20):0;
+    }];
+    
+    [self senderAction:self.senderArray.firstObject];
+    self.view.backgroundColor = [UIColor whiteColor];
+}
+
+- (void)shareAction:(UIBarButtonItem *)share {
+    DLog(@"shareAction");
+}
+
+
+- (IBAction)senderAction:(UIButton *)sender {
+    
+    NSArray *array = @[@"icon_paiban_heng_a",@"icon_paiban_shu_a",@"icon_paiban_daochu_a"];
+    NSArray *seletarray = @[@"icon_paiban_heng_b",@"icon_paiban_shu_b",@"icon_paiban_daochu_b"];
+    [self.senderArray enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        UIButton *conBtn = obj;
+        if ([sender isEqual:conBtn]) {
+            [conBtn setImage:[UIImage imageNamed:seletarray[conBtn.tag - 100]] forState:UIControlStateNormal];
+        } else {
+            [conBtn setImage:[UIImage imageNamed:array[conBtn.tag - 100]] forState:UIControlStateNormal];
+        }
+    }];
+    switch (sender.tag) {
+        case 100:
+        {
+            
+        }
+            break;
+        case 101:
+        {
+            
+        }
+            break;
+        case 102:
+        {
+            UIAlertController *alertVC = [UIAlertController alertControllerWithTitle:@"字帖已完成" message:nil preferredStyle:(UIAlertControllerStyleActionSheet)];
+            UIAlertAction *action1 = [UIAlertAction actionWithTitle:@"生成下载链接" style:(UIAlertActionStyleDefault) handler:^(UIAlertAction * _Nonnull action) {
+                [TipCopyAlert centerAlertShowtipAlertisSureBlock:^(BOOL isCopy) {
+                    
+                } urlString:@"http:www.baidu.com.wahKhkdahsdhahkhdakdhakhdksdhakdjkahdakshdkadhkadjkadhakda"];
+            }];
+            UIAlertAction *action2 = [UIAlertAction actionWithTitle:@"保存本地" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+                
+            }];
+            UIAlertAction *action3 = [UIAlertAction actionWithTitle:@"继续编辑" style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
+                
+            }];
+            [alertVC addAction:action1];
+            [alertVC addAction:action2];
+            [alertVC addAction:action3];
+            
+            [self.navigationController presentViewController:alertVC animated:YES completion:nil];
+            
+        }
+            break;
+        default:
+            break;
+    }
+}
+
+/*
+#pragma mark - Navigation
+
+// In a storyboard-based application, you will often want to do a little preparation before navigation
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    // Get the new view controller using [segue destinationViewController].
+    // Pass the selected object to the new view controller.
+}
+*/
+
+@end

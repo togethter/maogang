@@ -1,0 +1,25 @@
+//
+//  RegisterViewController.h
+//  LvJie
+//
+//  Created by bilin on 2017/1/5.
+//  Copyright © 2017年 Bilin-Apple. All rights reserved.
+//
+
+#import "YLRootViewController.h"
+
+
+@protocol RegisterViewControllerDelegate <NSObject>
+
+- (void)registerViewControllerMakeLoginVCToLoginWithModel:(UserModel *)model;
+
+@end
+@interface RegisterViewController : YLRootViewController
+
+@property (nonatomic, weak) id<RegisterViewControllerDelegate> delegate;
+
+// openId
+// url
+// qqOrwx  1 QQ 2 WX
+@property (nonatomic, copy) NSDictionary *dic;
+@end

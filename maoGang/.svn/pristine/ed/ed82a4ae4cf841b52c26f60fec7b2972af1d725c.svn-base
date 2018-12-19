@@ -1,0 +1,79 @@
+//
+//  XLYuMengNotificationTool.m
+//  LvJie
+//
+//  Created by bilin on 2018/2/5.
+//  Copyright © 2018年 Bilin-Apple. All rights reserved.
+//
+#define IOS10_OR_LATER ([[[UIDevice currentDevice] systemVersion] floatValue] >= 10.0)
+#define IOS9_OR_LATER ([[[UIDevice currentDevice] systemVersion] floatValue] >= 9.0)
+#define IOS8_OR_LATER ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.0)
+#define IOS7_OR_LATER ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0)
+
+#import "XLYuMengNotificationTool.h"
+NSString *const XLYuMengNotificationToolTypeFrom = @"lvjie";
+//
+NSString *const XLYuMengNotificationToolAppKey = @"5a445091b27b0a470d000016";
+
+@implementation XLYuMengNotificationTool
++ (void)XLYuMengNotificationToolWithuid:(NSString *)uid withtype:(NSString *)typefrome withXLYuMengNotificationToolPersonAuthtags:(NSArray *)authTagsArray
+{
+    // 移除
+    [UMessage removeAlias:uid type:typefrome response:^(id  _Nonnull responseObject, NSError * _Nonnull error) {
+        DLog(@"%@", responseObject);
+        DLog(@"%@", error);
+        [UMessage removeAllTags:^(id  _Nonnull responseObject, NSInteger remain, NSError * _Nonnull error) {
+            DLog(@"%@", responseObject);
+            DLog(@"%@", error);
+            [UMessage setAlias:uid type:typefrome response:^(id  _Nonnull responseObject, NSError * _Nonnull error) {
+                DLog(@"%@", responseObject);
+                DLog(@"%@", error);
+                if (IS_VALID_ARRAY(authTagsArray)) {
+                    for (NSString *auth in authTagsArray) {
+                        [UMessage addTag:auth response:^(id  _Nonnull responseObject, NSInteger remain, NSError * _Nonnull error) {
+                            DLog(@"%@", responseObject);
+                            DLog(@"%@", error);
+                        }];
+                    }
+                }
+            }];
+        }];
+    }];
+
+}
+
++ (void)XLYuMengNotificationToolwithappKey:(NSString *)appKey withlaunchoptions:(NSDictionary *)launchOptions withAppDelegate:(AppDelegate<UNUserNotificationCenterDelegate> *)delegate
+{
+    [UMessage startWithAppkey:appKey launchOptions:launchOptions httpsEnable:YES];
+    // 线上的 发布的NO 线下为YES
+    [UMessage openDebugMode:NO];
+    //    UIStoryboard *board=[UIStoryboard storyboardWithName:@"Main_iPhone" bundle:nil];
+    //    [UMessage addLaunchMessageWithWindow:self.window finishViewController:[board instantiateInitialViewController]];
+    // ios 10 之前的
+    //注册通知
+    [UMessage registerForRemoteNotifications];
+    //iOS10必须加下面这段代码。
+    if (iOS10) {// 以上为iOS10
+        UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
+        center.delegate= delegate;
+        UNAuthorizationOptions types10=UNAuthorizationOptionBadge|UNAuthorizationOptionAlert|UNAuthorizationOptionSound;
+        [center requestAuthorizationWithOptions:types10 completionHandler:^(BOOL granted, NSError * _Nullable error) {
+            if (granted) {// 点击允许推送
+                //点击允许
+                
+            } else {// 点击不允许推送
+                //点击不允许
+                
+            }
+        }];
+        // // 可以通过 getNotificationSettingsWithCompletionHandler 获取权限设置
+        //之前注册推送服务，用户点击了同意还是不同意，以及用户之后又做了怎样的更改我们都无从得知，现在 apple 开放了这个 API，我们可以直接获取到用户的设定信息了。注意UNNotificationSettings是只读对象哦，不能直接修改！
+        
+        [center getNotificationSettingsWithCompletionHandler:^(UNNotificationSettings * _Nonnull settings) {
+            DLog(@"========%@",settings);
+        }];
+    }
+    [UMessage setBadgeClear:NO];
+    [UMessage setLogEnabled:NO];
+}
+@end

@@ -1,0 +1,61 @@
+//
+//  YLReplyPostModel.h
+//  maoGang
+//
+//  Created by zhangzhen on 2018/11/28.
+//  Copyright © 2018 bilin. All rights reserved.
+//
+
+#import "BaseModel.h"
+
+NS_ASSUME_NONNULL_BEGIN
+
+@interface YLReplyPostModel : BaseModel
+/**
+ *回复人昵称
+ */
+@property (nonatomic, copy) NSString * ReplyMemberNick;
+
+/**
+ *@人昵称（暂时不用）
+ */
+@property (nonatomic, copy) NSString * AtMemberNick;
+
+/**
+ *回复编号
+ */
+@property (nonatomic, copy) NSString * ReplyId;
+
+/**
+ *作品编号
+ */
+@property (nonatomic, copy) NSString * PostId;
+
+
+/**
+ *回复人编号
+ */
+@property (nonatomic, copy) NSString * ReplyMemberId;
+
+/**
+ *回复内容
+ */
+@property (nonatomic, copy) NSString * ReplyContent;
+
+/**
+ *?
+ */
+@property (nonatomic, copy) NSString * AtMemberId;
+
+/**
+ *回复时间 时间戳
+ */
+@property (nonatomic, copy) NSString * Created;
+
+
+
+
+
+@end
+
+NS_ASSUME_NONNULL_END

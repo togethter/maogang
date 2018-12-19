@@ -1,0 +1,30 @@
+//
+//  FontModel.h
+//  maoGang
+//
+//  Created by xl on 2018/12/8.
+//  Copyright © 2018年 bilin. All rights reserved.
+//
+
+#import "BaseModel.h"
+
+NS_ASSUME_NONNULL_BEGIN
+
+@interface FontModel : BaseModel
+//HomePic = "http://192.168.0.155:9052/Typefaces/Home/SIMKAI.png";
+//IsOpen = 1;
+//PenType = 1;
+//SwitchPic = "http://192.168.0.155:9052/Typefaces/Switch/SIMKAI.png";
+//TypefaceId = 4;
+//TypefaceName = "\U94a2\U7b14\U6977\U4e66\U5b57\U5e16";
+//TypefacesCode = SIMKAI;
+@property (nonatomic, copy) NSString *HomePic;//首页图片
+@property (nonatomic, copy) NSString *IsOpen;
+@property (nonatomic, copy) NSString *PenType;//笔类（1=钢笔 2=毛笔）
+@property (nonatomic, copy) NSString *SwitchPic;//内页切换图片
+@property (nonatomic, copy) NSString *TypefaceId;//字体编号
+@property (nonatomic, copy) NSString *TypefaceName;//字体名称
+@property (nonatomic, copy) NSString *TypefacesCode;//传给前端的字体名称
+@end
+
+NS_ASSUME_NONNULL_END

@@ -1,0 +1,480 @@
+//
+//  YLRecommendedWorksViewController.m
+//  maoGang
+//
+//  Created by zhangzhen on 2018/11/22.
+//  Copyright © 2018 bilin. All rights reserved.
+//
+
+#import "YLRecommendedWorksViewController.h"
+#import "CircleItem.h"
+#import "CircleUserCell.h"//评论cell
+#import "LikeUserTableViewCell.h"//点赞 cell
+#import "FriendCircleViewModel.h"
+#import "SectionHeaderView.h"
+#import "SectionFooterView.h"
+#import "ZLPhotoPickerBrowserViewController.h"
+
+
+
+static NSString *const kCellId = @"CircleCell";
+static NSString *const kCellId1 = @"LikeUserCell";
+
+@interface YLRecommendedWorksViewController ()<CircleUserCellDelegate>
+@property (nonatomic, strong) NSMutableArray *dataMuArr;
+@property (nonatomic, strong) NSMutableArray *headerMuArr;
+@property (nonatomic, assign) NSInteger selectedSection;
+@property (nonatomic, strong) UITextView *kTextView;
+@property (nonatomic, strong) UIView *kInputView;
+@property (nonatomic, assign) CGFloat kInputHeight;
+@property (nonatomic, strong) NSDictionary *toPeople;
+
+
+@property(nonatomic,strong)UITableView * tableV;
+
+
+@end
+
+@implementation YLRecommendedWorksViewController
+
+-(NSMutableArray *)dataMuArr
+{
+    if (!_dataMuArr) {
+        _dataMuArr = [NSMutableArray array];
+    }
+    return _dataMuArr;
+}
+-(NSMutableArray *)headerMuArr
+{
+    if (!_headerMuArr) {
+        _headerMuArr = [NSMutableArray array];
+    }
+    return _headerMuArr;
+}
+
+
+- (void)viewDidLoad {
+   
+    [super viewDidLoad];
+    self.kInputHeight = 50;
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillChangeFrame:) name:UIKeyboardWillChangeFrameNotification object:nil];
+    CGFloat tabHeight = iPhoneX|iPhoneXM|iPhoneXR  ? 83.f : 49.f;
+    self.tableV = [[UITableView alloc]initWithFrame:CGRectMake(0, 0, kScreenWidth, kScreenHeight-  TOPBAR_HEIGHT - tabHeight-5) style:UITableViewStyleGrouped];
+    self.tableV.delegate = self;
+    self.tableV.dataSource = self;
+    [self.view addSubview:self.tableV];
+    
+    [self.tableV registerClass:[CircleUserCell class] forCellReuseIdentifier:kCellId];
+    [self.tableV registerClass:[LikeUserTableViewCell class] forCellReuseIdentifier:kCellId1];
+    self.tableV.estimatedRowHeight = 100;//预设 cell高度 可不设置
+    self.tableV.separatorStyle = UITableViewCellSeparatorStyleNone;
+    
+    //    [self setMJRefreshData];
+    
+    dispatch_async(dispatch_get_global_queue(0, 0), ^{
+        self.dataMuArr = [[FriendCircleViewModel new] loadDatas];
+        
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self.tableV reloadData];
+        });
+    });
+    
+    [self addInputView];
+    
+    
+    // Do any additional setup after loading the view, typically from a nib.
+}
+- (void)viewWillDisappear:(BOOL)animated {
+    [super viewWillDisappear:animated];
+    [self hideKeyBoard];
+}
+
+- (void)addInputView {
+    self.kInputView = [UIView new];
+    _kInputView.backgroundColor = [UIColor colorWithHexString:@"#eeeeee"];
+    [self.view addSubview:_kInputView];
+    [self.view bringSubviewToFront:_kInputView];
+    [_kInputView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.height.equalTo(@50);
+        make.left.right.equalTo(self.view);
+        make.bottom.equalTo(@(self.kInputHeight));
+    }];
+    
+    self.kTextView = [UITextView new];
+    _kTextView.backgroundColor = [UIColor whiteColor];
+    _kTextView.layer.cornerRadius = 5;
+    NSMutableParagraphStyle *paragraphStyle = [NSMutableParagraphStyle new];
+    paragraphStyle.lineSpacing = 5;// 字体的行间距
+    NSDictionary *attributes = @{
+                                 NSFontAttributeName:[UIFont systemFontOfSize:16], NSParagraphStyleAttributeName:paragraphStyle
+                                 };
+    _kTextView.typingAttributes = attributes;
+    _kTextView.returnKeyType = UIReturnKeySend;
+    _kTextView.delegate = self;
+    [_kInputView addSubview:_kTextView];
+    [_kTextView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.equalTo(@7);
+        make.bottom.equalTo(@(-7));
+        make.left.equalTo(@14);
+        make.right.equalTo(@(-50));
+    }];
+}
+
+-(void)setMJRefreshData{
+    
+    __weak typeof (self)weakSelf = self;
+    MJRefreshAutoNormalFooter * footer = [MJRefreshAutoNormalFooter footerWithRefreshingBlock:^{
+        
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            [weakSelf.dataMuArr addObjectsFromArray:[[FriendCircleViewModel new] loadDatas]];
+            [weakSelf.tableV.mj_footer endRefreshing];
+            //            DebugLog(@"结束刷新");
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [weakSelf.tableV reloadData];
+            });
+            
+        });
+        
+        
+    }];
+    [footer setTitle:@"加载更多" forState:MJRefreshStateRefreshing];
+    self.tableV.mj_footer = footer;
+}
+
+
+#pragma mark - Table view data source
+//分组
+-(NSInteger)numberOfSectionsInTableView:(UITableView *)tableView{
+    return self.dataMuArr.count;
+}
+-(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
+    CircleItem * item = self.dataMuArr[section];
+    if (item.like_users.count>0) {
+        return item.comments.count +1;
+    }else{
+        return item.comments.count;
+    }
+    
+}
+
+-(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
+    CircleItem *item = self.dataMuArr[indexPath.section];
+    if (item.like_users.count > 0) {
+        if (indexPath.row == 0) {//点赞
+            LikeUserTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:kCellId1 forIndexPath:indexPath];
+            cell.delegate = self;
+            [cell setContentData:item];
+            return cell;
+        } else {//评论
+            CircleUserCell *cell = [tableView dequeueReusableCellWithIdentifier:kCellId forIndexPath:indexPath];
+            [cell setContentData:item index:indexPath.row - 1];
+            cell.delegate = self;
+            return cell;
+        }
+    } else {//评论
+        CircleUserCell *cell = [tableView dequeueReusableCellWithIdentifier:kCellId forIndexPath:indexPath];
+        [cell setContentData:item index:indexPath.row];
+        cell.delegate = self;
+        return cell;
+    }
+    
+}
+
+-(UIView * )tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section{
+    
+    static NSString * viewIdentfier = @"headView";
+    SectionHeaderView * headerView = [tableView dequeueReusableHeaderFooterViewWithIdentifier:viewIdentfier];
+    if (!headerView) {
+        headerView = [[SectionHeaderView alloc]initWithReuseIdentifier:viewIdentfier];
+    }
+    CircleItem * item = self.dataMuArr[section];
+    headerView.delegate = self;
+    [headerView setContentData:item section:section];
+    return headerView;
+    
+}
+
+-(CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section{
+    
+    CircleItem * item = self.dataMuArr[section];
+    return item.headerHeight;
+}
+
+-(UIView *)tableView:(UITableView *)tableView viewForFooterInSection:(NSInteger)section{
+    static NSString * viewIdentfier = @"footerView";
+    SectionFooterView * footerView = [tableView dequeueReusableHeaderFooterViewWithIdentifier:viewIdentfier];
+    if (!footerView) {
+        footerView = [[SectionFooterView alloc]initWithReuseIdentifier:viewIdentfier];
+        [self.headerMuArr addObject:footerView];
+    }
+    return footerView;
+}
+
+-(CGFloat)tableView:(UITableView *)tableView heightForFooterInSection:(NSInteger)section{
+    CircleItem * item = self.dataMuArr[section];
+    return item.footerHeight;
+}
+
+-(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
+    CircleItem *item = self.dataMuArr[indexPath.section];
+    NSDictionary *dic = nil;
+    if (item.like_users.count > 0) {
+        if (indexPath.row > 0) {
+            dic = item.comments[indexPath.row - 1];
+        }
+    } else {
+        dic = item.comments[indexPath.row];
+    }
+    if (dic) {
+        self.selectedSection = indexPath.section;
+        self.toPeople = @{
+                          @"comment_to_user_id": [dic valueForKey:@"comment_user_id"],
+                          @"comment_to_user_name": [dic valueForKey:@"comment_user_name"],
+                          };
+        //        [self startComment];
+    }
+}
+
+#pragma mark - SectionHeaderViewDelegate
+//收起 or 全文
+- (void)spreadContent:(BOOL)isSpread section:(NSUInteger)section{
+    
+    CircleItem *item = self.dataMuArr[section];
+    item.isSpread = isSpread;
+    item.headerHeight = [[FriendCircleViewModel new] getHeaderHeight:item];
+    [self.tableV reloadData];
+}
+//点击  姓名
+- (void)didTapPeople:(CircleItem *)circleItem {
+    //    UIViewController *vc = [UIViewController new];
+    //    vc.view.backgroundColor = [UIColor whiteColor];
+    //    vc.navigationItem.title = circleItem.user_name;
+    //    [self.navigationController pushViewController:vc animated:YES];
+    
+    
+    //    YLDetailForNewsUserViewController * vc = [[YLDetailForNewsUserViewController alloc]init];
+    //    [self.navigationController pushViewController:vc animated:YES];
+    
+}
+
+- (void)didTapImageListView:(NSInteger)section  withImageIndex:(NSInteger)imageIndex{
+    CircleItem *item = self.dataMuArr[section];
+    NSMutableArray *zlPhotos = [NSMutableArray array];
+    for (int i = 0; i < item.small_pics.count; i++) {
+        NSString * url = item.small_pics[i];
+        ZLPhotoPickerBrowserPhoto *photod = [ZLPhotoPickerBrowserPhoto photoAnyImageObjWith:url];
+        [zlPhotos addObject:photod];
+    }
+    ZLPhotoPickerBrowserViewController *pickerBrowser = [[ZLPhotoPickerBrowserViewController alloc] init];
+    // 淡入淡出效果
+    // pickerBrowser.status = UIViewAnimationAnimationStatusFade;
+    // 数据源/delegate
+    pickerBrowser.editing = NO;
+    pickerBrowser.photos = zlPhotos;
+    // 能够删除
+    pickerBrowser.delegate = self;
+    // 当前选中的值
+    pickerBrowser.currentIndex = imageIndex;
+    
+    // 展示控制器
+    [pickerBrowser showPickerVc:self];
+    
+}
+
+//点赞
+- (void)didClickLikeButton:(NSInteger)section {
+    
+    CircleItem *item = self.dataMuArr[section];
+    NSMutableArray *muArr = [NSMutableArray arrayWithArray:item.like_users];
+    BOOL isContain = NO;
+    NSDictionary *containDic = nil;
+    for (NSDictionary *dic in item.like_users) {
+        if ([[dic valueForKey:@"userId"] integerValue] == 0) {
+            isContain = YES;
+            containDic = dic;
+            break;
+        }
+    }
+    if (isContain) {
+        [muArr removeObject:containDic];
+    } else {
+        [muArr addObject:@{@"userId": @(0), @"userName": @"1234"}];
+    }
+    item.like_users = [muArr copy];
+    [[FriendCircleViewModel new] calculateItemHeight:item];
+    [self.tableV reloadData];
+}
+#pragma mark --  收藏
+- (void)didClickShouCangButton:(NSInteger)section{
+    
+    
+    
+}
+
+//评论
+- (void)didClickCommentButton:(NSInteger)section {
+    
+    self.selectedSection = section;
+    CircleItem *item = self.dataMuArr[section];
+    self.toPeople = @{
+                      @"comment_to_user_id": @(item.user_id),
+                      @"comment_to_user_name": item.user_name,
+                      };
+    [self startComment];
+}
+
+#pragma mark - CircleCellDelegate,LikeUserCellDelegate
+
+- (void)didSelectPeople:(NSDictionary *)dic {
+    NSLog(@"%@",dic);
+    //    UIViewController *vc = [UIViewController new];
+    //    vc.view.backgroundColor = [UIColor whiteColor];
+    //    vc.navigationItem.title = [dic valueForKey:@"user_name"];
+    //    [self.navigationController pushViewController:vc animated:YES];
+    
+    
+    //    YLViewDetailsViewController * vc = [[YLViewDetailsViewController alloc]init];
+    //    [self.navigationController pushViewController:vc animated:YES];
+    
+}
+
+- (void)startComment {
+    [self.kTextView becomeFirstResponder];
+}
+
+- (void)hideKeyBoard {
+    [self.kTextView resignFirstResponder];
+}
+#pragma mark --- 添加 评论
+- (void)sendMessage:(NSString *)text {
+    
+    CircleItem *item = self.dataMuArr[self.selectedSection];
+    NSDictionary *dic = @{
+                          @"commet_id": @10,
+                          @"comment_user_id": @(0),
+                          @"comment_user_name": @"123",
+                          @"comment_text": text,
+                          @"comment_to_user_id": [_toPeople valueForKey:@"comment_to_user_id"],
+                          @"comment_to_user_name": [_toPeople valueForKey:@"comment_to_user_name"],
+                          };
+    NSMutableArray *comments = [NSMutableArray arrayWithArray:item.comments];
+    [comments addObject:dic];
+    item.comments = [comments copy];
+    [[FriendCircleViewModel new] calculateItemHeight:item];
+    
+    [self.tableV reloadSections: [NSIndexSet indexSetWithIndex:self.selectedSection] withRowAnimation:(UITableViewRowAnimationNone)];
+    //    [self.tableV reloadData];
+}
+
+// 开始拖拽
+- (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView {
+    [self hideKeyBoard];
+}
+#pragma mark - UITextViewDelegate
+
+- (void)textViewDidChange:(UITextView *)textView {
+    if (textView.text.length > 5000) { // 限制5000字内
+        textView.text = [textView.text substringToIndex:5000];
+    }
+    static CGFloat maxHeight = 36 + 24 * 2;//初始高度为36，每增加一行，高度增加24
+    CGRect frame = textView.frame;
+    CGSize constraintSize = CGSizeMake(frame.size.width, MAXFLOAT);
+    CGSize size = [textView sizeThatFits:constraintSize];
+    if (size.height >= maxHeight) {
+        size.height = maxHeight;
+        textView.scrollEnabled = YES;   // 允许滚动
+    } else {
+        textView.scrollEnabled = NO;    // 不允许滚动
+    }
+    if ((ceil(size.height) + 14) != self.kInputHeight) {
+        CGPoint offset = self.tableV.contentOffset;
+        CGFloat delta = ceil(size.height) + 14 - self.kInputHeight;
+        offset.y += delta;
+        if (offset.y < 0) {
+            offset.y = 0;
+        }
+        [self.tableV setContentOffset:offset animated:NO];
+        self.kInputHeight = ceil(size.height) + 14;
+        [self.kInputView mas_updateConstraints:^(MASConstraintMaker *make) {
+            make.height.equalTo(@(ceil(size.height) + 14));
+        }];
+    }
+}
+
+- (BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text{
+    if ([text isEqualToString:@"\n"]){
+        if (self.kTextView.text.length > 0) {     // send Text
+            [self sendMessage:self.kTextView.text];
+        }
+        [self.kInputView mas_updateConstraints:^(MASConstraintMaker *make) {
+            make.height.equalTo(@50);
+        }];
+        [self.kTextView setText:@""];
+        self.kInputHeight = 50;
+        [self hideKeyBoard];
+        return NO;
+    }
+    return YES;
+}
+
+#pragma mark - 通知方法
+
+- (void)keyboardWillChangeFrame:(NSNotification *)notification {
+    NSDictionary *userInfo = notification.userInfo;
+    // 1,取出键盘动画的时间
+    CGFloat duration = [userInfo[UIKeyboardAnimationDurationUserInfoKey] doubleValue];
+    // 2,取得键盘将要移动到的位置的frame
+    CGRect keyboardFrame = [userInfo[UIKeyboardFrameEndUserInfoKey] CGRectValue];
+    // 3,计算kInputView需要平移的距离
+    CGFloat tabHeight = iPhoneX|iPhoneXM|iPhoneXR ? 83.f : 49.f;
+    CGFloat moveY = self.view.frame.size.height + TOPBAR_HEIGHT  - keyboardFrame.origin.y;
+    //      CGFloat moveY = self.view.frame.size.height  - keyboardFrame.origin.y;
+    // 4,执行动画
+    
+    UIWindow *window = [UIApplication sharedApplication].keyWindow;
+    SectionHeaderView *headerView = (SectionHeaderView *)[self.tableV headerViewForSection:self.selectedSection];
+    CGRect rect = [headerView.superview convertRect:headerView.frame toView:window];
+    CircleItem *item = self.dataMuArr[self.selectedSection];
+    CGFloat cellHeight = item.likerHeight;
+    for (NSNumber *num in item.commentHeightArr) {
+        cellHeight += [num floatValue];
+    }
+    CGFloat footerMaxY = CGRectGetMaxY(rect) + cellHeight + item.footerHeight;
+    CGFloat delta = footerMaxY - (SCREEN_MAX_LENGTH - (moveY + self.kInputHeight));
+    CGPoint offset = self.tableV.contentOffset;
+    offset.y += delta + tabHeight+5;
+    if (offset.y < 0) {
+        offset.y = 0;
+    }
+    
+    [self.tableV setContentOffset:offset animated:NO];
+    [self.kInputView mas_updateConstraints:^(MASConstraintMaker *make) {
+        if (moveY == 0) {
+            make.bottom.equalTo(@(self.kInputHeight));
+        } else {
+            make.bottom.equalTo(@(-moveY));
+        }
+    }];
+    [UIView animateWithDuration:duration animations:^{
+        [self.view layoutIfNeeded];
+    }];
+}
+
+- (void)dealloc {
+    [self.kInputView removeFromSuperview];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:UIKeyboardWillChangeFrameNotification object:nil];
+    DLog(@"%@--dealloc",[self class]);
+}
+
+/*
+ #pragma mark - Navigation
+ 
+ // In a storyboard-based application, you will often want to do a little preparation before navigation
+ - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+ // Get the new view controller using [segue destinationViewController].
+ // Pass the selected object to the new view controller.
+ }
+ */
+//中科院
+@end

@@ -1,0 +1,32 @@
+//
+//  XLScrollowContainCommentView.h
+//  LvJie
+//
+//  Created by bilin on 2018/1/30.
+//  Copyright © 2018年 Bilin-Apple. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+#import "CircleItem.h"
+
+@protocol XLScrollowContainCommentViewDelegate<NSObject>
+
+-(void)showNewReplyCommentDic:(NSDictionary *)contentDic withCellSection:(NSInteger)section;
+/**
+ 登录
+ */
+- (void)XLScrollowContainCommentViewLogin;
+
+
+@end
+@interface XLScrollowContainCommentView : UIView
+
+@property (nonatomic, weak) id<XLScrollowContainCommentViewDelegate> delegate;
+@property (nonatomic, strong) CircleItem *model;
+@property (nonatomic, assign) NSInteger NSInteger;
+// 是否是下一个界面因为WkWebView 白屏的原因
+@property (nonatomic, assign) BOOL isTwo;
+
++ (instancetype )xlScrollowContainCommentViewWith:(CircleItem *)model withDelegate:(id<XLScrollowContainCommentViewDelegate>)delegate WithIndexPath:(NSInteger )NSInteger;
+
+@end

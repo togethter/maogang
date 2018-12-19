@@ -1,0 +1,502 @@
+//
+//  YLRootViewController.m
+//  LeForProject
+//
+//  Created by zhangzhen on 2018/6/20.
+//  Copyright © 2018年 zhangzhen. All rights reserved.
+//
+
+#import "YLRootViewController.h"
+#import "AFNetworkReachabilityManager.h"
+#import "BaiduMobStat.h"
+
+
+@interface YLRootViewController ()
+
+@end
+
+@implementation YLRootViewController
+
+- (UIView *)xlContentView
+{
+    if (!_xlContentView) {
+        
+        _xlContentView = [[UIView alloc] initWithFrame:[UIScreen mainScreen].bounds];
+        [_xlContentView addSubview:self.temporarilyNodataImageV];
+        [_xlContentView addSubview:self.temporarilyNodataTitleV];
+        _xlContentView.backgroundColor = [UIColor whiteColor];
+        _xlContentView.hidden = YES;
+        
+        [_temporarilyNodataImageV mas_makeConstraints:^(MASConstraintMaker *make) {
+            make.width.and.height.mas_equalTo(150 * XLh);
+            make.centerY.mas_equalTo(_xlContentView.mas_centerY).offset(-100 * XLV);
+            make.centerX.mas_equalTo(_xlContentView.mas_centerX);
+        }];
+        
+        
+        [_temporarilyNodataTitleV mas_makeConstraints:^(MASConstraintMaker *make) {
+            make.top.mas_equalTo(_temporarilyNodataImageV.mas_bottom).offset(12);
+            make.centerX.mas_equalTo(_xlContentView);
+        }];
+        
+        
+        UITapGestureRecognizer *tapGes = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(xlreloadRequsetAction:)];
+        [_xlContentView addGestureRecognizer:tapGes];
+        
+        
+    }
+    return _xlContentView;
+}
+
+// 重新加载
+- (void)xlreloadRequsetAction:(UITapGestureRecognizer *)tapGes
+{
+    
+}
+/**开启网络权限*/
+- (void)OpenNetworkAccess
+{
+        if (@available(iOS 10.0, *)) {
+            [[UIApplication sharedApplication] openURL:[NSURL URLWithString:UIApplicationOpenSettingsURLString] options:@{} completionHandler:nil];
+        } else {
+            // Fallback on earlier versions
+            [[UIApplication sharedApplication] openURL:[NSURL URLWithString:UIApplicationOpenSettingsURLString]];
+        }
+}
+- (void)setXlQuanXian:(xlQuanXianEnum)xlQuanXian
+{
+    _xlQuanXian = xlQuanXian;
+    if (_isCanHiddenXlContentView == NO) {
+        switch (xlQuanXian) {
+            case xForOther:
+            {
+                self.xlContentView.hidden = YES;
+                self.temporarilyNodataImageV.hidden = YES;
+                self.temporarilyNodataTitleV.hidden = YES;
+                
+            }
+                break;
+            case xForChuChuo:
+            {
+                [self.view bringSubviewToFront:self.xlContentView];
+                self.xlContentView.hidden = NO;
+                self.temporarilyNodataImageV.hidden = NO;
+                self.temporarilyNodataTitleV.hidden = NO;
+                self.temporarilyNodataTitleV.text = @"出错了!";
+                self.temporarilyNodataImageV.image = [UIImage imageNamed:@"bar_chucuo"];
+            }
+                break;
+            case XForWuWangluo:
+            {
+                [self.view bringSubviewToFront:self.xlContentView];
+                self.xlContentView.hidden = NO;
+                self.temporarilyNodataImageV.image = [UIImage imageNamed:@"bar_wuwangluo"];
+                self.temporarilyNodataImageV.hidden = NO;
+                self.temporarilyNodataTitleV.hidden = NO;
+                
+                
+                self.temporarilyNodataTitleV.text = @"未检测到可用网络,请检查网络是否畅通";
+            }
+                break;
+            case xForWuShuJu:
+            {
+                
+            }
+                break;
+            default:
+                break;
+        }
+        
+    } else {
+        
+    }
+    
+    
+}
+- (void)xlHideenNetWork:(NSNotification *)notification
+{
+    if (self.netWorkCustomView.networkEnum == AlertCustomViewForNetworkNoNetwork) {
+        self.netWorkCustomView.hidden = YES;
+    }
+}
+- (void)canHiddenAction:(NSNotificationCenter *)notification
+{
+    //    xForOther,
+    //    xForChuChuo,
+    //    xForWuShuJu,
+    //    XForWuWangluo
+    if (self.xlQuanXian == xForChuChuo || self.xlQuanXian == xForOther) {
+        return;
+    }
+    self.xlContentView.hidden = YES;
+}
+- (void)isHaveData:(BOOL)isHaveData
+{
+    if (isHaveData) {// 有数据
+        [self.view bringSubviewToFront:self.xlContentView];
+        self.temporarilyNodataTitleV.text = @"暂无记录";
+        self.temporarilyNodataImageV.image = [UIImage imageNamed:@"bar_wushuju"];
+        self.xlContentView.hidden = YES;
+        self.temporarilyNodataImageV.hidden = YES;
+        self.temporarilyNodataTitleV.hidden = YES;
+    } else {// 无数据
+        self.xlContentView.hidden = NO;
+        self.temporarilyNodataImageV.image = [UIImage imageNamed:@"bar_wushuju"];
+        self.temporarilyNodataImageV.hidden = NO;
+        self.temporarilyNodataTitleV.text = @"暂无记录";
+        self.temporarilyNodataTitleV.hidden = NO;
+        self.xlQuanXian = xForWuShuJu;
+        [self.view bringSubviewToFront:self.xlContentView];
+    }
+}
+- (UILabel *)Icon_label{
+    if (!_Icon_label) {
+        _Icon_label = [[UILabel alloc]init];
+        _Icon_label.textColor = RGBCOLOR(163, 163, 163);
+        _Icon_label.font = [UIFont systemFontOfSize:14];
+        _Icon_label.textAlignment = NSTextAlignmentCenter;
+        _Icon_label.text = @"~空空如也~";
+        _Icon_label.hidden = YES;
+        
+        
+    }
+    return _Icon_label;
+}
+- (UIImageView *)Icon_backImage{
+    
+    if (!_Icon_backImage) {
+        _Icon_backImage = [[UIImageView alloc]init];
+        _Icon_backImage.image = [UIImage imageNamed:@"bar_wushuju"];
+        _Icon_backImage.hidden = YES;
+    }
+    return _Icon_backImage;
+}
+-(NSMutableArray *)dataArray{
+    if (!_dataArray) {
+        _dataArray = [NSMutableArray array];
+    }
+    return _dataArray;
+    
+}
+// 进入页面，建议在此处添加
+- (void)viewDidAppear:(BOOL)animated {
+    [super viewDidAppear:animated];
+    NSString* cName = [NSString stringWithFormat:@"%@%@",  NSStringFromClass(self.class),self.navigationItem.title];
+    [[BaiduMobStat defaultStat] pageviewStartWithName:cName];
+    
+}
+
+// 退出页面，建议在此处添加
+- (void)viewDidDisappear:(BOOL)animated {
+    [super viewDidDisappear:animated];
+    NSString* cName = [NSString stringWithFormat:@"%@%@", NSStringFromClass(self.class),self.navigationItem.title];
+    [[BaiduMobStat defaultStat] pageviewEndWithName:cName];
+}
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    
+    self.view.backgroundColor = BACKCOLOR;
+    if (!self.noAddBackBtn) {
+//        UIBarButtonItem *leftBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[[UIImage imageNamed:@"icon_back"]imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal] style:(UIBarButtonItemStylePlain) target:self action:@selector(xlBackActionshangxin)];
+//        self.navigationItem.leftBarButtonItem = leftBarButtonItem;
+        UIButton *button = [UIButton buttonWithType:UIButtonTypeCustom];
+        [button addTarget:self action:@selector(xlBackActionshangxin) forControlEvents:UIControlEventTouchUpInside];
+        [button setImage:[[UIImage imageNamed:@"btn_fanhui"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal]forState:UIControlStateNormal];
+        UIBarButtonItem *leftBarbutton = [[UIBarButtonItem alloc] initWithCustomView:button];
+        self.navigationItem.leftBarButtonItem = leftBarbutton;
+    }
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(xlHideenNetWork:) name:@"isOnLineNetWork" object:nil];
+
+    self.netWorkCustomView = [AlertCustomViewForNetwork alertCustomViewForNetworkWithDelegte:self];
+    self.netWorkCustomView.hidden = YES;
+    [[UIApplication sharedApplication].delegate.window addSubview:self.netWorkCustomView];
+}
+
+
+- (void)xlBackActionshangxin
+{
+    [self.navigationController popViewControllerAnimated:YES];
+}
+
+- (void)setNavigationBarTypeHiddenBottomLine{
+    self.navigationController.navigationBar.translucent = NO;
+    self.navigationController.navigationBar.shadowImage = [UIImage new];
+}
+
+-(void)addRightItemTitle:(NSString * )rightTitle withtitleColor:(UIColor *)titleColor addAction:(SEL)action{
+    
+    UIButton *but = [UIButton buttonWithType:UIButtonTypeCustom];
+    but.frame =CGRectMake(0,0, 60, 44);
+    NSString *dingweiString = rightTitle;
+    but.titleLabel.font = [UIFont systemFontOfSize:17];
+    [but setTitle:dingweiString forState:UIControlStateNormal];
+    //    [but setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+    [but setTitleColor:titleColor?titleColor:[UIColor blackColor] forState:UIControlStateNormal];
+    [but setTitleEdgeInsets:UIEdgeInsetsMake(0, 0, 0, -20)];
+    [but addTarget:self action:action forControlEvents:UIControlEventTouchUpInside];
+    
+    UIBarButtonItem * rightItem = [[UIBarButtonItem alloc]initWithCustomView:but];
+    self.navigationItem.rightBarButtonItem = rightItem;
+    
+    
+}
+-(void)addLeftItemAction:(SEL)action{
+    
+//    UIButton *firstButton = [UIButton buttonWithType:UIButtonTypeCustom];
+//    firstButton.frame = CGRectMake(0, 0, 44, 44);
+//    [firstButton setImage:[[UIImage imageNamed:@"btn_fanhui"]imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal] forState:UIControlStateNormal];
+//    [firstButton addTarget:self action:action forControlEvents:UIControlEventTouchUpInside];
+//    firstButton.contentHorizontalAlignment =UIControlContentHorizontalAlignmentLeft;
+//    [firstButton setImageEdgeInsets:UIEdgeInsetsMake(0,-5,0,0)];
+//
+//
+//    UIBarButtonItem *leftBarButtonItem = [[UIBarButtonItem alloc]initWithCustomView:firstButton];
+//    self.navigationItem.leftBarButtonItem = leftBarButtonItem;
+    
+    
+    
+     UIBarButtonItem *leftBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[[UIImage imageNamed:@"icon_back"]imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal] style:(UIBarButtonItemStylePlain) target:self action:action];
+    self.navigationItem.leftBarButtonItem = leftBarButtonItem;
+    
+}
+- (WKWebViewConfiguration *)configuration {
+    if (!_configuration) {
+        _configuration = [[WKWebViewConfiguration alloc] init];
+        // 设置偏好设置
+        _configuration.preferences = [[WKPreferences alloc] init];
+        // 默认为 0
+        _configuration.preferences.minimumFontSize = 20;
+        // 默认为YES
+        _configuration.preferences.javaScriptEnabled = YES;
+        
+        // 在iOS上默人为NO， 表示不能自动通过窗口打开
+        _configuration.preferences.javaScriptCanOpenWindowsAutomatically = NO;
+        // 配置userContentControlller
+        _configuration.userContentController = self.wkuserConentVC;
+    }
+    return _configuration;
+}
+
+
+#warning wk 配置
+- (WKWebView *)wkWebView {
+    if (!_wkWebView) {
+        
+        //        if ([self isKindOfClass:NSClassFromString(@"DetailsCsaeViewController")]&&iPhoneX) {
+        //
+        //          _wkWebView = [[WKWebView alloc] initWithFrame:CGRectMake(0, 0, kScreenWidth, kScreenHeight-50 -IPhoneXBottomV-State_barHeight) configuration:self.configuration];
+        //        }else{
+        _wkWebView = [[WKWebView alloc] initWithFrame:CGRectZero configuration:self.configuration];
+        //        }
+        
+        // 导航代理
+        _wkWebView.navigationDelegate = self;
+        // 与webView UI交互代理
+        _wkWebView.UIDelegate = self;
+        
+        [_wkWebView addSubview:self.progressView];
+        [_progressView mas_makeConstraints:^(MASConstraintMaker *make) {
+            make.left.mas_equalTo(_wkWebView.mas_left);
+            make.right.mas_equalTo(_wkWebView.mas_right);
+            make.top.mas_equalTo(_wkWebView.mas_top);
+            make.height.mas_equalTo(2);
+        }];
+        
+    }
+    return _wkWebView;
+}
+- (UIProgressView *)progressView
+{
+    if (!_progressView) {
+        _progressView = [[UIProgressView alloc] initWithProgressViewStyle:UIProgressViewStyleDefault];
+        _progressView.progressTintColor =[UIColor colorWithRed:22.f / 255.f green:126.f / 255.f blue:251.f / 255.f alpha:1.0];
+        _progressView.trackTintColor = [UIColor whiteColor];
+    }
+    return _progressView;
+}
+- (WKUserContentController *)wkuserConentVC {
+    if (!_wkuserConentVC) {
+        _wkuserConentVC = [[WKUserContentController alloc] init];
+    }
+    return _wkuserConentVC;
+}
+
+- (void)configureWkWebViewConfigure:(void(^)(WKWebView *wkWebView))wkWebBlock
+{
+    [self configureWkWebViewWithMinimunFontSize:10 target:self WithNameKey:@"" configure:wkWebBlock];
+}
+// 空实现 不要动
+- (void)configureWkWebViewWithMinimunFontSize:(CGFloat)miniFont target:(nullable id)ViewController WithNameKey:(nullable NSString *)nameKey configure:(void(^)(WKWebView *wkWebView))wkWebBlock
+{
+    
+    [self confiureAll:miniFont addTargect:ViewController withNameKey:nameKey configure:wkWebBlock] ;
+}
+- (void)confiureAll:(CGFloat)minimunFontSize addTargect:(nullable id)viewController withNameKey:(NSString *)nameKey configure:(void(^)(WKWebView *wkWebView))wkWebBlock
+{
+    if (minimunFontSize) {
+        self.configuration.preferences.minimumFontSize = minimunFontSize;
+    }
+    if ([viewController isKindOfClass:[UIViewController class]] && IS_VALID_STRING(nameKey)) {
+        [self addScriptMessageHandlerWith:viewController name:nameKey];
+        self.scriptMessageName = nameKey;
+    }
+    if (wkWebBlock) {
+        wkWebBlock(self.wkWebView);
+    }
+}
+
+/** 注入JS对象 用户js 与webView内容之间的交互*/
+- (void)addScriptMessageHandlerWith:(UIViewController<WKScriptMessageHandler>*)viewController name:(NSString *)nameKey
+{
+    [self.wkuserConentVC addScriptMessageHandler:viewController name:nameKey];
+}
+// 添加前进和后退
+- (void)webViewBackAndForward
+{
+    //    UIBarButtonItem *left = [[UIBarButtonItem alloc] initWithTitle:@"后退" style:(UIBarButtonItemStylePlain) target:self action:@selector(backAction)];
+    //    UIBarButtonItem *right = [[UIBarButtonItem alloc] initWithTitle:@"前进" style:(UIBarButtonItemStylePlain) target:self action:@selector(forwardAction)];
+    //
+    //    UIBarButtonItem *barButton = [UIBarButtonItem itemWithImage:@"icon_back" highImage:@"icon_back" target:self action:@selector(back)];
+    //    self.navigationItem.leftBarButtonItems = @[barButton];
+    
+    UIView *view = [[UIView alloc]initWithFrame:CGRectMake(0,0,44,44)];
+    view.backgroundColor = [UIColor clearColor];
+    
+    UIButton *firstButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    firstButton.frame = CGRectMake(0, 0, 44, 44);
+    [firstButton setImage:[[UIImage imageNamed:@"btn_fanhui"]imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal] forState:UIControlStateNormal];
+    [firstButton addTarget:self action:@selector(back) forControlEvents:UIControlEventTouchUpInside];
+    
+    //        if (iOS11) {
+    firstButton.contentHorizontalAlignment =UIControlContentHorizontalAlignmentLeft;
+    [firstButton setImageEdgeInsets:UIEdgeInsetsMake(0, -5,0,0)];
+    //        }
+    
+    UIBarButtonItem *leftBarButtonItem = [[UIBarButtonItem alloc]initWithCustomView:firstButton];
+    self.navigationItem.leftBarButtonItems = @[leftBarButtonItem];
+    
+}
+- (void)backAction
+{
+    if ([self.wkWebView canGoBack]) {
+        [self.wkWebView goBack];
+    }
+}
+
+- (void)forwardAction
+{
+    if ([self.wkWebView canGoForward]) {
+        [self.wkWebView goForward];
+    }
+}
+
+- (void)back
+{
+    [self removewScriptAction];
+    [self.navigationController popViewControllerAnimated:YES];
+}
+
+// 添加观察者为了有一个加载的进度
+- (void)addloadingFromObserver
+{
+    [self.wkWebView addObserver:self forKeyPath:@"loading" options:NSKeyValueObservingOptionNew context:nil];
+    [self.wkWebView addObserver:self forKeyPath:@"estimatedProgress" options:NSKeyValueObservingOptionNew context:nil];
+}
+/** 移除观察者 --- loding 注意！！！不能随便调用和 addloadingFromObserver 成对出现*/
+- (void)removeLodingFromObserver
+{
+    [self.wkWebView removeObserver:self forKeyPath:@"loading"];
+    [self.wkWebView removeObserver:self forKeyPath:@"estimatedProgress"];
+}
+
+
+/** 根据name 移除注入的scriptMessageHandler*/
+- (void)removeScriptMessageHandkerForNameForKey:(nullable NSString *)name
+{
+    [self.wkuserConentVC removeScriptMessageHandlerForName:name];
+}
+// 空实现
+/** 移除script 方法*/
+- (void)removewScriptAction
+{
+    
+}
+- (void)clearWebViewCache
+{
+    if (iOS9) {// 如果是iOS 9的话
+        NSSet *tpes = [NSSet setWithArray:@[WKWebsiteDataTypeDiskCache,
+                                            WKWebsiteDataTypeMemoryCache]];
+        NSDate *date = [NSDate date];
+        
+        [[WKWebsiteDataStore defaultDataStore] removeDataOfTypes:tpes modifiedSince:date completionHandler:^{
+            NSLog(@"clear webView cache");
+        }];
+    } else {
+        NSString *libraryPath = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES).lastObject;
+        NSString *cookiesFolderPath = [libraryPath stringByAppendingPathComponent:@"Cookies"];
+        [[NSFileManager defaultManager] removeItemAtPath:cookiesFolderPath error:nil];
+        
+    }
+}
+
+
+- (NSString * )monitorNetworking
+{
+    
+    AFNetworkReachabilityStatus status = [[AFNetworkReachabilityManager sharedManager] networkReachabilityStatus];
+    if (status == AFNetworkReachabilityStatusReachableViaWiFi) {
+        
+        return @"wifi";
+    } 
+    return @"";
+  
+}
+
+
+/**
+ *  POST请求,无缓存
+ *
+ *  @param url        请求地址
+ *  @param parameters 请求参数
+ *  @param success    请求成功的回调
+ *  @param failure    请求失败的回调
+ *
+ *  @return 返回的对象可取消请求,调用cancel方法
+ */
+- (void)netWorkHelperWithPOST:(NSString *)url parameters:(NSDictionary *)parameters success:(HttpRequestSuccess)success failure:(HttpRequestFailed)failure
+{
+    [[YXHTTPRequst shareInstance] networking:url parameters:parameters method:YXRequstMethodTypePOST withView:self success:success failsure:failure];
+    
+   
+}
+
+
+
+#pragma mark - system
+
+- (void)dealloc {
+    DLog(@"%@-dealloc",NSStringFromClass(self.class));
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+
+}
+
+
+
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+/*
+#pragma mark - Navigation
+
+// In a storyboard-based application, you will often want to do a little preparation before navigation
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    // Get the new view controller using [segue destinationViewController].
+    // Pass the selected object to the new view controller.
+}
+*/
+
+@end

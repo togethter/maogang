@@ -1,0 +1,661 @@
+//
+//  XLScrollowContainCommentView.m
+//  LvJie
+//
+//  Created by bilin on 2018/1/30.
+//  Copyright © 2018年 Bilin-Apple. All rights reserved.
+//
+
+#import "XLScrollowContainCommentView.h"
+#import "UIView+Frame.h"
+#import "ArticleDetailBottomInputView.h"
+#import "YLReplyPostModel.h"
+#import "ArticleDetailBottomView.h"
+#import "NSString+Extension.h"
+#import "ReplayCell.h"
+#import "NODataView.h"
+
+static CGFloat XkeyBoardH = 0.f;
+
+@interface XLScrollowContainCommentView()
+<UITableViewDataSource,
+UITableViewDelegate,
+ArticleDetailBottomInputViewdelegate,
+ArticleDetailBottomViewDelegate
+>
+{
+    UIWindow *customWindow;
+    NSInteger page;
+}
+@property (nonatomic, strong) UITableView *tableView;
+@property (nonatomic, strong) UIView *lineView;
+@property (nonatomic, strong) UIButton *cancleBtn;
+@property (nonatomic, strong) UILabel *titileLabl;
+@property (nonatomic, strong) NSMutableArray *dataArray;
+@property (nonatomic, assign) CGFloat lastOffsetY;
+@property (nonatomic, strong) ArticleDetailBottomView *bottomView;
+
+@property (nonatomic, strong) ArticleDetailBottomInputView *xinputView;
+
+@property (nonatomic, strong) UIView *whiteView;
+@property (nonatomic, strong) UIView *mengBanView;
+
+//@property (nonatomic, strong) XLForInforModel *InforModel;
+
+@property (nonatomic, strong) NODataView *nodataView;
+
+
+@end
+
+
+@implementation XLScrollowContainCommentView
+
+
+// 添加通知
+- (void)addkeyBordNotification
+{
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(notificationFrameChange:) name:UIKeyboardWillChangeFrameNotification object:nil];
+}
+// 移除通知
+- (void)removeKeyBordNotification
+{
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
+
+- (void)dealloc
+{
+    [self removeKeyBordNotification];
+    DLog(@"%@",NSStringFromClass(self.class));
+    
+}
+
+
+
+
+- (NSMutableArray *)dataArray
+{
+    if (!_dataArray) {
+        _dataArray = [NSMutableArray array];
+    }
+    return _dataArray;
+}
++ (instancetype )xlScrollowContainCommentViewWith:(CircleItem *)model withDelegate:(id<XLScrollowContainCommentViewDelegate>)delegate WithIndexPath:(NSInteger )NSInteger
+{
+    XLScrollowContainCommentView *view = [[XLScrollowContainCommentView alloc] initWithFrame:CGRectZero withDelegate:delegate withModel:model withIndexPath:NSInteger];
+    [view reuseNetWorkwithBlock:nil];
+    return view;
+    
+}
+
+
+- (void)alert:(NSString *)description
+{
+    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:[NSString stringWithFormat:@"%@",description]
+                                                        message:nil
+                                                       delegate:nil
+                                              cancelButtonTitle:@"确定"
+                                              otherButtonTitles:nil];
+    [alertView show];
+}
+- (NSString *)privateToken
+{
+    NSString *token = nil;
+    if (isLogin) {
+        token = TOKEN;
+    } else {
+        token = @"";
+    }
+    return token;
+}
+- (void)network:(void(^)(void))successBlock {
+    
+    NSString *token = [self privateToken];
+    
+    NSString *commentid = self.model.PostId;
+    if (!IS_VALID_STRING(commentid)) {
+        [self alert:@"PostId 为空"];
+        return;
+    }
+    [[YXHTTPRequst shareInstance] networking:PostesReplyList parameters:@{@"postId":commentid,@"token":token,@"page":@(page)} method:(YXRequstMethodTypePOST) withView:nil success:^(NSDictionary *dic) {
+
+        BaseModel *baseModel = [BaseModel loadModelWithDictionary:dic];
+        if ([baseModel.Result isEqualToString:@"200"]) {
+            NSArray *array = dic[@"Info"][@"List"];
+            for (NSDictionary *dic in array) {
+                YLReplyPostModel *model = [YLReplyPostModel loadModelWithDictionary:dic];
+                [self.dataArray addObject:model];
+            }
+            NSString * number = [NSString stringWithFormat:@"%@条回复",dic[@"Info"][@"Number"]];
+            if (IS_VALID_STRING(number)) {
+                self.titileLabl.text = number;
+            }
+            // 配置是否有没有数据
+            [self noCommentWithDataArray:self.dataArray];
+            if (successBlock) {
+                successBlock();
+            }
+        }
+        [self stopLoadAnimation];
+    } failsure:^(NSError *error) {
+        [self stopLoadAnimation];
+    }];
+    
+    
+}
+ // 配置是否有没有数据
+- (void)noCommentWithDataArray:(NSArray *)array
+{
+
+//    if (IS_VALID_ARRAY(array)) {
+//        self.tableView.tableFooterView = nil;
+        self.nodataView.hidden = array.count;
+//    } else {
+//        self.nodataView = [NODataView noDataViewWithImage:@"bar_wushuju" withDescription:@"暂无评论回复"];
+//        self.tableView.tableFooterView = self.nodataView;
+//
+//    }
+}
+
+- (instancetype)initWithFrame:(CGRect)frame withDelegate:(id<XLScrollowContainCommentViewDelegate>)delegate withModel:(CircleItem *)model withIndexPath:(NSInteger )indexPath
+{
+    if (iPhoneX|iPhoneXR|iPhoneXM) {
+        frame = CGRectMake(0, kScreenHeight, kScreenWidth, kScreenHeight -44);
+    } else {
+        frame = CGRectMake(0, kScreenHeight, kScreenWidth, kScreenHeight - 20);
+        
+    }
+    self = [super initWithFrame:frame];
+    if (self) {
+        self.model = model;
+        self.NSInteger = indexPath;
+        self.backgroundColor = [UIColor whiteColor];
+        self.delegate = delegate;
+        UIView * top_v = [[UIView alloc]init];
+//        top_v.backgroundColor = [UIColor redColor];
+        [self addSubview:top_v];
+        [top_v mas_makeConstraints:^(MASConstraintMaker *make) {
+            make.left.right.top.mas_equalTo(self);
+            make.height.mas_equalTo(@60);
+        }];
+        UIButton * leftB = [UIButton buttonWithType:UIButtonTypeCustom];
+        [leftB setImage:[UIImage imageNamed:@"icon_shouqi_c"] forState:UIControlStateNormal];
+        [leftB addTarget:self action:@selector(leftButtonClicked) forControlEvents:UIControlEventTouchUpInside];
+        [top_v addSubview:leftB];
+        [leftB mas_makeConstraints:^(MASConstraintMaker *make) {
+            make.left.top.bottom.mas_equalTo(top_v);
+            make.width.mas_equalTo(@65);
+        }];
+        
+        
+        self.titileLabl = [[UILabel alloc]init];
+        self.titileLabl.text = [NSString stringWithFormat:@"%ld条回复",model.replys.count];
+        [top_v addSubview:self.titileLabl];
+        [self.titileLabl mas_makeConstraints:^(MASConstraintMaker *make) {
+            make.centerX.mas_equalTo(top_v);
+            make.centerY.mas_equalTo(top_v);
+        }];
+        
+        UILabel * line = [[UILabel alloc]init];
+        line.backgroundColor = LineBackgroundColor;
+        [top_v addSubview:line];
+        [line mas_makeConstraints:^(MASConstraintMaker *make) {
+            make.left.mas_equalTo(top_v).mas_offset(20);
+            make.right.mas_equalTo(top_v).mas_equalTo(-20);
+            make.height.mas_equalTo(@1);
+            make.bottom.mas_equalTo(top_v);
+        }];
+        
+
+        self.xinputView    = [[ArticleDetailBottomInputView alloc] initWithFrame:CGRectMake(0, kScreenHeight , kScreenWidth,  72)];
+        self.xinputView.delegate = self;
+       
+        
+        
+        self.tableView = [[UITableView alloc]init];
+        self.tableView.separatorStyle =  UITableViewCellSeparatorStyleNone;
+        [self.tableView registerNib:[UINib nibWithNibName:@"ReplayCell" bundle:nil] forCellReuseIdentifier:@"ReplayCell"];
+        self.tableView.delegate = self;
+        self.tableView.dataSource = self;
+        self.tableView.backgroundColor = [UIColor whiteColor];
+         [self addSubview:self.tableView];
+      
+       
+        
+        self.whiteView = [[UIView alloc] init];
+        UITapGestureRecognizer *tapGes = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapGesAction:)];
+        [self.whiteView addGestureRecognizer:tapGes];
+        [self addSubview:self.whiteView];
+        [self.whiteView mas_makeConstraints:^(MASConstraintMaker *make) {
+            make.edges.mas_equalTo(self);
+        }];
+        self.whiteView.hidden = YES;
+        
+        UIView *mengBanView = [[UIView alloc] init];
+        mengBanView.backgroundColor = RGBACOLOR(0, 0, 0, 0.5);
+        self.mengBanView = mengBanView;
+        
+        
+        page = 1;// 第一页的
+        self.NSInteger = indexPath;
+        
+        CGFloat height = 0.f;
+        if (iPhoneX|iPhoneXR|iPhoneXM) {
+            height = IPhoneXBottomV;
+        } else {
+            height = 0.f;
+        }
+        ArticleDetailBottomView *articleBottom = [[ArticleDetailBottomView alloc] initWithFrame:CGRectMake(0, self.height - 49 - height, kScreenWidth, 49) withbuttonsType:buttonsTypeLike];
+        articleBottom.delegate                 = self;
+        [self addSubview:articleBottom];
+        self.bottomView = articleBottom;
+        [self addSubview:self.xinputView];
+        [self.tableView mas_makeConstraints:^(MASConstraintMaker *make) {
+            make.top.mas_equalTo(top_v.mas_bottom).mas_offset(0);
+            make.left.mas_equalTo(self.mas_left);
+            make.right.mas_equalTo(self.mas_right);
+            make.bottom.mas_equalTo(self.bottomView.mas_top);
+        }];
+        
+        [self.whiteView mas_makeConstraints:^(MASConstraintMaker *make) {
+            make.edges.mas_equalTo(self);
+        }];
+        self.whiteView.hidden = YES;
+       
+        
+        UIWindow *window = [self xlWindow];
+        
+        [window addSubview:mengBanView];
+        [mengBanView mas_makeConstraints:^(MASConstraintMaker *make) {
+            make.edges.mas_equalTo(window);
+        }];
+        
+        [window addSubview:self];
+        
+        [self changAnimationMyOrigianY];// 动画
+        
+        [self addkeyBordNotification];
+        self.layer.cornerRadius = 5;
+        self.layer.masksToBounds = YES;
+        [self configurationTableView];
+        
+        self.nodataView = [NODataView noDataViewWithImage:@"bar_wushuju" withDescription:@"暂无评论回复"];
+        [self.tableView addSubview:self.nodataView];
+        self.nodataView.hidden = YES;
+        [self.nodataView mas_makeConstraints:^(MASConstraintMaker *make) {
+            make.top.mas_equalTo(self.tableView).mas_offset((kScreenHeight- 72-49-44-CGRectGetHeight(self.nodataView.frame))/2 );
+            make.centerX.mas_equalTo(self.tableView);
+        }];
+    }
+    return self;
+}
+
+
+
+-(void)leftButtonClicked{
+    
+    [UIView animateWithDuration:0.35f animations:^{
+        self.y += kScreenHeight;
+    } completion:^(BOOL finished) {
+        [self.mengBanView removeFromSuperview];
+        [self removeFromSuperview];
+    }];
+    
+}
+
+
+
+- (void)configurationTableView
+{
+    if (iOS11) {
+        self.tableView.estimatedRowHeight = 0;
+        self.tableView.estimatedSectionHeaderHeight = 0;
+        self.tableView.estimatedSectionFooterHeight = 0;
+    }
+    MJRefreshBackStateFooter * foot = [MJRefreshBackStateFooter footerWithRefreshingTarget:self refreshingAction:@selector(loadMoreData)];
+    // 设置文字
+    [foot setTitle:@"" forState:MJRefreshStateIdle];
+    [foot setTitle:@"" forState:MJRefreshStateRefreshing];
+    [foot setTitle:@"没有更多内容" forState:MJRefreshStateNoMoreData];
+    // 设置字体
+    foot.stateLabel.font = [UIFont fontWithName:FontName size:14];
+    // 设置颜色
+    foot.stateLabel.textColor = [UIColor blackColor];
+    self.tableView.mj_footer = foot;
+    
+    // 加载数据
+    self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+}
+
+- (void)reuseNetWorkwithBlock:(void(^)(void))successBlock
+{
+    [self.dataArray removeAllObjects];
+    page = 1;
+    [self network:successBlock];
+    
+}
+
+- (void)loadMoreData
+{
+    page++;
+    [self network:nil];
+}
+
+
+- (void)stopLoadAnimation
+{
+    [self.tableView.mj_footer endRefreshing];
+    [self.tableView reloadData];
+}
+- (void)changAnimationMyOrigianY
+{
+    [UIView animateWithDuration:0.35 animations:^{
+        [self animation];
+    }];
+}
+
+- (void)animation
+{
+    [self configurationAnimationY];
+}
+
+- (void)configurationAnimationY
+{
+    if (iPhoneX|iPhoneXM|iPhoneXR) {
+        [self animationY:44.f];
+    } else {
+        [self animationY:20.f];
+    }
+}
+- (void)animationY:(CGFloat)y
+{
+    self.y = y;
+}
+- (void)tapGesAction:(UITapGestureRecognizer *)tapGes
+{
+    [self.xinputView.textView resignFirstResponder];
+}
+
+
+- (void)configurationPullDownTrackingWithscrollowOriginalY:(CGFloat)y
+{
+    if (iPhoneX|iPhoneXM|iPhoneXR) {
+    [self setPullDownTrackingY:44.f withOriginalY:y];
+    } else {
+    [self setPullDownTrackingY:20.f withOriginalY:y];
+    }
+}
+
+- (void)setPullDownTrackingY:(CGFloat)trY withOriginalY:(CGFloat)y
+{
+    if (self.y >trY) {
+        self.y -= y;
+        CGPoint point = self.tableView.contentOffset;
+        point.y = 0;
+        self.tableView.contentOffset = point;
+    } else if (self.y ==trY) {
+
+    } else if (self.y <trY) {
+        self.y = trY;
+        CGPoint point = self.tableView.contentOffset;
+        point.y = 0;
+        self.tableView.contentOffset = point;
+    }
+}
+- (void)scrollViewDidScroll:(UIScrollView *)scrollView
+{
+    if (_lastOffsetY < scrollView.contentOffset.y) {        // 向上拉
+
+        if (!scrollView.tracking) {// 手松开了
+        } else {// 手没有松开下上拉
+            [self configurationPullDownTrackingWithscrollowOriginalY:scrollView.contentOffset.y];
+        }
+
+    } else if (_lastOffsetY > scrollView.contentOffset.y) { // 向下拉
+        if (scrollView.contentOffset.y < 0) {// 向下拉
+            if (scrollView.tracking) {
+                [UIView animateWithDuration:0 animations:^{
+                    self.y +=-scrollView.contentOffset.y;
+                    scrollView.contentOffset = CGPointZero;
+                }];
+            
+            } else {
+            }
+        } else {
+
+        }
+
+    } else if (_lastOffsetY == scrollView.contentOffset.y) {//
+      
+
+    }
+//    NSLog(@"%d %d ,%d",scrollView.tracking,scrollView.dragging,scrollView.decelerating);
+    _lastOffsetY = scrollView.contentOffset.y;
+}
+- (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate{
+    if (self.y > (kScreenHeight)/2 - 80) {
+        [self leftButtonClicked];
+    } else {
+        [self animation];
+    }
+}
+
+
+- (void)cancleAnimationWithblock:(void(^)(void))removeAcctionBlock
+{
+    [UIView animateWithDuration:0.35f animations:^{
+        self.y += kScreenHeight;
+    } completion:^(BOOL finished) {
+        if (removeAcctionBlock) {
+            removeAcctionBlock();
+        }
+        [self.mengBanView removeFromSuperview];
+        [self removeFromSuperview];
+    }];
+}
+- (UIWindow *)xlWindow
+{
+    customWindow = [UIApplication sharedApplication].delegate.window;
+    return  customWindow;
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+{
+   
+    return self.dataArray.count;
+}
+
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    
+        ReplayCell *cell = [tableView dequeueReusableCellWithIdentifier:@"ReplayCell" forIndexPath:indexPath];
+        if (self.dataArray.count > indexPath.row) {
+            cell.model = self.dataArray[indexPath.row];
+        }
+        cell.delegate = self;
+        cell.selectionStyle = UITableViewCellSelectionStyleNone;
+        return cell;
+    
+    
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    
+    if (self.dataArray.count > indexPath.row) {
+        YLReplyPostModel *model = self.dataArray[indexPath.row];
+        CGFloat height =  [NSString setSelfH:model.ReplyContent withSize:CGSizeMake(kScreenWidth - 12-12-20-50, MAXFLOAT) withDic:@{NSFontAttributeName : [UIFont systemFontOfSize:15]}];
+        if (height < 24.f) {
+            height = 24.f;
+        }
+      
+        return  12+15 +13+13 +12+12 + height;
+    }
+    
+    return 0;
+}
+
+ - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    [self didSelectIndexPath:indexPath];
+}
+
+
+- (void)didSelectIndexPath:(NSIndexPath *)indexPath
+{
+
+
+}
+
+- (CGFloat)inputViewMinYkeyBoardH:(CGFloat)keyBoardH inputViewH:(CGFloat)inputViewH
+{
+    XkeyBoardH = keyBoardH;
+    
+    return self.height - keyBoardH - inputViewH;
+}
+
+- (void)articleDetailBottomInputViewUpdateY:(CGFloat) Y
+{
+    [self inputViewLocation:Y];
+}
+- (void)inputViewLocation:(CGFloat)minY {
+    
+    [UIView animateWithDuration:0 animations:^{
+        self.xinputView.y =  self.height - XkeyBoardH - self.xinputView.height;
+    }];
+}
+
+
+- (void)notificationFrameChange:(NSNotification *)note
+{
+    CGRect endFrame = [note.userInfo[UIKeyboardFrameEndUserInfoKey] CGRectValue];
+    // 获取键盘弹出时长
+    CGFloat duration = [note.userInfo[UIKeyboardAnimationDurationUserInfoKey] floatValue];
+    
+    // 修改底部视图距离底部的间距
+    
+    if (endFrame.origin.y != kScreenHeight) {
+        CGFloat keyboardY = [self inputViewMinYkeyBoardH:endFrame.size.height inputViewH:self.xinputView.height];
+        [self animationKeyBoardMinY:keyboardY animationDuration:duration];
+        self.whiteView.hidden = NO;
+    }else {
+        self.whiteView.hidden = YES;
+        [self animationKeyBoardMinY:kScreenHeight animationDuration:duration];
+    }
+    
+}
+#pragma mark - 键盘动画
+- (void)animationKeyBoardMinY:(CGFloat)minY animationDuration:(CGFloat)duration
+{
+    [UIView animateWithDuration:0 animations:^{
+        
+        self.xinputView.frame = CGRectMake(0, minY, kScreenWidth, self.xinputView.height);
+    }];
+}
+
+#pragma mark - ArticleDetailBottomViewDelegate
+
+- (void)articleDetailBottomViewTFDBecaseFistResponder
+{
+    
+//    NSString *xxtoken = TOKEN;
+//    NSString *xxtoken = @"";
+//    if (!IS_VALID_STRING(xxtoken)) {
+//        typeof(self)weakSelf = self;
+//        [self cancleAnimationWithblock:^{
+//            if (weakSelf.delegate && [weakSelf.delegate respondsToSelector:@selector(XLScrollowContainCommentViewLogin)]) {
+//                [weakSelf.delegate XLScrollowContainCommentViewLogin];
+//            }
+//        }];
+//        return;
+//    }
+    [self.xinputView.textView becomeFirstResponder];
+    
+}
+#pragma mark  ---- 发布
+-(void)articleDetailBottomInputViewWithInputString:(NSString *)inputString withButton:(UIButton *)sender withModel:(id)model{
+    
+    DLog(@"fa发布bu");
+    
+    [self replyCommentWithPostId:self.model.PostId withButton:sender];
+    
+}
+- (void)replyCommentWithPostId:(NSString *)postId withButton:(UIButton *)sender{
+    NSString *xxtoken = TOKEN;
+    if (!IS_VALID_STRING(xxtoken)) {
+        typeof(self)weakSelf = self;
+        [self cancleAnimationWithblock:^{
+            if (weakSelf.delegate && [weakSelf.delegate respondsToSelector:@selector(XLScrollowContainCommentViewLogin)]) {
+                [weakSelf.delegate XLScrollowContainCommentViewLogin];
+            }
+        }];
+        return;
+    }
+    NSString *token = [self privateToken];
+    if (!IS_VALID_STRING(postId)) {
+        [self alert:@"postId 为空"];
+        return;
+    }
+    NSString *newContent        =self.xinputView.textView.text;
+    if ((IS_VALID_STRING(newContent) && IS_VALID_STRING(self.xinputView.textView.text)) == NO) {
+        [self alert:@"请输入回复内容"];
+        return;
+    }
+    sender.userInteractionEnabled = NO;
+    [[YXHTTPRequst shareInstance] networking:MyPostesReplys parameters:@{@"postId":postId,@"token":token,@"content":newContent,@"atMemberId":@"0"} method:(YXRequstMethodTypePOST) withView:nil success:^(NSDictionary *dic) {
+        BaseModel *baseModel = [BaseModel loadModelWithDictionary:dic];
+        if ([baseModel.Result isEqualToString:@"200"]) {
+            self.xinputView.textView.text = @"";
+            
+            YLReplyPostModel * model = [YLReplyPostModel loadModelWithDictionary:dic[@"Info"]];
+            
+            NSDictionary * replyDic = @{
+                                        @"AtMemberId":model.AtMemberId,
+                                        @"AtMemberNick":model.AtMemberNick,
+                                        @"Created":model.Created,
+                                         @"PostId":model.PostId,
+                                         @"PostMemberId":model.PostMemberId,
+                                         @"ReplyContent":model.ReplyContent,
+                                         @"ReplyHeadPic":model.ReplyHeadPic,
+                                         @"ReplyId":model.ReplyId,
+                                         @"ReplyMemberId":model.ReplyMemberId,
+                                         @"ReplyMemberNick":model.ReplyMemberNick
+    
+                                        };
+            
+            if ([self.xinputView respondsToSelector:@selector(updateHeight:)]) {
+                [self.xinputView performSelector:@selector(updateHeight:) withObject:self.xinputView.textView];
+            }
+            if (self.delegate && [self.delegate respondsToSelector:@selector(showNewReplyCommentDic:withCellSection:)]) {
+                [self.delegate showNewReplyCommentDic:replyDic withCellSection:self.NSInteger];
+            }
+            typeof(self)weakSelf = self;
+            [self reuseNetWorkwithBlock:^{
+                [weakSelf endEditing:YES];
+            }];
+        }else if ([baseModel.Result isEqualToString:@"201"]){//跳转至完善资料
+            typeof(self)weakSelf = self;
+            [self cancleAnimationWithblock:^{
+                if (weakSelf.delegate && [weakSelf.delegate respondsToSelector:@selector(XLScrollowContainCommentViewBasicDataViewController)]) {
+                    [weakSelf.delegate XLScrollowContainCommentViewBasicDataViewController];
+                }
+            }];
+            return;
+        }
+//        else{
+//            [GiFHUD show:baseModel.message view:self];
+//        }
+        sender.userInteractionEnabled = YES;
+        
+    } failsure:^(NSError *error) {
+        sender.userInteractionEnabled = YES;
+    }];
+    
+    
+}
+
+
+
+@end
+

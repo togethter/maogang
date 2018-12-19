@@ -1,0 +1,131 @@
+//
+//  CircleUserCell.m
+//  gaofangPenYouQuan
+//
+//  Created by zhangzhen on 2018/11/19.
+//  Copyright © 2018 zhangzhen. All rights reserved.
+//
+
+#import "CircleUserCell.h"
+
+#import <TTTAttributedLabel.h>
+#import "CircleItem.h"
+#import <UIImageView+WebCache.h>
+#import "SectionHeaderView.h"
+
+@interface CircleUserCell ()<TTTAttributedLabelDelegate>
+
+@property(nonatomic,strong)TTTAttributedLabel * commentLabel;
+
+@end
+@implementation CircleUserCell
+
+-(instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier{
+    if (self = [super initWithStyle:style reuseIdentifier:reuseIdentifier]) {
+        [self setTop];
+        self.selectionStyle = UITableViewCellSelectionStyleNone;
+    }
+    return self;
+}
+
+-(void)setTop{
+    
+    UIView * bgV = [UIView new];
+    bgV.backgroundColor = [UIColor colorWithHexString:@"#eeeeee"];
+    [self.contentView addSubview:bgV];
+    [bgV mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.bottom.equalTo(self.contentView);
+        make.right.equalTo(self.contentView).mas_offset(-SectionHeaderHorizontalSpace*2);
+        make.left.equalTo(@( SectionHeaderHeaderImageLeftWidth+SectionHeaderHeaderImageHeight+ SectionHeaderHorizontalSpace ));
+        
+    }];
+    
+    self.commentLabel = [TTTAttributedLabel new];
+    self.commentLabel.numberOfLines = 0;
+    self.commentLabel.lineSpacing = SectionHeaderLineSpace;
+    self.commentLabel.font = [UIFont systemFontOfSize:12];
+    self.commentLabel.delegate = self;
+    [self.contentView addSubview:self.commentLabel];
+    [self.commentLabel mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.equalTo(self.contentView).offset(6);
+        make.bottom.equalTo(self.contentView).offset(-6);
+        make.right.equalTo(self.contentView).offset(-SectionHeaderHorizontalSpace*2-SectionHeaderHeaderLiketNameLeftWidth);
+        make.left.equalTo(@(SectionHeaderHeaderImageLeftWidth+SectionHeaderHeaderImageHeight+SectionHeaderHorizontalSpace+SectionHeaderHeaderLiketNameLeftWidth));
+        
+    }];
+    
+    [self linkStyles];
+    
+
+    
+}
+-(void)linkStyles{
+    
+    UIColor * linkColor = [UIColor colorWithRGB:@"2,112,225"];
+    CTUnderlineStyle linkUnderLineStyle = kCTUnderlineStyleNone;
+    UIColor *activeLinkColor = [UIColor colorWithRGB:@"2,112,225"];
+    CTUnderlineStyle activelinkUnderLineStyle  = kCTUnderlineStyleNone;
+    
+    //没有点击时候的样式
+    self.commentLabel.linkAttributes = @{
+                                         NSFontAttributeName : [UIFont boldSystemFontOfSize:12],
+                                         (NSString*)kCTForegroundColorAttributeName : linkColor,
+                                         (NSString *)kCTUnderlineStyleAttributeName:[NSNumber numberWithInt:linkUnderLineStyle]
+                                         };
+    
+    // 点击时候的样式
+    self.commentLabel.activeLinkAttributes = @{NSFontAttributeName:[UIFont boldSystemFontOfSize:12],
+                                               (NSString *)kCTForegroundColorAttributeName: activeLinkColor,
+                                               (NSString *)kTTTBackgroundFillColorAttributeName:[UIColor lightGrayColor],
+                                               (NSString *)kCTUnderlineStyleAttributeName: [NSNumber numberWithInt:activelinkUnderLineStyle]};
+    
+}
+
+-(void)setContentData:(CircleItem *)item index:(NSInteger)index{
+    
+    NSDictionary *dic = item.comments[index];
+    NSString *text = nil;
+    if ([dic valueForKey:@"comment_to_user_name"] == nil || [[dic valueForKey:@"comment_to_user_name"] length] <= 0 || [[dic valueForKey:@"comment_to_user_id"] integerValue] == item.user_id) {
+        text = [NSString stringWithFormat:@"%@: %@", [dic valueForKey:@"comment_user_name"], [dic valueForKey:@"comment_text"]];
+        self.commentLabel.text = text;
+    } else {
+        text = [NSString stringWithFormat:@"%@回复%@: %@", [dic valueForKey:@"comment_user_name"], [dic valueForKey:@"comment_to_user_name"], [dic valueForKey:@"comment_text"]];
+        self.commentLabel.text = text;
+    }
+    
+    //添加url
+    NSRange boldRange0 = NSMakeRange(0, [[dic valueForKey:@"comment_user_name"] length]);
+    NSRange boldRange1 = NSMakeRange([[dic valueForKey:@"comment_user_name"] length] + 2, [[dic valueForKey:@"comment_to_user_name"] length]);
+    [self.commentLabel addLinkToTransitInformation:@{@"user_name":[dic valueForKey:@"comment_user_name"]} withRange:boldRange0];
+    if ([dic valueForKey:@"comment_to_user_name"] == nil || [[dic valueForKey:@"comment_to_user_name"] length] <= 0 || [[dic valueForKey:@"comment_to_user_id"] integerValue] == item.user_id) {
+        
+    } else {
+        [self.commentLabel addLinkToTransitInformation:@{@"user_name":[dic valueForKey:@"comment_to_user_name"]} withRange:boldRange1];
+    }
+    
+    
+}
+
+#pragma mark - TTTAttributedLabelDelegate
+
+- (void)attributedLabel:(TTTAttributedLabel *)label didSelectLinkWithTransitInformation:(NSDictionary *)components {
+    if ([_delegate respondsToSelector:@selector(didSelectPeople:)]) {
+        [_delegate didSelectPeople:components];
+    }
+}
+
+- (void)awakeFromNib {
+    [super awakeFromNib];
+    
+    
+    
+    // Initialization code
+}
+
+- (void)setSelected:(BOOL)selected animated:(BOOL)animated {
+    [super setSelected:selected animated:animated];
+
+    // Configure the view for the selected state
+}
+
+@end

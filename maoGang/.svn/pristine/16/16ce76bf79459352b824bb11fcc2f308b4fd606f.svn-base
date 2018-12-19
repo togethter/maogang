@@ -1,0 +1,104 @@
+//
+//  PrefixHeader.pch
+//  JNdefine
+//
+//  Created by Titan on 16/3/15.
+//  Copyright © 2016年 Aaron Wong. All rights reserved.
+//
+
+#ifndef PrefixHeader_pch
+#define PrefixHeader_pch
+#define LRWeakSelf(type)  __weak typeof(type) weak##type = type;
+#define LRStrongSelf(type)  __strong typeof(type) type = weak##type;
+//----------------------INSTALLATION 安装方法----------------------------
+
+//Added the prefix header file to PROJECT:
+//1.Creat a new PCH files and named it with "PrefixHeader.pch"(default name or anything you want) .
+//2.Click next and go to Build Settings search Prefix Header.
+//3.Double click the blank address and put this address: $(SRCROOT)/$(PROJECT_NAME)/PrefixHeader.pch
+//THEN YOU CAN USE THIS IN EVERY FILES IN THIS PROJECT. Good luck.
+
+//如何安装:
+//1.创建新pch文件,默认名字即可: "PrefixHeader.pch".
+//2.点击下一步再去Build Settings 搜索Prefix Header.
+//3.找到Prefix Header并且双击,输入$(SRCROOT)/$(PROJECT_NAME)/PrefixHeader.pch
+//现在你可以在项目内任何文件调用宏定义了,祝一切顺利.
+//DDLogDebug
+
+//----------------------ABOUT PRINTING LOG 打印日志 ----------------------------
+//Using dlog to print while in debug model.        调试状态下打印日志
+#ifdef DEBUG
+#   define DLog(fmt, ...) NSLog((@"%s [Line %d] " fmt), __PRETTY_FUNCTION__, __LINE__, ##__VA_ARGS__);
+#else
+#   define DLog(...)
+#endif
+#define XLStringSelector(SEL) NSStringFromSelector(@selector(SEL))
+#define thumbnailPicture @""
+
+//判断字符串是否为空
+//#define IS_VALID_STRING(string) (string && [string isKindOfClass:[NSString class]] && [string length])
+#define IS_VALID_STRING(string) !((![string isKindOfClass:[NSString class]])||[string isEqualToString:@""] || (string == nil) || [string isEqualToString:@"<null>"]|| [string isEqualToString:@"(null)"]|| [string isEqualToString:@"null"]|| [string isEqualToString:@"nil"] || [string isKindOfClass:[NSNull class]]||[[string stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] length]==0)
+
+
+//判断数组是否为空
+#define IS_VALID_ARRAY(array) (array && [array isKindOfClass:[NSArray class]] && [array count])
+#define TOKEN  [UserManager sharedManager].userModel.Token
+#define SEX    [UserManager sharedManager].userModel.sex
+#define ACCID  [UserManager sharedManager].userModel.accid
+
+#define VIPCAPACITYStr  [UserManager sharedManager].userModel.VipCapacityStr
+#define XLh ([SPManager horizontal])
+#define XLV ([SPManager vertical])
+#ifdef __OBJC__
+#import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
+#import "ConstantHeader.h"
+#import "RequestURLHeader.h"
+#import "YXHTTPRequst.h"
+#import "SVProgressHUD.h"
+#import "UIImageView+WebCache.h"
+#import "Masonry.h"
+#import <UIColor+SKYExtension.h>
+#import "MJRefresh.h"
+#import "BaseModel.h"
+#import "XLYuMengNotificationTool.h"
+#import "PushSingleton.h"
+#import "AlertPool.h"
+#import "NSString+Extension.h"
+#import "LCMD5Tool.h"
+//#import "AlertForMax.h"
+#import "UserModel.h"
+#import "UserManager.h"
+//#import "NTESGlobalMacro.h"
+#import <WebKit/WebKit.h>
+#import "SPManager.h"
+#import "UIImage+Extension.h"
+//#import "MarginModel.h"
+#import "WorshipTheJudgeNetworkViewController.h"
+//#import "CityAndLocationManager.h"
+//#import "LocationManager.h"
+#import "GiFHUD.h"
+//#import "AlertBox.h"
+//#import "UploadImageTool.h"
+//#import "UIButton+WebCache.h"
+
+#import "TTTAttributedLabel.h"
+#import "LoginViewController.h"
+
+#endif
+#endif
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

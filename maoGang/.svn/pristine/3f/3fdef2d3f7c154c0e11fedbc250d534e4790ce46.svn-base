@@ -1,0 +1,105 @@
+//
+//  EditionController.m
+//  maoGang
+//
+//  Created by xl on 2018/11/24.
+//  Copyright © 2018年 bilin. All rights reserved.
+//
+
+#import "EditionController.h"
+#import "CustomAlertView.h"
+@interface EditionController ()
+@property (weak, nonatomic) IBOutlet UIView *yView;
+@property (weak, nonatomic) IBOutlet UIView *contentView;
+@property (nonatomic, strong) WKWebView *contentWKWebView;
+
+@property (nonatomic, strong) UIButton *rightBtn;
+
+@property (weak, nonatomic) IBOutlet UIView *bottomContentView;
+@property (weak, nonatomic) IBOutlet NSLayoutConstraint *bottomMargin;
+
+
+@end
+
+@implementation EditionController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view from its nib.
+    self.yView.layer.cornerRadius = 3;
+    self.yView.layer.masksToBounds = YES;
+    __weak typeof(self)weakSelf = self;
+    if (self.titleName) {
+        self.navigationItem.title =  self.titleName;
+    }
+    self.rightBtn = [UIButton buttonWithType:UIButtonTypeCustom];
+    [self.rightBtn setImage:[UIImage imageNamed:@"xiayibu_a"] forState:UIControlStateNormal];
+    [self.rightBtn addTarget:self action:@selector(netAction:) forControlEvents:UIControlEventTouchUpInside];
+    [self configureWkWebViewWithMinimunFontSize:12 target:self WithNameKey:nil configure:^(WKWebView *wkWebView) {
+        [weakSelf.contentView addSubview:wkWebView];
+        [weakSelf.wkWebView addSubview:weakSelf.rightBtn];
+        [weakSelf.wkWebView mas_makeConstraints:^(MASConstraintMaker *make) {
+            make.left.mas_equalTo(weakSelf.contentView.mas_left);
+            make.right.mas_equalTo(weakSelf.contentView.mas_right);
+            make.top.mas_equalTo(weakSelf.contentView.mas_top);
+            make.bottom.mas_equalTo(weakSelf.bottomContentView.mas_top);
+        }];
+        [weakSelf.rightBtn mas_makeConstraints:^(MASConstraintMaker *make) {
+            make.right.mas_equalTo(weakSelf.wkWebView.mas_right).offset(-21);
+            make.bottom.mas_equalTo(weakSelf.wkWebView.mas_bottom).offset(-40);
+        }];
+        iPhoneXR||iPhoneXM||iPhoneX?(weakSelf.bottomMargin.constant = 20):0;
+    }];
+    
+    
+    
+}
+- (instancetype)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil titleName:(NSString *)titlename {
+    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+    if (self) {
+        NSAssert(titlename, @"描述不能为空");
+        self.titleName = titlename;
+        self.navigationItem.title = titlename;
+    }
+    return self;
+}
+
+// 编辑文字
+- (IBAction)bianji:(UIButton *)sender {
+
+    
+}
+
+// 规格
+- (void)netAction:(UIButton *)sender {
+    ColorAlertView *colorAlertView = [[ColorAlertView alloc] initWithFrame:CGRectMake(0, 0, kScreenWidth, alertViewHeight)];
+    colorAlertView.backgroundColor = [UIColor whiteColor];
+    [self.view addSubview:colorAlertView];
+
+    
+}
+- (IBAction)editionClick:(UIButton *)sender {
+    
+//    NSArray *array = @[@"ColorAlertView",@"AlpheraAlertView",@"TiziGeAlertView",@"FontAlertView"];
+//    Class xclass = NSClassFromString(array[sender.tag - 100]);
+//    CGFloat height = 0.f;
+//    iPhoneXR||iPhoneXM||iPhoneX?(height = 88 + 20):64;
+//    CustomAlertView *alertView = [[xclass alloc] initWithFrame:CGRectMake(0, kScreenHeight - alertViewHeight - 60 - height, kScreenWidth, alertViewHeight)];
+//    [self.view addSubview:alertView];
+    
+}
+
+
+//AlpheraAlertView,TiziGeAlertView,FontAlertView,ColorAlertView
+
+/*
+#pragma mark - Navigation
+
+// In a storyboard-based application, you will often want to do a little preparation before navigation
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    // Get the new view controller using [segue destinationViewController].
+    // Pass the selected object to the new view controller.
+}
+*/
+
+@end

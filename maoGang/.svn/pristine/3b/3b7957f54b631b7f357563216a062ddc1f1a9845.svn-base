@@ -1,0 +1,102 @@
+//
+//  FontViewController.m
+//  maoGang
+//
+//  Created by xl on 2018/11/13.
+//  Copyright © 2018年 bilin. All rights reserved.
+//
+
+#import "FontViewController.h"
+#import "PanViewController.h"
+#import "BrushViewController.h"
+#import "NotingViewController.h"
+#import "YLScorlControl.h"
+#import "FontDaquanViewController.h"
+@interface FontViewController ()
+
+@end
+
+@implementation FontViewController
+
+- (void)viewDidLoad {
+    self.noAddBackBtn = YES;
+    [super viewDidLoad];
+    // Do any additional setup after loading the view from its nib.
+    self.navigationItem.title = @"首页";
+    YLScorlControl *control = [[YLScorlControl alloc] init];
+    [self.view addSubview:control];
+    PanViewController   *panVC    = [[PanViewController alloc] init];
+    BrushViewController *brushVC  = [[BrushViewController alloc] init];
+    NotingViewController*NOVC       = [[NotingViewController alloc] init];
+    [control addChildViewController:panVC title:@"钢笔"];
+    [control addChildViewController:brushVC title:@"毛笔"];
+    [control addChildViewController:NOVC title:@"空白字帖"];
+    [control show];
+    
+//    UIBarButtonItem *rightBar = [[UIBarButtonItem alloc] initWithTitle:@"download" style:(UIBarButtonItemStylePlain) target:self action:@selector(rightButton:)];
+//    self.navigationItem.rightBarButtonItem = rightBar;
+//
+    
+}
+
+- (void)rightButton:(UIBarButtonItem *)right {
+//    NSString *filePath = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES).lastObject;
+//    filePath = [filePath stringByAppendingPathComponent:@"lxsf.TTF"];
+    
+    NSString *filePath = [NSString stringWithFormat:@"%@/Library/Assets/com_apple_MobileAsset_Font/",NSHomeDirectory()];
+   BOOL isok =  [[NSFileManager defaultManager] createDirectoryAtPath:filePath withIntermediateDirectories:YES attributes:nil error:nil];
+    
+    if (isok) {
+        NSLog(@"创建路径成功");
+        NSString *xpath = [[NSBundle mainBundle] pathForResource:@"lx" ofType:@".ttf"];
+        NSData *data = [[NSFileManager defaultManager] contentsAtPath:xpath];
+        filePath = [filePath stringByAppendingPathComponent:@"lx.ttf"];
+        BOOL iscreateSuccess =  [data writeToFile:filePath atomically:YES];
+        if (iscreateSuccess) {// 创建成功
+            NSLog(@"生成文件成功 %@",filePath);
+//            [self fontName:@"lx.ttf"];
+        } else {
+            NSLog(@"生成文件失败");
+        }
+    }
+    
+
+    
+    
+}
+- (NSString *)fontName:(NSString *)fontName {
+    //fontName 为家族中的字体名
+    NSString *fontPath = [NSString stringWithFormat:@"%@/Library/Assets/com_apple_MobileAsset_Font/",NSHomeDirectory()];
+    fontPath = [fontPath stringByAppendingPathComponent : [NSString stringWithFormat:@"%@",fontName]];
+    NSURL *url = [NSURL fileURLWithPath:fontPath];
+    
+    CGDataProviderRef fontDataProvider = CGDataProviderCreateWithURL((CFURLRef)url);
+    CGFontRef newFont = CGFontCreateWithDataProvider(fontDataProvider);
+    
+    CFErrorRef error;
+    if(!CTFontManagerRegisterGraphicsFont(newFont, &error)) {
+        NSLog(@"failed!");
+        NSLog(@"%@",error);
+    } else {
+        NSLog(@"success!");
+    }
+    //        else
+    error = nil;
+    CGDataProviderRelease(fontDataProvider);
+   return fontPath;
+}
+
+
+
+
+/*
+#pragma mark - Navigation
+
+// In a storyboard-based application, you will often want to do a little preparation before navigation
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    // Get the new view controller using [segue destinationViewController].
+    // Pass the selected object to the new view controller.
+}
+*/
+
+@end

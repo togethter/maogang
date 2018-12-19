@@ -1,0 +1,172 @@
+//
+//  TypesettingViewController.m
+//  maoGang
+//
+//  Created by xl on 2018/11/28.
+//  Copyright © 2018年 bilin. All rights reserved.
+//
+
+#import "TypesettingViewController.h"
+#import "CustomAlertView.h"
+#import "FontModel.h"
+@interface TypesettingViewController ()
+@property (weak, nonatomic) IBOutlet UIView *contentView;
+@property (weak, nonatomic) IBOutlet NSLayoutConstraint *bottomMargin;
+@property (weak, nonatomic) IBOutlet UIButton *sender1;
+@property (weak, nonatomic) IBOutlet UIButton *sender2;
+@property (weak, nonatomic) IBOutlet UIButton *sender3;
+@property (nonatomic, strong) NSMutableArray *senderArray;
+@property (weak, nonatomic) IBOutlet UIView *bottomView;
+
+@property (weak, nonatomic) IBOutlet UILabel *bottomLab;
+
+
+@end
+
+@implementation TypesettingViewController
+
+- (NSMutableArray *)senderArray {
+    if (!_senderArray) {
+        _senderArray = [NSMutableArray array];
+    }
+    return _senderArray;
+}
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view from its nib.
+    self.navigationItem.title = @"排版";
+    UIBarButtonItem *right = [[UIBarButtonItem alloc] initWithTitle:@"分享" style:UIBarButtonItemStylePlain target:self action:@selector(shareAction:)];
+    self.navigationItem.rightBarButtonItem = right;
+    [self.senderArray addObjectsFromArray:@[_sender1,_sender2,_sender3]];
+    __weak typeof(self)weakSelf = self;
+    [self configureWkWebViewWithMinimunFontSize:12 target:self WithNameKey:nil configure:^(WKWebView *wkWebView) {
+        [weakSelf.contentView addSubview:wkWebView];
+        [weakSelf.wkWebView mas_makeConstraints:^(MASConstraintMaker *make) {
+            make.left.mas_equalTo(weakSelf.contentView.mas_left).offset(12);
+            make.right.mas_equalTo(weakSelf.contentView.mas_right).offset(-12);
+            make.top.mas_equalTo(weakSelf.contentView.mas_top).offset(12);
+            make.bottom.mas_equalTo(weakSelf.bottomView.mas_top).offset(-50);
+        }];
+        iPhoneXR||iPhoneXM||iPhoneX?(weakSelf.bottomMargin.constant = 20):0;
+    }];
+    self.wkWebView.scrollView.showsVerticalScrollIndicator = NO;
+    self.wkWebView.scrollView.showsHorizontalScrollIndicator = NO;
+    self.customAlertModel.order = @(1);
+    [self senderAction:self.senderArray.firstObject];
+    self.view.backgroundColor = [UIColor whiteColor];
+    [self.wkWebView  loadRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:@"http://192.168.0.192/zitie/step2.html?v=1"]]];
+}
+- (void)dealloc {
+    [self clearWebViewCache];
+}
+- (void)shareAction:(UIBarButtonItem *)share {
+    DLog(@"shareAction");
+}
+- (void)webView:(WKWebView *)webView didFinishNavigation:(WKNavigation *)navigation
+{
+    [self configureProerty:self.customAlertModel];
+}
+
+
+- (void)configureProerty:(CustomAlertModel *)customAlertModel {
+    NSInteger colorIndex = customAlertModel.colorIndex.integerValue -100;// 田字格线框颜色
+    NSInteger backgroundView = customAlertModel.tiziGeIndex.intValue - 100;// 田字格类型
+    NSInteger fontsizeIndex =  customAlertModel.fontSizeIndex - 100;//
+
+    NSString *fontSizeStr = [NSString stringWithFormat:@"%ld",(long)fontsizeIndex + 1];// 字体大小1
+  
+    NSString *alpha = self.customAlertModel.alphaDic[[NSString stringWithFormat:@"%.2f",customAlertModel.percent]];//  2字体颜色|| alpha
+    NSString *tianziGeYanSe = [NSString stringWithFormat:@"%@",customAlertModel.colorNameArray[colorIndex]];// 3田字格线框颜色
+
+    NSString *tianziGeLeixing = [NSString stringWithFormat:@"%ld",(long)backgroundView + 1];// 田字格类型4
+
+    NSString *pape = [NSString stringWithFormat:@"%@",customAlertModel.a3orA4];// 纸张类型 5
+
+    NSString *biType = [NSString stringWithFormat:@"%@",customAlertModel.maoGangType];// 笔的类型6
+    FontModel *fontModel = customAlertModel.fontTypeArray[customAlertModel.fontType.integerValue];
+    NSString *fontType = [NSString stringWithFormat:@"%@",fontModel.TypefacesCode];// 7 字体类型 xl编码
+    NSString *jsTxt = [NSString stringWithFormat:@"%@",customAlertModel.txt];// 8 文字
+    
+#pragma warn -- 笔形需要确定
+    NSString *getConfi = [NSString stringWithFormat:@"getConfig('%@','%@','%@','%@','%@','%@','%@','%@')",biType,tianziGeLeixing,tianziGeYanSe,fontType,fontSizeStr,jsTxt,pape,alpha];
+    NSLog(@"%@",getConfi);
+    __weak typeof(self)weakSelf = self;
+    [self.wkWebView evaluateJavaScript:getConfi completionHandler:^(id _Nullable result, NSError * _Nullable error) {
+        NSLog(@"%@,%@" ,result,error);
+        NSDictionary *dic = result;
+        weakSelf.bottomLab.text = [NSString stringWithFormat:@"共%@个文字,占用%@张%@打印纸",dic[@"pageNumber"],dic[@"textNumber"],dic[@"paperType"]];
+    }];
+}
+- (IBAction)senderAction:(UIButton *)sender {
+    
+    NSArray *array = @[@"icon_paiban_shu_a",@"icon_paiban_heng_a",@"icon_paiban_daochu_a"];
+    NSArray *seletarray = @[@"icon_paiban_shu_b",@"icon_paiban_heng_b",@"icon_paiban_daochu_b"];
+    [self.senderArray enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        UIButton *conBtn = obj;
+        if ([sender isEqual:conBtn]) {
+            [conBtn setImage:[UIImage imageNamed:seletarray[conBtn.tag - 100]] forState:UIControlStateNormal];
+        } else {
+            [conBtn setImage:[UIImage imageNamed:array[conBtn.tag - 100]] forState:UIControlStateNormal];
+        }
+    }];
+    switch (sender.tag) {
+        case 100:// 左右
+        {
+            NSString *der = [NSString stringWithFormat:@"1"];//
+            self.customAlertModel.order = @(2);
+            NSString *derOrder = [NSString stringWithFormat:@"changeOrder('%@')",der];
+            [self.wkWebView evaluateJavaScript:derOrder completionHandler:^(id _Nullable resutl, NSError * _Nullable error) {
+                
+            }];
+            
+        }
+            break;
+        case 101:// 上下
+        {
+            NSString *der = [NSString stringWithFormat:@"2"];//
+            self.customAlertModel.order = @(1);
+            NSString *derOrder = [NSString stringWithFormat:@"changeOrder('%@')",der];
+            [self.wkWebView evaluateJavaScript:derOrder completionHandler:^(id _Nullable resutl, NSError * _Nullable error) {
+                
+            }];
+            
+        }
+            break;
+        case 102:
+        {
+            UIAlertController *alertVC = [UIAlertController alertControllerWithTitle:@"字帖已完成" message:nil preferredStyle:(UIAlertControllerStyleActionSheet)];
+            UIAlertAction *action1 = [UIAlertAction actionWithTitle:@"生成下载链接" style:(UIAlertActionStyleDefault) handler:^(UIAlertAction * _Nonnull action) {
+                [TipCopyAlert centerAlertShowtipAlertisSureBlock:^(BOOL isCopy) {
+                    
+                } urlString:@"http:www.baidu.com.wahKhkdahsdhahkhdakdhakhdksdhakdjkahdakshdkadhkadjkadhakda"];
+            }];
+            UIAlertAction *action2 = [UIAlertAction actionWithTitle:@"保存本地" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+                
+            }];
+            UIAlertAction *action3 = [UIAlertAction actionWithTitle:@"继续编辑" style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
+                
+            }];
+            [alertVC addAction:action1];
+            [alertVC addAction:action2];
+            [alertVC addAction:action3];
+            
+            [self.navigationController presentViewController:alertVC animated:YES completion:nil];
+            
+        }
+            break;
+        default:
+            break;
+    }
+}
+
+/*
+#pragma mark - Navigation
+
+// In a storyboard-based application, you will often want to do a little preparation before navigation
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    // Get the new view controller using [segue destinationViewController].
+    // Pass the selected object to the new view controller.
+}
+*/
+
+@end

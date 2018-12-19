@@ -1,0 +1,132 @@
+//
+//  NotingViewController.m
+//  maoGang
+//
+//  Created by xl on 2018/11/23.
+//  Copyright © 2018年 bilin. All rights reserved.
+//
+
+#import "NotingViewController.h"
+#import "NotingCell.h"
+#import "WhiteViewController.h"
+#import "NODataView.h"
+@interface NotingViewController ()<UITableViewDelegate,UITableViewDataSource,NotingCellDelegate>
+@property (weak, nonatomic) IBOutlet UIButton *btn1;
+@property (weak, nonatomic) IBOutlet UIButton *btn2;
+@property (weak, nonatomic) IBOutlet UIButton *btn3;
+@property (nonatomic, strong) NSArray *btnArray;
+@property (weak, nonatomic) IBOutlet UITableView *notingTable;
+@property (nonatomic, strong) NODataView *nodataView;
+@end
+
+@implementation NotingViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view from its nib.
+    self.btn1.tag = 0;
+    self.btn2.tag = 1;
+    self.btn3.tag = 2;
+    self.notingTable.delegate = self;
+    self.notingTable.dataSource = self;
+    self.notingTable.separatorStyle = UITableViewCellSeparatorStyleNone;
+    
+    [self.notingTable registerNib:[UINib nibWithNibName:@"NotingCell" bundle:nil] forCellReuseIdentifier:@"NotingCell"];
+
+    if (iOS11) {
+        self.notingTable.estimatedSectionFooterHeight = 0;
+        self.notingTable.estimatedSectionFooterHeight = 0;
+        self.notingTable.estimatedRowHeight = 0;
+    }
+    //    self.notingTable.mj_header = [MJRefreshNormalHeader headerWithRefreshingTarget:self refreshingAction:@selector(downRefsh)];
+    //
+    //    MJRefreshAutoGifFooter * footer = [MJRefreshAutoGifFooter footerWithRefreshingTarget:self refreshingAction:@selector(laodMoreRefsh)];
+    //    // 设置文字
+    //    [footer setTitle:@"" forState:MJRefreshStateIdle];
+    //    [footer setTitle:@"正在加载 ..." forState:MJRefreshStateRefreshing];
+    //    [footer setTitle:@"没有更多内容" forState:MJRefreshStateNoMoreData];
+    //
+    //    // 设置字体
+    //    footer.stateLabel.font = [UIFont fontWithName:FontName size:14];
+    //
+    //
+    //    // 设置颜色
+    //    footer.stateLabel.textColor = [UIColor blackColor];
+    //    self.notingTable.mj_footer = footer;
+    self.btnArray = @[_btn1,_btn2,_btn3];
+    for (int i = 0; i < self.btnArray.count; i++) {
+        UIButton *btn = _btnArray[i];
+        btn.layer.cornerRadius = 25.f/2;
+        btn.layer.masksToBounds = YES;
+        btn.layer.borderWidth = 1;
+        [btn setTitleColor:RGBCOLOR(128, 126, 126) forState:UIControlStateNormal];
+        btn.layer.borderColor = RGBCOLOR(128, 126, 126).CGColor;
+        if (i == 0) {
+            btn.layer.borderColor = RGBCOLOR(255, 51, 17).CGColor;
+            [btn setTitleColor:RGBCOLOR(255, 51, 17) forState:UIControlStateNormal];
+        }
+    }
+    self.nodataView = [NODataView noDataViewWithImage:@"bar_wushuju" withDescription:@"暂无数据"];
+//    self.nodataView.hidden = YES;
+    [self.notingTable addSubview:self.nodataView];
+    [self.nodataView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.centerX.mas_equalTo(self.notingTable);
+        make.centerY.mas_equalTo(self.notingTable.mas_centerY).offset(-70);
+    }];
+}
+
+- (IBAction)senderSelect:(UIButton *)sender {
+    [self.btnArray enumerateObjectsUsingBlock:^(UIButton *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        [obj setTitleColor:RGBCOLOR(128, 126, 126) forState:UIControlStateNormal];
+        obj.layer.borderColor = RGBCOLOR(128, 126, 126).CGColor;
+        if ([sender isEqual:obj]) {
+            obj.layer.borderColor = RGBCOLOR(255, 51, 17).CGColor;
+            [obj setTitleColor:RGBCOLOR(255, 51, 17) forState:UIControlStateNormal];
+        }
+    }];
+}
+
+
+
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    
+    return 10;
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    NotingCell *cell = [tableView dequeueReusableCellWithIdentifier:@"NotingCell" forIndexPath:indexPath];
+    cell.selectionStyle = UITableViewCellSelectionStyleNone;
+    cell.delegate = self;
+
+    return cell;
+}
+#pragma mark - NotingCellDelegate
+- (void)notingCellDidSelectWithModel:(id)model sender:(NotingCell *)cell {
+    
+}
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    WhiteViewController *whiteVC = [[WhiteViewController alloc] init];
+    [self.navigationController pushViewController:whiteVC animated:YES];
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
+    return 189;
+}
+
+
+
+
+
+/*
+#pragma mark - Navigation
+
+// In a storyboard-based application, you will often want to do a little preparation before navigation
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    // Get the new view controller using [segue destinationViewController].
+    // Pass the selected object to the new view controller.
+}
+*/
+
+@end

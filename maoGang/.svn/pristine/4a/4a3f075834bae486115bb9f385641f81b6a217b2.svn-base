@@ -1,0 +1,123 @@
+//
+//  EditionController.m
+//  maoGang
+//
+//  Created by xl on 2018/11/24.
+//  Copyright © 2018年 bilin. All rights reserved.
+//
+
+#import "EditionController.h"
+#import "MaogangDictionaryViewController.h"
+#import "CustomAlertView.h"
+#import "TypesettingViewController.h"// 排版
+#import "EditionAddViewController.h"
+@interface EditionController ()<EditionAddViewControllerDelegate>
+@property (weak, nonatomic) IBOutlet UIView *yView;
+@property (weak, nonatomic) IBOutlet UIView *contentView;
+@property (nonatomic, strong) WKWebView *contentWKWebView;
+
+@property (nonatomic, strong) UIButton *rightBtn;
+
+@property (weak, nonatomic) IBOutlet UIView *bottomContentView;
+@property (weak, nonatomic) IBOutlet NSLayoutConstraint *bottomMargin;
+
+
+@end
+
+@implementation EditionController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view from its nib.
+    self.yView.layer.cornerRadius = 3;
+    self.yView.layer.masksToBounds = YES;
+    __weak typeof(self)weakSelf = self;
+    if (self.titleName) {
+        self.navigationItem.title =  self.titleName;
+    }
+    self.rightBtn = [UIButton buttonWithType:UIButtonTypeCustom];
+    [self.rightBtn setImage:[UIImage imageNamed:@"xiayibu_a"] forState:UIControlStateNormal];
+    [self.rightBtn addTarget:self action:@selector(netAction:) forControlEvents:UIControlEventTouchUpInside];
+    [self configureWkWebViewWithMinimunFontSize:12 target:self WithNameKey:nil configure:^(WKWebView *wkWebView) {
+        [weakSelf.contentView addSubview:wkWebView];
+        [weakSelf.wkWebView addSubview:weakSelf.rightBtn];
+        [weakSelf.wkWebView mas_makeConstraints:^(MASConstraintMaker *make) {
+            make.left.mas_equalTo(weakSelf.contentView.mas_left);
+            make.right.mas_equalTo(weakSelf.contentView.mas_right);
+            make.top.mas_equalTo(weakSelf.contentView.mas_top);
+            make.bottom.mas_equalTo(weakSelf.bottomContentView.mas_top);
+        }];
+        [weakSelf.rightBtn mas_makeConstraints:^(MASConstraintMaker *make) {
+            make.right.mas_equalTo(weakSelf.wkWebView.mas_right).offset(-21);
+            make.bottom.mas_equalTo(weakSelf.wkWebView.mas_bottom).offset(-40);
+        }];
+        iPhoneXR||iPhoneXM||iPhoneX?(weakSelf.bottomMargin.constant = 20):0;
+    }];
+//
+    UIBarButtonItem *rightBarbutton = [[UIBarButtonItem alloc] initWithImage:[[UIImage imageNamed:@"cidian"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal] style:UIBarButtonItemStylePlain target:self action:@selector(rightItemAction:)];
+    self.navigationItem.rightBarButtonItem = rightBarbutton;
+    
+}
+
+- (void)rightItemAction:(UIBarButtonItem *)rightBarbutton {
+    MaogangDictionaryViewController *vc = [[MaogangDictionaryViewController alloc] init];
+    [self.navigationController pushViewController:vc animated:YES];
+}
+- (instancetype)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil titleName:(NSString *)titlename {
+    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+    if (self) {
+        NSAssert(titlename, @"描述不能为空");
+        self.titleName = titlename;
+        self.navigationItem.title = titlename;
+    }
+    return self;
+}
+#pragma mark -  添加字帖的文字
+- (void)editionAddViewControllerfinishWithTxt:(NSString *)txt {
+    
+}
+
+#pragma mark -  编辑文字
+- (IBAction)bianji:(UIButton *)sender {
+    EditionAddViewController *edadd = [[EditionAddViewController alloc] init];
+    edadd.delegate = self;
+    [self.navigationController pushViewController:edadd animated:YES];
+}
+#pragma mark -  纸张大小
+- (void)netAction:(UIButton *)sender {
+    __weak typeof(self)weakSelf = self;
+    [[[CustomSize customSizeAlertPool].index(0) selectIndex:^(NSInteger index) {
+        TypesettingViewController *vc = [[TypesettingViewController alloc] init];
+        [weakSelf.navigationController pushViewController:vc animated:YES];
+    }] alertShow];
+    
+}
+#pragma mark -  设置字帖属性
+- (IBAction)editionClick:(UIButton *)sender {
+    
+    [[[[[[CustomAlertPool customAlertPool].tagNumber(sender.tag) alpha:^(CGFloat alpha) {
+        
+    }] color:^(id d) {
+        
+    }] tiziGe:^(id d) {
+        
+    }] font:^(NSInteger font) {
+        
+    }].color(100).percent(0.5).tiziGe(100).fontSize(100) alertShow];
+  
+}
+
+
+//AlpheraAlertView,TiziGeAlertView,FontAlertView,ColorAlertView
+
+/*
+#pragma mark - Navigation
+
+// In a storyboard-based application, you will often want to do a little preparation before navigation
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    // Get the new view controller using [segue destinationViewController].
+    // Pass the selected object to the new view controller.
+}
+*/
+
+@end

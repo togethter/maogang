@@ -1,0 +1,150 @@
+//
+//  WhiteViewController.m
+//  maoGang
+//
+//  Created by xl on 2018/11/28.
+//  Copyright © 2018年 bilin. All rights reserved.
+//
+
+#import "WhiteViewController.h"
+#import "CustomAlertView.h"
+#import "GXWaterCollectionViewLayout.h"
+#import "GXWaterCVCell.h"
+@interface WhiteViewController ()<UICollectionViewDelegate, UICollectionViewDataSource,GXWaterCollectionViewLayoutDelegate>
+@property (weak, nonatomic) IBOutlet UIView *contentView;
+@property (weak, nonatomic) IBOutlet NSLayoutConstraint *bottomMargin;
+@property (weak, nonatomic) IBOutlet UIView *bottomView;
+@property (nonatomic, strong) UICollectionView *collectionView;
+@property (nonatomic, assign) NSInteger numberOfColumns;
+@property (nonatomic, assign) NSInteger numberLineCount;
+@property (nonatomic, strong) GXWaterCollectionViewLayout *waterLayout;
+
+@end
+
+@implementation WhiteViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view from its nib.
+     __weak typeof(self)weakSelf = self;
+//    [self configureWkWebViewWithMinimunFontSize:12 target:self WithNameKey:nil configure:^(WKWebView *wkWebView) {
+//        [weakSelf.contentView addSubview:wkWebView];
+//        [weakSelf.wkWebView mas_makeConstraints:^(MASConstraintMaker *make) {
+//            make.left.mas_equalTo(weakSelf.contentView.mas_left);
+//            make.right.mas_equalTo(weakSelf.contentView.mas_right);
+//            make.top.mas_equalTo(weakSelf.contentView.mas_top);
+//            make.bottom.mas_equalTo(weakSelf.bottomView.mas_top);
+//        }];
+//        iPhoneXR||iPhoneXM||iPhoneX?(weakSelf.bottomMargin.constant = 20):0;
+//    }];
+    
+    GXWaterCollectionViewLayout *waterLayout = [[GXWaterCollectionViewLayout alloc] init];
+    self.waterLayout = waterLayout;
+    waterLayout.delegate = self;
+    self.waterLayout.lineSpacing = 0;
+    self.waterLayout.interitemSpacing = 0;
+    self.waterLayout.sectionInset = UIEdgeInsetsMake(20, 20, 20, 20);
+    self.waterLayout.scrollDirection = UICollectionViewScrollDirectionVertical;
+    self.contentView.backgroundColor = BACKCOLOR;
+    self.collectionView = [[UICollectionView alloc] initWithFrame:self.collectionView.bounds collectionViewLayout:waterLayout];
+    [self.collectionView registerNib:[UINib nibWithNibName:@"GXWaterCVCell" bundle:nil] forCellWithReuseIdentifier:@"GXWaterCVCell"];
+    self.collectionView.dataSource = self;
+    self.collectionView.backgroundColor = [UIColor whiteColor];
+    
+    [self.contentView addSubview:self.collectionView];
+    [self.collectionView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.mas_equalTo(self.contentView.mas_left).offset(20);
+        make.right.mas_equalTo(self.contentView.mas_right).offset(-20);
+        make.top.mas_equalTo(self.contentView.mas_top).offset(20);
+        make.bottom.mas_equalTo(self.bottomView.mas_top).offset(-40);
+    }];
+    iPhoneXR||iPhoneXM||iPhoneX?(weakSelf.bottomMargin.constant = 20):0;
+    self.collectionView.showsVerticalScrollIndicator = NO;
+    self.collectionView.showsHorizontalScrollIndicator = NO;
+    UIBarButtonItem *rightBar = [[UIBarButtonItem alloc] initWithTitle:@"导出" style:UIBarButtonItemStyleDone target:self action:@selector(daoChuAction:)];
+    self.navigationItem.rightBarButtonItem = rightBar;
+    self.view.backgroundColor = [UIColor whiteColor];
+    self.navigationItem.title = @"预览";
+    
+    [self network];
+}
+- (NSInteger)numberOfSectionsInCollectionView:(UICollectionView *)collectionView {
+    return 1;
+}
+
+- (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
+    
+    
+    return  self.numberLineCount * self.numberOfColumns;
+}
+
+- (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
+    
+    GXWaterCVCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"GXWaterCVCell" forIndexPath:indexPath];
+//    cell.indexPath = indexPath;
+//    cell.array = self.textArray;
+//    cell.alertModel = self.customAlertModel;
+    return cell;
+}
+
+- (CGFloat)sizeWithLayout:(GXWaterCollectionViewLayout*)layout indexPath:(NSIndexPath*)indexPath itemSize:(CGFloat)itemSize {
+    return layout.viewHeightOrWidth;
+}
+- (void)network {
+    
+    if (!IS_VALID_STRING(self.blankFontTypeId)) {
+        [AlertPool alertMessage:@"blankFontTypeId为空" xlViewController:self WithBlcok:nil];
+        return;
+    }
+    [self netWorkHelperWithPOST:BlankFontDetails parameters:@{@"blankFontTypeId":self.blankFontTypeId} success:^(id responseObject) {
+        
+    } failure:^(NSError *error) {
+        
+    }];
+}
+
+- (IBAction)senderAction:(UIButton *)sender {
+    __weak typeof(self)weakSelf = self;
+
+    if (sender.tag == 100) {
+        ColorAlertView *colorAlert = [[ColorAlertView alloc] init];
+        colorAlert.colorIndex = 100;
+        colorAlert.colorBlock = ^(id dd) {
+            
+        };
+        [colorAlert customAlertShow];
+    }
+    if (sender.tag == 101) {
+        [[[CustomSize customSizeAlertPool].index(0) selectIndex:^(NSString *a3orA4) {
+           
+        }] alertShow];
+        
+    }
+}
+- (void)daoChuAction:(UIBarButtonItem *)right  {
+    UIAlertController *alertVC = [UIAlertController alertControllerWithTitle:@"字帖已完成" message:nil preferredStyle:(UIAlertControllerStyleActionSheet)];
+    UIAlertAction *action1 = [UIAlertAction actionWithTitle:@"生成下载链接" style:(UIAlertActionStyleDefault) handler:^(UIAlertAction * _Nonnull action) {
+        [TipCopyAlert centerAlertShowtipAlertisSureBlock:^(BOOL isCopy) {
+            
+        } urlString:@"http:www.baidu.com.wahKhkdahsdhahkhdakdhakhdksdhakdjkahdakshdkadhkadjkadhakda"];
+    }];
+   
+    UIAlertAction *action3 = [UIAlertAction actionWithTitle:@"继续编辑" style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
+        
+    }];
+    [alertVC addAction:action1];
+    [alertVC addAction:action3];
+    
+    [self.navigationController presentViewController:alertVC animated:YES completion:nil];
+}
+/*
+#pragma mark - Navigation
+
+// In a storyboard-based application, you will often want to do a little preparation before navigation
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    // Get the new view controller using [segue destinationViewController].
+    // Pass the selected object to the new view controller.
+}
+*/
+
+@end

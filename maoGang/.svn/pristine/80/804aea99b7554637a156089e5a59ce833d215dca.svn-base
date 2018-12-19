@@ -1,0 +1,161 @@
+//
+//  LikeUserTableViewCell.m
+//  gaofangPenYouQuan
+//
+//  Created by zhangzhen on 2018/11/19.
+//  Copyright © 2018 zhangzhen. All rights reserved.
+//
+
+#import "LikeUserTableViewCell.h"
+
+#import <TTTAttributedLabel.h>
+#import "CircleItem.h"
+#import "SectionHeaderView.h"
+
+NSString *const prefixStr = @"       ";
+
+@interface LikeUserTableViewCell() <TTTAttributedLabelDelegate>
+
+@property(nonatomic,strong)TTTAttributedLabel * likerLabel;
+@property(nonatomic,strong)UIView * lineView;
+@property(nonatomic,strong)NSMutableArray * links;
+
+@end
+@implementation LikeUserTableViewCell
+
+-(instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier{
+    
+    if (self = [super initWithStyle:style reuseIdentifier:reuseIdentifier]) {
+        [self setUp];
+        self.selectionStyle = UITableViewCellEditingStyleNone;
+    }
+    return self;
+}
+
+-(void)setUp{
+    
+    self.links = [NSMutableArray array];
+    UIView * bgView = [UIView new];
+    bgView.backgroundColor = [UIColor colorWithHexString:@"#eeeeee"];
+    [self.contentView addSubview:bgView];
+    [bgView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.bottom.equalTo(self.contentView);
+        make.right.equalTo(self.contentView).offset(-SectionHeaderHorizontalSpace*2);
+        make.left.equalTo(@(SectionHeaderHeaderImageLeftWidth+SectionHeaderHeaderImageHeight+SectionHeaderHorizontalSpace));
+    }];
+    
+    UIFont *font = [UIFont systemFontOfSize:12];
+    self.likerLabel = [TTTAttributedLabel new];
+    self.likerLabel.font = font;
+    self.likerLabel.numberOfLines = 0;
+    self.likerLabel.lineSpacing = SectionHeaderLineSpace;
+    self.likerLabel.delegate = self;
+    self.likerLabel.textColor =[UIColor colorWithRGB:@"2,112,225"];
+    [self.contentView addSubview:self.likerLabel];
+   
+    
+    self.lineView = [UIView new];
+    self.lineView.backgroundColor = [UIColor colorWithHexString:@"#999999" alpha:0.5];
+    [self.contentView addSubview:self.lineView];
+    [self.lineView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.bottom.equalTo(bgView);
+        make.left.mas_equalTo(bgView).mas_offset(SectionHeaderHeaderLiketNameLeftWidth);
+        make.right.mas_equalTo(bgView).mas_offset(-SectionHeaderHeaderLiketNameLeftWidth);
+        make.height.equalTo(@0.3);
+    }];
+    
+    UIImageView *likeImgV = [UIImageView new];
+    likeImgV.image =[UIImage imageNamed:@"dianzan_3"];
+    [self.contentView addSubview:likeImgV];
+    [likeImgV mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.equalTo(self.lineView);
+        make.top.equalTo(@5);
+    }];
+    [self.likerLabel mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.equalTo(@6);
+        make.bottom.equalTo(@(-6));
+        make.left.right.equalTo(self.lineView);
+//        make.right.mas_equalTo(self.lineView);
+    }];
+    
+    [self linkStyles];
+    
+   
+}
+- (void)linkStyles {
+    UIColor *linkColor = [UIColor colorWithRGB:@"2,112,225"];
+    CTUnderlineStyle linkUnderLineStyle = kCTUnderlineStyleNone;
+    UIColor *activeLinkColor = [UIColor colorWithRGB:@"2,112,225"];
+    CTUnderlineStyle activelinkUnderLineStyle  = kCTUnderlineStyleNone;
+    
+    // 没有点击时候的样式
+    self.likerLabel.linkAttributes = @{NSFontAttributeName:[UIFont boldSystemFontOfSize:12],
+                                       (NSString *)kCTForegroundColorAttributeName: linkColor,
+                                       (NSString *)kCTUnderlineStyleAttributeName: [NSNumber numberWithInt:linkUnderLineStyle]};
+    // 点击时候的样式
+    self.likerLabel.activeLinkAttributes = @{NSFontAttributeName:[UIFont boldSystemFontOfSize:12],
+                                             (NSString *)kCTForegroundColorAttributeName: activeLinkColor,
+                                             (NSString *)kTTTBackgroundFillColorAttributeName:[UIColor lightGrayColor],
+                                             (NSString *)kCTUnderlineStyleAttributeName: [NSNumber numberWithInt:activelinkUnderLineStyle]};
+}
+
+- (void)setContentData:(CircleItem *)item {
+    NSArray *likeUserArr = item.LikeList;
+    [self.links removeAllObjects];
+    NSString *str = [prefixStr copy];
+    for (int i = 0; i < likeUserArr.count; i++) {
+        
+        
+        NSString *userName = [likeUserArr[i] valueForKey:@"LikeMemberNick"];
+        NSString *userId = [likeUserArr[i] valueForKey:@"LikeMemberId"];
+        [self.links addObject:@{@"loc": @(str.length), @"length": @(userName.length), @"userName": userName,@"userId":userId}];
+        str = [str stringByAppendingString:userName];
+        if (i != likeUserArr.count - 1) {
+            str = [str stringByAppendingString:@", "];
+        }
+    }
+    if (IS_VALID_STRING(item.LikesNum)) {
+        if (likeUserArr.count<=item.LikesNum.integerValue) {
+            
+            str = [NSString stringWithFormat:@"%@  等%@人赞过",str,item.LikesNum];
+        }
+    }
+    self.likerLabel.text = str;
+    for (NSDictionary *dic in self.links) {
+        NSRange range = NSMakeRange([[dic valueForKey:@"loc"] integerValue], [[dic valueForKey:@"length"] integerValue]);
+        [self.likerLabel addLinkToTransitInformation:@{@"user_name":[dic valueForKey:@"userName"]} withRange:range];
+    }
+    if (item.replys.count <= 0) {
+        self.lineView.hidden = YES;
+    } else {
+        self.lineView.hidden = NO;
+    }
+    
+    
+}
+
+#pragma mark - TTTAttributedLabelDelegate
+
+- (void)attributedLabel:(TTTAttributedLabel *)label didSelectLinkWithTransitInformation:(NSDictionary *)components {
+    if ([_delegate respondsToSelector:@selector(didSelectPeople:)]) {
+        [_delegate didSelectPeople:components];
+    }
+}
+
+
+
+
+
+
+- (void)awakeFromNib {
+    [super awakeFromNib];
+    // Initialization code
+}
+
+- (void)setSelected:(BOOL)selected animated:(BOOL)animated {
+    [super setSelected:selected animated:animated];
+
+    // Configure the view for the selected state
+}
+
+@end

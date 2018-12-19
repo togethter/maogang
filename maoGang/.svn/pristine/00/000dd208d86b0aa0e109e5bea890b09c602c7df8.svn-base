@@ -1,0 +1,26 @@
+//
+//  YLReleaseWorksCell.m
+//  maoGang
+//
+//  Created by zhangzhen on 2018/12/4.
+//  Copyright © 2018 bilin. All rights reserved.
+//
+
+#import "YLReleaseWorksCell.h"
+
+@implementation YLReleaseWorksCell
+
+- (void)awakeFromNib {
+    [super awakeFromNib];
+    self.L_title.font = [UIFont boldSystemFontOfSize:18];
+    
+    // Initialization code
+}
+
+- (void)setSelected:(BOOL)selected animated:(BOOL)animated {
+    [super setSelected:selected animated:animated];
+
+    // Configure the view for the selected state
+}
+
+@end

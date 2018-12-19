@@ -1,0 +1,165 @@
+//  ArticleDetailBottomInputView.m
+//  LvJie
+//
+//  Created by bilin on 2018/1/4.
+//  Copyright © 2018年 Bilin-Apple. All rights reserved.
+//
+
+#import "ArticleDetailBottomInputView.h"
+
+
+#import "UIView+Frame.h"
+#import "UIView+Frame.h"
+#import "YYText.h"
+
+@interface ArticleDetailBottomInputView ()<YYTextViewDelegate,IWTextViewDelegate>
+{
+    CGSize _currentTextViewContentSize;
+    NSInteger _textLine;
+    float _keyboardHeight;
+}
+
+@property (nonatomic, strong) UIButton *sendBtn;
+@property (nonatomic, strong) UIButton *simleBtn;
+
+@property (nonatomic, strong) UIView *bottomView;
+
+
+
+
+
+@end
+@implementation ArticleDetailBottomInputView
+
+
+
+- (instancetype)initWithFrame:(CGRect)frame
+{
+    self = [super initWithFrame:frame];
+    
+    if (self) {
+        self.backgroundColor            = [UIColor whiteColor];
+
+        self.bottomView                 = [UIView new];
+        self.bottomView.backgroundColor = RGBCOLOR(244, 244, 244);
+        self.textView                   = [[IWTextView alloc] init];
+        self.textView.font              = [UIFont fontWithName:FontName size:14];
+        self.textView.backgroundColor   =  RGBCOLOR(244, 244, 244);
+        self.bottomView.layer.cornerRadius    = 8;
+        self.bottomView.layer.masksToBounds   = YES;
+        self.textView.xdelegate          = self;
+        self.textView.placeholder   = @"写评论...";
+        self.sendBtn                    = [UIButton buttonWithType:UIButtonTypeSystem];
+        [self.sendBtn  setTitle:@"发布" forState:UIControlStateNormal];
+        [self.sendBtn addTarget:self action:@selector(sendBtnAction:) forControlEvents:UIControlEventTouchUpInside];
+      
+        [self addSubview:self.bottomView];
+        [self.bottomView addSubview:self.textView];
+        [self addSubview:self.sendBtn];
+        
+        self.sendBtn.enabled = NO;
+        [self.sendBtn mas_makeConstraints:^(MASConstraintMaker *make) {
+            make.right.mas_equalTo(self.mas_right).offset(-20);
+            make.width.mas_equalTo(36.f);
+            make.height.mas_equalTo(22.f);
+            make.bottom.mas_equalTo(self.textView.mas_bottom).offset(-3);
+        }];
+        
+        [self.bottomView mas_makeConstraints:^(MASConstraintMaker *make) {
+            make.left.mas_equalTo(self.mas_left).offset(15);
+            make.right.mas_equalTo(self.sendBtn.mas_left).offset(-20);
+            make.top.mas_equalTo(self.mas_top).offset(12);
+            make.bottom.mas_equalTo(self.mas_bottom).offset(-12);
+        }];
+        
+        [self.textView mas_makeConstraints:^(MASConstraintMaker *make) {
+            make.left.mas_equalTo(self.bottomView.mas_left).offset(12);
+            make.right.mas_equalTo(self.bottomView);
+            make.top.mas_equalTo(self.bottomView.mas_top);
+            make.bottom.mas_equalTo(self.bottomView.mas_bottom);
+            
+        }];
+        
+        
+    }
+    
+    
+    return self;
+    
+}
+- (void)iwTextViewTextHaveText:(BOOL)isHave
+{
+    self.sendBtn.enabled = isHave;
+    
+}
+- (void)IWTextViewDelegateTextChangeAction:(NSString *)text count:(NSUInteger)count withTextView:(IWTextView *)textView
+{
+    [self iwTextViewTextHaveText:count];
+    if (!_currentTextViewContentSize.width) {
+        _currentTextViewContentSize = textView.contentSize;
+    } else {
+        if ((_currentTextViewContentSize.height < textView.contentSize.height) || _currentTextViewContentSize.height > textView.contentSize.height) {
+            [self updateHeight:textView];
+        }
+    }
+}
+- (void)updateHeight:(UITextView *)textView {
+    _currentTextViewContentSize = textView.contentSize;
+    CGFloat height = _currentTextViewContentSize.height;
+    if (height<=36.f) {
+        height = 36.f;
+        
+    }
+    if (height >= 90.f) {
+        height = 90.f;
+    }
+    CGFloat allH         =     51 + height - 25;
+    self.height         = allH;
+    [UIView animateWithDuration:0 animations:^{
+        CGRect frame = textView.frame;
+        frame.size.height = height;
+        textView.frame = frame;
+        [textView scrollRangeToVisible:textView.selectedRange];
+        
+    }];
+    
+    if (self.delegate && [self.delegate respondsToSelector:@selector(articleDetailBottomInputViewUpdateY:)]) {
+        [self.delegate articleDetailBottomInputViewUpdateY:self.height];
+        
+    }
+    
+}
+
+
+
+
+
+#pragma mark - 发布
+- (void)sendBtnAction:(UIButton *)sender
+{
+   
+    if (self.delegate && [self.delegate respondsToSelector:@selector(articleDetailBottomInputViewWithInputString:withButton:withModel:)]) {
+        [self.delegate articleDetailBottomInputViewWithInputString:self.textView.text withButton:sender withModel:self.model];
+    }
+}
+
+
+- (void)simleAction:(UIButton *)sender
+{
+
+    if (sender.selected) {
+        self.textView.inputView = nil;
+        [self.textView reloadInputViews];
+    } else {
+    
+        [self.textView reloadInputViews];
+        [_textView becomeFirstResponder];
+    
+    }
+    sender.selected = !sender.selected;
+    
+}
+
+
+
+@end

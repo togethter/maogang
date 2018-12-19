@@ -1,0 +1,202 @@
+//
+//  AlertCustomViewForNetwork.m
+//  LvJie
+//
+//  Created by bilin on 2017/12/6.
+//  Copyright © 2017年 Bilin-Apple. All rights reserved.
+// 蒙版加弹框放在基类中
+
+#import "AlertCustomViewForNetwork.h"
+@interface AlertCustomViewForNetwork ()
+
+/**警示框*/
+@property (nonatomic, strong) UIView *alertView;
+
+/**标题*/
+@property (nonatomic, strong) UILabel *titleLabel;
+
+/**状态的图片网络不给力*/
+@property (nonatomic, strong) UIImageView *imageView;
+
+/**重新加载*/
+@property (nonatomic, strong) UIButton *againLoadBtn;
+
+/**取消加载*/
+@property (nonatomic, strong) UIButton *cancleBtn;
+
+
+
+
+@end
+@implementation AlertCustomViewForNetwork
+
+
+
+CGFloat const alertViewW = 250;// alertView width
+CGFloat const alertViewH = 330.5;// alertView height
+CGFloat const alertViewOffsetY = 30.0;// alertView offsetY
+CGFloat const againLoadBtnW = 200;// againLoadBtnW width
+CGFloat const againLoadBtnH = 45;//againLoadBtnH height
+CGFloat const cancleBtnWH = 40;// cancleBtnWH width or height
+
+- (instancetype)initWithFrame:(CGRect)frame
+{
+    self = [super initWithFrame:frame];
+    if (self) {
+        self.backgroundColor = RGBACOLOR(0, 0, 0, 0.4);
+        
+        self.alertView = [UIView new];
+        self.alertView.backgroundColor = [UIColor whiteColor];
+        
+        self.titleLabel = [UILabel new];
+        self.titleLabel.text = @"网络不给力";
+        self.titleLabel.font = [UIFont fontWithName:FontName size:20];
+        self.imageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"img_no_wifi"]];
+        
+        
+        self.againLoadBtn = [UIButton buttonWithType:UIButtonTypeCustom];
+        [self.againLoadBtn addTarget:self action:@selector(reloadRequsetAction:) forControlEvents:UIControlEventTouchUpInside];
+        [self.againLoadBtn setTitle:@"重新加载" forState:UIControlStateNormal];
+        
+        self.cancleBtn = [UIButton buttonWithType:UIButtonTypeCustom];
+        [self.cancleBtn setImage:[UIImage imageNamed:@"icon_guanbi"] forState:UIControlStateNormal];
+        [self.cancleBtn addTarget:self action:@selector(cancleBtnAction:) forControlEvents:UIControlEventTouchUpInside];
+        
+        [self addSubview:self.alertView];
+        [self.alertView addSubview:self.titleLabel];
+        [self.alertView addSubview:self.imageView];
+        [self.alertView addSubview:self.againLoadBtn];
+        [self addSubview:self.cancleBtn];
+        
+        
+        [self.alertView mas_makeConstraints:^(MASConstraintMaker *make) {
+            make.centerX.mas_equalTo(self.mas_centerX);
+            make.centerY.mas_equalTo(self.mas_centerY).offset(-alertViewOffsetY);
+            make.width.mas_equalTo(XLh * alertViewW);
+            make.height.mas_equalTo(XLV * alertViewH);
+        }];
+        
+    
+        [self.titleLabel mas_makeConstraints:^(MASConstraintMaker *make) {
+            make.centerX.mas_equalTo(self.alertView.mas_centerX);
+            make.top.mas_equalTo(self.alertView.mas_top).offset(12);
+        }];
+        
+        [self.imageView mas_makeConstraints:^(MASConstraintMaker *make) {
+            make.centerX.mas_equalTo(self.alertView.mas_centerX);
+            make.centerY.mas_equalTo(self.alertView.mas_centerY).offset(-20);
+        }];
+        
+        
+        [self.againLoadBtn mas_makeConstraints:^(MASConstraintMaker *make) {
+            make.bottom.mas_equalTo(self.alertView.mas_bottom).offset(-30);
+            make.centerX.mas_equalTo(self.alertView.mas_centerX);
+            make.width.mas_equalTo(againLoadBtnW * XLh);
+            make.height.mas_equalTo(againLoadBtnH * XLV);
+        }];
+        
+        [self.cancleBtn mas_makeConstraints:^(MASConstraintMaker *make) {
+            make.top.mas_equalTo(self.alertView.mas_bottom).offset(30);
+            make.centerX.mas_equalTo(self.mas_centerX);
+        }];
+        
+        // 属性配置
+        self.alertView.layer.cornerRadius = 4;
+        self.alertView.layer.masksToBounds = YES;
+        self.againLoadBtn.layer.cornerRadius = (againLoadBtnH / 2) *XLV;
+        self.againLoadBtn.layer.masksToBounds = YES;
+        self.againLoadBtn.titleLabel.font = [UIFont fontWithName:FontName size:16];
+        
+        [self.againLoadBtn setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+        [self.againLoadBtn setBackgroundImage:[UIImage createImageWithColor:ButtonBackGroudRGB] forState:UIControlStateNormal];
+        [self.againLoadBtn setBackgroundImage:[UIImage createImageWithColor:RGBCOLOR(3, 139, 218)] forState:UIControlStateHighlighted];
+        
+        // 自定义的配置
+        
+        
+    }
+    return self;
+}
++ (instancetype)alertCustomViewForNetworkWithDelegte:(id<alertCustomViewForNetworkDelegate>)delegate
+{
+    AlertCustomViewForNetwork *alertView = [[AlertCustomViewForNetwork alloc] initWithFrame:[UIScreen mainScreen].bounds];
+    alertView.delegate = delegate;
+    return alertView;
+}
+
+/**
+ 无网络或者超时
+
+ @param networkEnum 枚举
+ */
+- (void)setNetworkEnum:(AlertCustomViewForNetworkEnum)networkEnum
+{
+    _networkEnum = networkEnum;
+    
+    switch (_networkEnum) {
+        case AlertCustomViewForNetworkTimeOut:
+            {
+                self.titleLabel.text = @"网络不给力";
+                self.imageView.image = [UIImage imageNamed:@"img_no_wifi"];
+                [self.againLoadBtn setTitle:@"重新加载" forState:UIControlStateNormal];
+
+            }
+            break;
+        case AlertCustomViewForNetworkNoNetwork:
+            {
+                self.titleLabel.text = @"无网络";
+                self.imageView.image = [UIImage imageNamed:@"img_no_wifi"];
+                [self.againLoadBtn setTitle:@"知道了" forState:UIControlStateNormal];
+
+            }
+            break;
+            
+            case AlertCustomViewForNetworError:// 网络请求出错了
+        {
+            self.titleLabel.text = @"出错了";
+            self.imageView.image = [UIImage imageNamed:@"img_error_default"];
+            [self.againLoadBtn setTitle:@"重新加载" forState:UIControlStateNormal];
+        }
+            
+        default:
+            break;
+    }
+}
+
+- (void)reloadRequsetAction:(UIButton *)sender
+{
+    switch (self.networkEnum) {
+        case AlertCustomViewForNetworkTimeOut:
+        {
+            if (self.delegate && [self.delegate respondsToSelector:@selector(reloadRequsetAction:)]) {
+                [self.delegate reloadRequsetAction:sender];
+            }
+        }
+            break;
+        case AlertCustomViewForNetworkNoNetwork:
+        {
+            if (self.delegate && [self.delegate respondsToSelector:@selector(OpenNetworkAccess)]) {
+                [self.delegate OpenNetworkAccess];
+            }
+        }
+            break;
+            
+            case AlertCustomViewForNetworError:
+        {
+            if (self.delegate && [self.delegate respondsToSelector:@selector(reloadRequsetAction:)]) {
+                [self.delegate reloadRequsetAction:sender];
+            }
+        }
+        default:
+            break;
+    }
+   
+}
+
+
+- (void)cancleBtnAction:(UIButton *)sender
+{
+    self.hidden = YES;
+}
+
+@end

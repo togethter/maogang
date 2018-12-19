@@ -1,0 +1,44 @@
+//
+//  XLYuMengNotificationTool.h
+//  LvJie
+//
+//  Created by bilin on 2018/2/5.
+//  Copyright © 2018年 Bilin-Apple. All rights reserved.
+//
+
+#import <Foundation/Foundation.h>
+#import "AppDelegate.h"
+#import <UMCommon/UMCommon.h>
+#import <UMPush/UMessage.h>
+
+/*来自哪一个平台 比如lvjie **/
+extern NSString *const XLYuMengNotificationToolTypeFrom;
+/** appKey*/
+extern NSString *const XLYuMengNotificationToolAppKey;
+
+
+typedef enum : NSUInteger {
+    XLYuMengNotificationToolNOcertification = 1,// 没有认证
+    XLYuMengNotificationToolInthereview = 10,// 认证中
+    XLYuMengNotificationToollawyer = 20,// 律师
+    XLYuMengNotificationToolotherLawyer = 30,// 律师
+} XLYuMengNotificationToolPersonType;
+
+@interface XLYuMengNotificationTool : NSObject
+
+/**
+ 绑定账号以及设置tag 不会移除所有的tag
+
+
+ @param uid 账号的uid
+ @param typefrome 来自哪里 比如lvjie
+ @param XLYuMengNotificationToolPersonType 枚举 添加 tag
+ */
++ (void)XLYuMengNotificationToolWithuid:(NSString *)uid withtype:(NSString *)typefrome withXLYuMengNotificationToolPersonAuthtags:(NSArray *)authTagsArray;
+
+
+
+
++ (void)XLYuMengNotificationToolwithappKey:(NSString *)appKey withlaunchoptions:(NSDictionary *)launchOptions withAppDelegate:(AppDelegate<UNUserNotificationCenterDelegate> *)delegate;
+
+@end

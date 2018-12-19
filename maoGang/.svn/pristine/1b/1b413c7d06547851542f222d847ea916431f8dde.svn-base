@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>step2</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="keywords" content="">
+    <meta name="description" content="">
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <link href="css/css.css" rel="stylesheet" type="text/css">
+    <style type="text/css">
+        #step2{
+            display: block;
+            background: #fff;
+            /*padding: 0 10px;*/
+            /*margin-bottom: 10px;*/
+        }
+        #step2 ul{
+            overflow: hidden;
+            width: 100%;
+            clear: both;
+            margin: 10px 0 10px 0;
+        }
+        #step2 li{
+            box-sizing: border-box;
+            /*border: 1px dashed transparent;*/
+            position: relative;
+            display: inline-block;
+            text-align: center;
+            background: #fff ;
+            /*background: url("../zitie/img/mi-red.png") no-repeat ;*/
+            /*background-size: 100% auto;*/
+            background-size: 100% 100%;
+
+        }
+        /*#step2 li img{*/
+           /**/
+            /*width: 100%;*/
+            /*height: 100%;*/
+            /*!*z-index: -1;*!*/
+        /*}*/
+        #step2 li img{
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            /*z-index: -1;*/
+        }
+        .loading{
+            position: fixed;
+            top: 60px;
+            left: 0;
+            width: 100%;
+            font-size: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body style="height: 100%;" class="">
+<section style="height: 100%;" id="step2">
+
+</section>
+<!--<a href="javascript:;" class="changebtn" onclick="changeOrder('2')"></a>-->
+<script src="js/jquery.2.1.4.min.js"></script>
+<script src="js/text.js"></script>
+<script src="js/swiper.min.js"></script>
+<script>
+
+    /**
+     *
+     * @param type 类型：1=钢笔 or 2=毛笔
+     * @param bg   格子类型：例（mi-red.png）
+     * @param font 字体：例（shoujin）
+     * @param fontSize 字号：小、中、大、特大
+     * @param text 字帖内容 string类型
+     */
+    var paixu = '1'
+    var type
+        , bg
+        ,bgColor
+        , font
+        , fontSize
+        , text
+        , textBf
+        ,paperType
+        ,fontColor
+        ,setFontSize
+function getConfig(type1, bg1,bgColor1, font1, fontSize1, text1,paperType1,fontColor1) {
+        type = type1
+        , bg = bg1
+        ,bgColor =bgColor1
+        , font =font1
+        , fontSize = fontSize1
+        , text = text1
+        , textBf = text1
+        ,paperType = paperType1
+        ,fontColor = fontColor1
+
+   return  showText()
+}
+    function showText() {
+        console.log(type, bg,bgColor, font, 'fontsize'+fontSize, text,paperType,fontColor,paixu)
+        var hang,lie
+        //根据笔型、纸型设置一页字数
+        var textNumber
+        if(type === '1'){//钢笔只有a4纸型
+            textNumber = 216
+            hang = 18
+            lie = 12
+
+        }else {
+            switch (paperType) {
+                case 'A4':
+                    if(fontSize === '1'){//小
+                        textNumber = 24
+                        hang = 6
+                        lie = 4
+                    }else if(fontSize === '2'){//中
+                        textNumber = 12
+                        hang = 4
+                        lie = 3
+                    }else {//大
+                        textNumber = 6
+                        hang = 3
+                        lie = 2
+                    }
+                    break
+                case 'A3':
+                    if(fontSize === '1'){//小
+                        textNumber = 70
+                        hang = 7
+                        lie = 10
+                    }else if(fontSize === '2'){//中
+                        textNumber = 40
+                        hang = 5
+                        lie = 8
+                    }else {//大
+                        textNumber = 15
+                        hang = 3
+                        lie = 5
+                    }
+
+                    break
+                // case 'c0':
+                //     textNumber = 580
+                //     hang = 29
+                //     lie = 20
+                //
+                //     break
+            }
+        }
+
+        console.log('一页字数：',textNumber)
+        //根据一页字数
+        if(paixu === '2'){
+            text = tbrl(text,hang,textNumber)
+        }else {
+            text = textBf
+        }
+        var step2Arr = text.split('')
+        var textLength = step2Arr.length
+        step2Arr = sliceArray(step2Arr,textNumber)
+        var pageNumber = step2Arr.length
+        var textHtml = ''
+
+        for(var i = 0;i<step2Arr.length;i++){
+            textHtml+='<ul class="">'
+            console.log(step2Arr[i].length,textNumber)
+            if(step2Arr[i].length < textNumber){
+                var times = textNumber -step2Arr[i].length
+                for(var z =0 ; z<times;z++){
+                    step2Arr[i].push('&nbsp;')
+                }
+            }
+            for(var x = 0;x<step2Arr[i].length;x++){
+                // textHtml+='<li>'+step2Arr[i][x]+'</li>'
+                textHtml+='<li><img src="img/mi-red.png" alt="">'+step2Arr[i][x]+'</li>'
+            }
+            textHtml+='</ul>'
+        }
+        $('#step2').html(textHtml)
+
+        if(type === '1'){//钢笔只有a4纸型
+
+            $('#step2 li').css('width',(100/12)+'%')
+
+        }else {
+            switch (paperType) {
+                case 'A4':
+                    if(fontSize === '1'){//小
+                        $('#step2 li').css('width','25%')
+                        $('#step2 ul').css('height',$('#step2 li').width()*6)
+
+                    }else if(fontSize === '2'){//中
+                        $('#step2 li').css('width',(100/3)+'%')
+                        $('#step2 ul').css('height',$('#step2 li').width()*4)
+                    }else {//大
+                        $('#step2 li').css('width',(100/2)+'%')
+                        $('#step2 ul').css('height',$('#step2 li').width()*3)
+                    }
+
+                    break
+                case 'A3':
+                    if(fontSize === '1'){
+                        $('#step2 li').css('width',(100/10)+'%')
+                        $('#step2 ul').css('height',$('#step2 li').width()*7)
+                    }else if(fontSize === '2'){
+                        $('#step2 li').css('width',(100/8)+'%')
+                        $('#step2 ul').css('height',$('#step2 li').width()*5)
+                    }else {
+                        $('#step2 li').css('width',(100/5)+'%')
+                        $('#step2 ul').css('height',$('#step2 li').width()*3)
+                    }
+                    break
+                // case 'c0':
+                //     $('#step2 li').css('width','5%')
+                //     $('#step2 ul').css('height',$('#step2 li').width()*29)
+                //     break
+            }
+        }
+
+
+
+        var color = bgColor
+
+        switch (bg) {
+            //1:无线格  2：回字格  3：口字格  4：田字格  5：米字格
+            case '1'://无线格
+                bgImg = ''
+                color = ''
+                break
+            case '2'://
+                bgImg='img/hui-'
+                break
+            case '3':
+                bgImg = 'img/kou-'
+                break
+            case '4':
+                bgImg = 'img/tian-'
+                break
+            case '5':
+                bgImg = 'img/mi-'
+                break
+            default:
+                break
+        }
+        var  bgurl = ''
+        if(bg === '1'){
+            bgurl = ''
+        }else {
+            bgurl = bgImg+color+'.png'
+        }
+
+        // $('#step2 li').css("background-image","url("+bgurl+")")
+        $('#step2 li img').attr("src",bgurl)
+        var liH = $('#step2 li').width()
+        $('#step2 li').css('height',liH+'px')
+        $('#step2 li').css('line-height',liH+'px')
+
+        var fonttype=''
+        switch (font) {
+            case '德彪钢笔行书字库':
+                fonttype = 'debiao'
+                break
+            case 'SIMKAI':
+                fonttype = 'simkai'
+                break
+            case '方正瘦金书GBK_宋徵宗瘦金体':
+                fonttype = 'shoujin'
+                break
+            case '报隶-简常规体':
+                fonttype = 'baoli'
+                break
+            case '方正苏新诗柳楷简体':
+                fonttype = 'liukai'
+                break
+            case '李旭科书法1.4':
+                fonttype = 'lixuke'
+                break
+        }
+
+        $('#step2').css('font-family',fonttype)
+        $('#step2').css('color',fontColor)
+        if(paixu === '2'){
+            $('#step2 li').removeClass('fl')
+            $('#step2 li').addClass('fr')
+        }else {
+            $('#step2 li').removeClass('fr')
+            $('#step2 li').addClass('fl')
+        }
+
+        switch (fontSize) {
+            case '1':
+                setFontSize =liH*0.5
+                console.log(setFontSize)
+                break
+            case '2':
+                setFontSize = liH*0.6
+                console.log(setFontSize)
+                break
+            case '3':
+                setFontSize = liH*0.7
+                console.log(setFontSize)
+                break
+            case '4':
+                setFontSize = liH*0.8
+                console.log(setFontSize)
+                break
+        }
+        console.log( liH-(liH*0.1))
+        $('#step2').css('font-size',setFontSize+'px')
+
+        //回调给app
+        var returnInfo = {"textNumber":textLength,"pageNumber":pageNumber,"paperType":paperType};
+        return returnInfo;
+    }
+
+function changeOrder(state) {
+    paixu = state
+    showText()
+}
+    // getConfig('1', '2','black', '德彪钢笔行书字库', '2', string,'A4','#4d5d4d')
+</script>
+</body>
+</html>

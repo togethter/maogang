@@ -1,0 +1,28 @@
+//
+//  MyModel.h
+//  maoGang
+//
+//  Created by xl on 2018/11/29.
+//  Copyright © 2018年 bilin. All rights reserved.
+//
+
+#import "BaseModel.h"
+
+NS_ASSUME_NONNULL_BEGIN
+
+@interface MyModel : BaseModel
+/**
+ *广告图片地址
+ */
+@property (nonatomic, copy) NSString * AdvertisementPic;
+@property (nonatomic, copy) NSString * Autograph;//签名
+@property (nonatomic, copy) NSString * HeadPic;
+@property (nonatomic, copy) NSString * MemberId;
+@property (nonatomic, copy) NSString * MyCollectionNum;
+@property (nonatomic, copy) NSString * MyFollowNum;
+@property (nonatomic, copy) NSString * MyFansNum;
+@property (nonatomic, copy) NSString * Nick;
+@property (nonatomic, copy) NSString * NotReasdNum;//消息红点数量
+@end
+
+NS_ASSUME_NONNULL_END

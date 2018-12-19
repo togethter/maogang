@@ -1,0 +1,136 @@
+//
+//  PanViewController.m
+//  maoGang
+//
+//  Created by xl on 2018/11/23.
+//  Copyright © 2018年 bilin. All rights reserved.
+//
+
+#import "PanViewController.h"
+#import "PenCell.h"
+#import "EditionController.h"
+#import "FontModel.h"
+#import "NODataView.h"
+@interface PanViewController ()<UITableViewDelegate,UITableViewDataSource>
+
+@property (weak, nonatomic) IBOutlet UITableView *panTableView;
+@property (nonatomic, strong) NSMutableArray *panArray;
+@property (nonatomic, strong) NODataView *nodataView;
+
+@end
+
+@implementation PanViewController
+
+- (NSMutableArray *)panArray {
+    if (!_panArray) {
+        _panArray = [NSMutableArray array];
+    }
+    return _panArray;
+}
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    self.panTableView.delegate = self;
+    self.panTableView.dataSource = self;
+    self.panTableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+    if (iOS11) {
+        self.panTableView.estimatedSectionFooterHeight = 0;
+        self.panTableView.estimatedSectionFooterHeight = 0;
+        self.panTableView.estimatedRowHeight = 0;
+    }
+//    self.panTableView.mj_header = [MJRefreshNormalHeader headerWithRefreshingTarget:self refreshingAction:@selector(downRefsh)];
+//
+//    MJRefreshAutoGifFooter * footer = [MJRefreshAutoGifFooter footerWithRefreshingTarget:self refreshingAction:@selector(laodMoreRefsh)];
+//    // 设置文字
+//    [footer setTitle:@"" forState:MJRefreshStateIdle];
+//    [footer setTitle:@"正在加载 ..." forState:MJRefreshStateRefreshing];
+//    [footer setTitle:@"没有更多内容" forState:MJRefreshStateNoMoreData];
+//
+//    // 设置字体
+//    footer.stateLabel.font = [UIFont fontWithName:FontName size:14];
+//
+//
+//    // 设置颜色
+//    footer.stateLabel.textColor = [UIColor blackColor];
+//    self.panTableView.mj_footer = footer;
+    self.nodataView = [NODataView noDataViewWithImage:@"bar_wushuju" withDescription:@"暂无数据"];
+    self.nodataView.hidden = YES;
+    [self.panTableView addSubview:self.nodataView];
+    [self.nodataView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.centerX.mas_equalTo(self.panTableView);
+        make.centerY.mas_equalTo(self.panTableView.mas_centerY).offset(-70);
+    }];
+    
+    [self.panTableView registerNib:[UINib nibWithNibName:@"PenCell" bundle:nil] forCellReuseIdentifier:@"PenCell"];
+}
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    [self downRefsh];
+}
+- (void)downRefsh {
+    [self.panArray removeAllObjects];
+    [self network];
+}
+
+- (void)laodMoreRefsh {
+    
+}
+
+- (void)network {
+    [self netWorkHelperWithPOST:BasicsTypefacesType parameters:@{@"penType":@"1"} success:^(id responseObject) {
+        FontModel *model = [FontModel loadModelWithDictionary:responseObject];
+        if ([model.Result isEqualToString:@"200"]) {
+          NSArray *fontArray =  responseObject[@"Info"];
+            for (NSDictionary *fontDic in fontArray) {
+                FontModel *fontModel = [FontModel loadModelWithDictionary:fontDic];
+                [self.panArray addObject:fontModel];
+            }
+            self.nodataView.hidden = self.panArray.count;
+            [self.panTableView reloadData];
+        }
+    } failure:^(NSError *error) {
+        
+    }];
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    return self.panArray.count;
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    PenCell *cell = [tableView dequeueReusableCellWithIdentifier:@"PenCell" forIndexPath:indexPath];
+    cell.selectionStyle = UITableViewCellSelectionStyleNone;
+    if (self.panArray.count > indexPath.row) {
+        FontModel *fontModel = self.panArray[indexPath.row];
+        [cell.penImageView sd_setImageWithURL:[NSURL URLWithString:fontModel.HomePic] placeholderImage:nil];
+        cell.desLabel.text = fontModel.TypefaceName;
+    }
+    return cell;
+}
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    return 190;
+}
+
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    if (self.panArray.count > indexPath.row) {
+        FontModel *fontModel = self.panArray[indexPath.row];
+        EditionController *vc = [[EditionController alloc] initWithNibName:@"EditionController" bundle:nil titleName:fontModel.TypefaceName];
+        vc.fontModel = fontModel;
+        vc.fontModelArray = self.panArray;
+        [self.navigationController pushViewController:vc animated:YES];
+    }
+   
+}
+
+/*
+#pragma mark - Navigation
+
+// In a storyboard-based application, you will often want to do a little preparation before navigation
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    // Get the new view controller using [segue destinationViewController].
+    // Pass the selected object to the new view controller.
+}
+*/
+
+@end

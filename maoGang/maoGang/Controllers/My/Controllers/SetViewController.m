@@ -1,0 +1,330 @@
+//
+//  SetViewController.m
+//  maoGang
+//
+//  Created by xl on 2018/11/29.
+//  Copyright © 2018年 bilin. All rights reserved.
+//
+
+#import "SetViewController.h"
+#import "ChangeXPassWordViewController.h"
+#import <ShareSDK/ShareSDK.h>
+
+@interface X_iSBangModel : BaseModel
+//IsPhone    是否绑定手机 （1=绑定 0=未绑定）    是    [string]    查看
+//IsWechat   是否绑定微信 （1=绑定 0=未绑定）    是    [string]    查看
+//IsQQ    是否绑定qq （1=绑定 0=未绑定）
+@property (nonatomic, copy) NSString * IsPhone;
+@property (nonatomic, copy) NSString * IsQQ;
+@property (nonatomic, copy) NSString * IsWechat;
+@end
+@implementation X_iSBangModel
+@end
+@interface SetViewController ()
+@property (weak, nonatomic) IBOutlet UILabel *vLable;
+@property (weak, nonatomic) IBOutlet UILabel *cacheSizeL;
+@property (weak, nonatomic) IBOutlet UIButton *extBtn;
+@property (weak, nonatomic) IBOutlet UIButton *weBtn;
+@property (weak, nonatomic) IBOutlet UIButton *qqBtn;
+@property (weak, nonatomic) IBOutlet UIButton *phoneBtn;
+@property (weak, nonatomic) IBOutlet UIView *contentView;
+@property (weak, nonatomic) IBOutlet UIView *lineViewOne_1;
+@property (weak, nonatomic) IBOutlet UIView *lineViewOne_2;
+@property (weak, nonatomic) IBOutlet UIView *lineViewOne_3;
+@property (nonatomic, strong) X_iSBangModel *bangModel;// 绑定的状态
+
+@end
+
+@implementation SetViewController
+
+
+- (void)setBangModel:(X_iSBangModel *)bangModel {
+    _bangModel = bangModel;
+//    weBtn;
+//    qqBtn;
+//    phoneBtn;
+   __block NSString *isbangdingle = @"已绑定";
+   __block  NSString *weiBangding = @"未绑定";
+    __weak typeof(self)weakSelf = self;
+    void (^phoneBlock)(BOOL bangding) = ^(BOOL bangding) {
+        if (bangding) {
+            [weakSelf.phoneBtn setTitle:isbangdingle forState:UIControlStateNormal];
+            [weakSelf.phoneBtn setTitleColor:RGBCOLOR(172, 172, 172) forState:UIControlStateNormal];
+        } else {
+            [weakSelf.phoneBtn setTitle:weiBangding forState:UIControlStateNormal];
+            [weakSelf.phoneBtn setTitleColor:RGBCOLOR(27, 141, 252) forState:UIControlStateNormal];
+        }
+    };
+    void (^wechatBlock)(BOOL bangding) = ^(BOOL bangding) {
+        if (bangding) {
+            [weakSelf.weBtn setTitle:isbangdingle forState:UIControlStateNormal];
+            [weakSelf.weBtn setTitleColor:RGBCOLOR(172, 172, 172) forState:UIControlStateNormal];
+
+        } else {
+            [weakSelf.weBtn setTitle:weiBangding forState:UIControlStateNormal];
+            [weakSelf.weBtn setTitleColor:RGBCOLOR(27, 141, 252) forState:UIControlStateNormal];
+
+        }
+    };
+    void (^QQBlock)(BOOL bangding) = ^(BOOL bangding) {
+        if (bangding) {
+            [weakSelf.qqBtn setTitle:isbangdingle forState:UIControlStateNormal];
+            [weakSelf.qqBtn setTitleColor:RGBCOLOR(172, 172, 172) forState:UIControlStateNormal];
+
+        } else {
+            [weakSelf.qqBtn setTitle:weiBangding forState:UIControlStateNormal];
+            [weakSelf.qqBtn setTitleColor:RGBCOLOR(27, 141, 252) forState:UIControlStateNormal];
+
+        }
+    };
+    (IS_VALID_STRING(bangModel.IsPhone) && [bangModel.IsPhone isEqualToString:@"1"])?phoneBlock(YES):phoneBlock(NO);
+    (IS_VALID_STRING(bangModel.IsWechat) && [bangModel.IsWechat isEqualToString:@"1"])?wechatBlock(YES):wechatBlock(NO);
+    (IS_VALID_STRING(bangModel.IsQQ) && [bangModel.IsQQ isEqualToString:@"1"])?QQBlock(YES):QQBlock(NO);
+}
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    [self.weBtn setTitleColor:RGBCOLOR(27, 141, 252) forState:UIControlStateNormal];
+    [self.qqBtn setTitleColor:RGBCOLOR(27, 141, 252) forState:UIControlStateNormal];
+    [self.phoneBtn setTitleColor:RGBCOLOR(27, 141, 252) forState:UIControlStateNormal];
+    self.extBtn.layer.cornerRadius = 4;
+    self.extBtn.layer.masksToBounds = YES;
+    self.vLable.text = [NSString stringWithFormat:@"v%@",[UserManager sharedManager].AppVersion];
+    self.lineViewOne_1.backgroundColor = self.lineViewOne_2.backgroundColor = self.lineViewOne_3.backgroundColor = LineBackgroundColor;
+    self.contentView.backgroundColor = BACKCOLOR;
+    NSString *cahcePath = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) lastObject];
+    dispatch_async(dispatch_get_global_queue(0, 0), ^{
+        int64_t size =  [NSString folderSizeAtPath: cahcePath];
+        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+            if (size >= 1024 * 1024) {
+                self.cacheSizeL.text = [NSString stringWithFormat:@"%.2fM",size/1024.f/1024.f];
+            } else {
+                self.cacheSizeL.text = [NSString stringWithFormat:@"%.2fkb",size/1024.f];
+            }
+        }];
+        
+    });
+    self.navigationItem.title = @"系统设置";
+}
+
+
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    [self isBangdingnetwork];
+}
+
+- (void)isBangdingnetwork {
+    NSString *token = TOKEN;
+    [self netWorkHelperWithPOST:MemberGetBindInfo parameters:@{@"token":token} success:^(id responseObject) {
+        BaseModel *model = [BaseModel loadModelWithDictionary:responseObject];
+        if ([model.Result isEqualToString:@"200"]) {
+            self.bangModel = [X_iSBangModel loadModelWithDictionary:responseObject[@"Info"]];
+        }
+    } failure:^(NSError *error) {
+        
+    }];
+}
+
+
+- (IBAction)sender:(UIButton *)sender {
+    
+    switch (sender.tag) {
+        case 100: {// 修改密码
+            ChangeXPassWordViewController *chaVC = [[ChangeXPassWordViewController alloc] init];
+            [self.navigationController pushViewController:chaVC animated:YES];
+        }
+            break;
+       
+        case 102: {// 关于我们
+            WorshipTheJudgeNetworkViewController *vc = [[WorshipTheJudgeNetworkViewController alloc] init];
+            vc.webType =  EWebTypeAbout;
+            [self.navigationController pushViewController:vc animated:YES];
+        }
+            
+            break;
+        case 103: {// 清楚缓存
+            [[SDImageCache sharedImageCache] clearMemory];
+            __weak typeof(self)weakself = self;
+            [SVProgressHUD show];
+            [SVProgressHUD setDefaultMaskType:SVProgressHUDMaskTypeClear];
+            
+            [NSString clearCache:^{
+            weakself.cacheSizeL.text = @"0.0KB";
+                [SVProgressHUD dismiss];
+            }];
+           
+            
+        }
+            
+            break;
+        default:
+            break;
+    }
+}
+
+#pragma mark - 退出登录
+- (IBAction)existSender:(UIButton *)sender {
+    
+    [[UserManager sharedManager] cleanUserInfo];
+    [self.navigationController popViewControllerAnimated:YES];
+}
+
+
+#pragma mark - 微信绑定Or解绑
+
+- (IBAction)wechat:(UIButton *)sender {
+    __weak typeof(self)weakself = self;
+  __weak __block  NSString *token = TOKEN;
+    
+    void (^bangdingweChatNetBlock)(BOOL isBangding) = ^(BOOL isBangding) {
+        NSString *urlString = MemberUnbindWeChat;
+        void (^cancleWeChatnetwork)(void) = ^{
+            [weakself netWorkHelperWithPOST:urlString parameters:@{@"token":token}success:^(id responseObject) {
+                BaseModel *baseModel = [BaseModel loadModelWithDictionary:responseObject];
+                if ([baseModel.Result isEqualToString:@"200"]) {
+                    [weakself isBangdingnetwork];
+                }
+                [AlertPool alertMessage:baseModel.message xlViewController:weakself WithBlcok:nil];
+            } failure:^(NSError *error) {
+                
+            }];
+        };
+        isBangding ? [weakself loginWXorQQ:(SSDKPlatformTypeWechat)] :cancleWeChatnetwork();
+       
+    };
+    (IS_VALID_STRING(self.bangModel.IsWechat) && [self.bangModel.IsWechat isEqualToString:@"1"])? bangdingweChatNetBlock(NO):bangdingweChatNetBlock(YES);
+}
+#pragma mark - QQ绑定Or解绑
+
+- (IBAction)qq:(UIButton *)sender {
+    __weak typeof(self)weakself = self;
+    __weak __block  NSString *token = TOKEN;
+    void (^bangdingQQNetBlock)(BOOL isBangDing) = ^(BOOL isBangDing) {// 取消绑定
+        NSString *urlString = MemberUnbindQQ;
+        void (^cancleQQBangding)(void) = ^() {
+            [weakself netWorkHelperWithPOST:urlString parameters:@{@"token":token}success:^(id responseObject) {
+                BaseModel *baseModel = [BaseModel loadModelWithDictionary:responseObject];
+                if ([baseModel.Result isEqualToString:@"200"]) {
+                    [weakself isBangdingnetwork];
+                }
+                [AlertPool alertMessage:baseModel.message xlViewController:weakself WithBlcok:nil];
+            } failure:^(NSError *error) {
+                
+            }];
+        };
+        isBangDing ? [weakself loginWXorQQ:(SSDKPlatformTypeQQ)]:cancleQQBangding();
+       
+    };
+    (IS_VALID_STRING(self.bangModel.IsQQ) && [self.bangModel.IsQQ isEqualToString:@"1"])?bangdingQQNetBlock(NO):bangdingQQNetBlock(YES);
+}
+#pragma mark - 手机绑定
+
+- (IBAction)phone:(UIButton *)sender {
+    __weak typeof(self)weakself = self;
+    __weak __block  NSString *token = TOKEN;
+    if ([self.bangModel.IsPhone isEqualToString:@"1"]||!IS_VALID_STRING(self.bangModel.IsPhone))return;
+    void (^bangdingPhoneNetBlock)(void) = ^() {
+        [weakself netWorkHelperWithPOST:MemberBindPhone parameters:@{@"token":token} success:^(id responseObject) {
+            BaseModel *baseModel = [BaseModel loadModelWithDictionary:responseObject];
+            if ([baseModel.Result isEqualToString:@"200"]) {
+                [weakself isBangdingnetwork];
+            } else {
+                [AlertPool alertMessage:baseModel.message xlViewController:weakself WithBlcok:nil];
+            }
+        } failure:^(NSError *error) {
+            
+        }];
+    };
+    (IS_VALID_STRING(self.bangModel.IsPhone) && [self.bangModel.IsPhone isEqualToString:@"1"])?:bangdingPhoneNetBlock();
+}
+
+
+
+
+-(void)loginWXorQQ:(SSDKPlatformType)PlatformType{
+    
+    
+    __weak typeof(self)weakself = self;
+    [ShareSDK getUserInfo:PlatformType
+           onStateChanged:^(SSDKResponseState state, SSDKUser *user, NSError *error)
+     {
+         
+         if (state == SSDKResponseStateSuccess)
+         {
+             
+             //             NSLog(@"uid=%@",user.uid);
+             //             NSLog(@"%@",user.credential);
+             //             NSLog(@"token=%@",user.credential.token);
+             //             NSLog(@"nickname=%@",user.nickname);
+             //             NSLog(@"icon=%@",user.icon);
+             //             NSLog(@"gender=%ld",user.gender);
+             //取消授权
+             [ShareSDK cancelAuthorize:PlatformType];
+             if (IS_VALID_STRING(user.uid)) {
+                 if (PlatformType == SSDKPlatformTypeQQ) {
+                     [weakself loginLvJieWithUid:user.uid withType:@"1"];
+                 } else if (PlatformType == SSDKPlatformTypeWechat) {
+                     [weakself loginLvJieWithUid:user.uid withType:@"2"];
+                 }
+             }
+             
+         }
+         
+         else
+         {
+             [GiFHUD show:@"授权失败" view:weakself.view];
+             
+         }
+         
+     }];
+    
+}
+-(void)loginLvJieWithUid:(NSString * )uid withType:(NSString * )type{
+    [SVProgressHUD show];
+    [SVProgressHUD setDefaultMaskType:SVProgressHUDMaskTypeClear];
+    
+    NSString * url = [NSString string];
+    NSDictionary * dic = [NSDictionary dictionary];
+    if ([type isEqualToString:@"2"]) {
+        url =   MemberBindWeChat;
+        dic = @{@"openId":uid,@"token":TOKEN};
+    }else {
+        
+        url = MemberBindQQ;
+        dic = @{@"openId":uid,@"token":TOKEN};
+    }
+//    self.WXBt.userInteractionEnabled = NO;
+//    self.CFBt.userInteractionEnabled = NO;
+    [[YXHTTPRequst shareInstance]networking:url parameters:dic method:YXRequstMethodTypePOST success:^(NSDictionary * obj) {
+        BaseModel * model = [BaseModel loadModelWithDictionary:obj];
+        if ([model.Result isEqualToString:@"200"]) {//返回成功
+            [AlertPool alertMessage:@"绑定成功" xlViewController:self WithBlcok:nil];
+            [self isBangdingnetwork];
+            
+        }else{//返回失败
+            
+            [AlertPool alertMessage:model.message xlViewController:self WithBlcok:nil];
+            
+        }
+    } failsure:^(NSError *error) {
+        
+        
+    }];
+    
+    
+    
+    
+    
+}
+
+/*
+#pragma mark - Navigation
+
+// In a storyboard-based application, you will often want to do a little preparation before navigation
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    // Get the new view controller using [segue destinationViewController].
+    // Pass the selected object to the new view controller.
+}
+*/
+
+@end

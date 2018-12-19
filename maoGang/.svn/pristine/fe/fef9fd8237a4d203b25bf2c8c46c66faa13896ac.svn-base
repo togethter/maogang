@@ -1,0 +1,18 @@
+//
+//  YLWXLoginModel.h
+//  LvJie
+//
+//  Created by Bilin-Apple on 2017/10/10.
+//  Copyright © 2017年 Bilin-Apple. All rights reserved.
+//
+
+#import "BaseModel.h"
+
+@interface YLWXLoginModel : BaseModel
+
+@property(nonatomic,copy)NSString * OpenId;
+@property(nonatomic,copy)NSString * ChongFa;//0未授权  1授权
+@property(nonatomic,copy)NSString * WeChat;//0未授权  1授权
+/** 是否绑定手机0 未绑定 1绑定了 如果是绑定了的话就隐藏掉*/
+@property (nonatomic, copy) NSString *Phone;
+@end

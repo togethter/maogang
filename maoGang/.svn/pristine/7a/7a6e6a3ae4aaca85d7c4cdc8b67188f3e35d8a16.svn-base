@@ -1,0 +1,79 @@
+//
+//  FontViewController.m
+//  maoGang
+//
+//  Created by xl on 2018/11/13.
+//  Copyright © 2018年 bilin. All rights reserved.
+//
+
+#import "FontViewController.h"
+#import "PanViewController.h"
+#import "BrushViewController.h"
+#import "NotingViewController.h"
+#import "YLScorlControl.h"
+#import "FontDaquanViewController.h"
+
+#import "FYSelectFontViewController.h"
+#import "Fonty.h"
+#import "FYFontManager.h"
+@interface FontViewController ()
+@property (nonatomic, strong) UILabel *label;
+@end
+
+@implementation FontViewController
+
+- (void)viewDidLoad {
+    self.noAddBackBtn = YES;
+    [super viewDidLoad];
+    // Do any additional setup after loading the view from its nib.
+    self.navigationItem.title = @"首页";
+    YLScorlControl *control = [[YLScorlControl alloc] init];
+    [self.view addSubview:control];
+    PanViewController   *panVC    = [[PanViewController alloc] init];
+    BrushViewController *brushVC  = [[BrushViewController alloc] init];
+    NotingViewController*NOVC       = [[NotingViewController alloc] init];
+    [control addChildViewController:panVC title:@"钢笔"];
+    [control addChildViewController:brushVC title:@"毛笔"];
+    [control addChildViewController:NOVC title:@"空白字帖"];
+    [control show];
+    
+    UIBarButtonItem *rightBar = [[UIBarButtonItem alloc] initWithTitle:@"下载" style:(UIBarButtonItemStylePlain) target:self action:@selector(rightButton:)];
+    self.navigationItem.rightBarButtonItem = rightBar;
+    
+    UILabel *label = [UILabel new];
+    self.label = label;
+    UIBarButtonItem *leftBarButton = [[UIBarButtonItem alloc] initWithCustomView:label];
+    self.navigationItem.rightBarButtonItems = @[rightBar,leftBarButton];
+    
+}
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    self.label.text = @"汉字";
+    self.label.font = [UIFont fy_mainFontWithSize:39.0f];
+}
+- (void)rightButton:(UIBarButtonItem *)right {
+    [FYFontManager setFileURLStrings:@[@"https://github.com/s2mh/FontFile/raw/master/Chinese/Simplified%20Chinese/ttc/Xingkai.ttc",
+                                       @"https://github.com/s2mh/FontFile/raw/master/Common/Regular/YuppySC-Regular.otf",
+                                       @"https://github.com/s2mh/FontFile/raw/master/English/Bold/Luminari.ttf",
+                                       @"https://github.com/s2mh/FontFile/raw/master/Common/Bold/LiHeiPro.ttf"]];
+    FYSelectFontViewController *typeVC = [[FYSelectFontViewController alloc] init];
+    UINavigationController *navc = [[UINavigationController alloc] initWithRootViewController:typeVC];
+    [self.navigationController presentViewController:navc animated:YES completion:nil];
+  
+}
+
+
+
+
+
+/*
+#pragma mark - Navigation
+
+// In a storyboard-based application, you will often want to do a little preparation before navigation
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    // Get the new view controller using [segue destinationViewController].
+    // Pass the selected object to the new view controller.
+}
+*/
+
+@end

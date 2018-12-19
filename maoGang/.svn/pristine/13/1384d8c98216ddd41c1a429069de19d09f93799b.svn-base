@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Bucket
+   type = "0"
+   version = "2.0">
+   <Breakpoints>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.ExceptionBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            scope = "0"
+            stopOnStyle = "0">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "maoGang/Category/NSStingCategory/NSString+Extension.m"
+            timestampString = "565779429.677967"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "1631"
+            endingLineNumber = "1631"
+            landmarkName = "+formateDate:withFormate:"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "maoGang/ThirdPartySKD/Equalize/ZLPhotoLib/Classes/ZLPhotoPicker/ViewControllers/ZLPhotoPickerAssetsViewController.m"
+            timestampString = "566212893.547174"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "470"
+            endingLineNumber = "470"
+            landmarkName = "-done"
+            landmarkType = "7">
+            <Locations>
+               <Location
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "-[ZLPhotoPickerAssetsViewController done]"
+                  moduleName = "maoGang"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/zhangzhen/Desktop/maoGang/maoGang/ThirdPartySKD/Equalize/ZLPhotoLib/Classes/ZLPhotoPicker/ViewControllers/ZLPhotoPickerAssetsViewController.m"
+                  timestampString = "566203255.89513"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "471"
+                  endingLineNumber = "471"
+                  offsetFromSymbolStart = "28">
+               </Location>
+               <Location
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "__41-[ZLPhotoPickerAssetsViewController done]_block_invoke"
+                  moduleName = "maoGang"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/zhangzhen/Desktop/maoGang/maoGang/ThirdPartySKD/Equalize/ZLPhotoLib/Classes/ZLPhotoPicker/ViewControllers/ZLPhotoPickerAssetsViewController.m"
+                  timestampString = "566203255.897356"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "471"
+                  endingLineNumber = "471"
+                  offsetFromSymbolStart = "60">
+               </Location>
+               <Location
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "__destroy_helper_block_.358"
+                  moduleName = "maoGang"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/zhangzhen/Desktop/maoGang/maoGang/ThirdPartySKD/Equalize/ZLPhotoLib/Classes/ZLPhotoPicker/ViewControllers/ZLPhotoPickerAssetsViewController.m"
+                  timestampString = "566203255.900115"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "471"
+                  endingLineNumber = "471"
+                  offsetFromSymbolStart = "20">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+   </Breakpoints>
+</Bucket>

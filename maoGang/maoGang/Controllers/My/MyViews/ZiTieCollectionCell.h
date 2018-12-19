@@ -1,0 +1,18 @@
+//
+//  ZiTieCollectionCell.h
+//  maoGang
+//
+//  Created by xl on 2018/11/30.
+//  Copyright © 2018年 bilin. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+NS_ASSUME_NONNULL_BEGIN
+
+@interface ZiTieCollectionCell : UICollectionViewCell
+@property (weak, nonatomic) IBOutlet UIImageView *placeHoldImageView;
+
+@end
+
+NS_ASSUME_NONNULL_END

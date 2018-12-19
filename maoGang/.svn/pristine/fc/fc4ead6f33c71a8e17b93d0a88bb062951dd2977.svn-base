@@ -1,0 +1,13 @@
+//
+//  YLPushUMModel.m
+//  maoGang
+//
+//  Created by zhangzhen on 2018/12/13.
+//  Copyright © 2018 bilin. All rights reserved.
+//
+
+#import "YLPushUMModel.h"
+
+@implementation YLPushUMModel
+
+@end

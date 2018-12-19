@@ -1,0 +1,190 @@
+//
+//  TBTabBarController.m
+//  TabbarBeyondClick
+//
+//  Created by 卢家浩 on 2017/4/17.
+//  Copyright © 2017年 lujh. All rights reserved.
+//
+
+#import "TBTabBarController.h"
+#import "YLNacigationViewController.h"
+#import "MyViewController.h"
+#import "ProductionViewController.h"
+#import "FontViewController.h"
+#import "TBTabBar.h"
+#import "AppDelegate.h"
+//判断是否iPhone X
+#define IS_iPhoneXs ([UIScreen instancesRespondToSelector:@selector(currentMode)] ? CGSizeEqualToSize(CGSizeMake(1125, 2436), [[UIScreen mainScreen] currentMode].size) : NO)
+#define TABs_BAR_SAFE_BOTTOM_MARGIN (IS_iPhoneXs ? 34.f : 0.f)
+
+@interface TBTabBarController ()
+//@property(nonatomic,strong)LLWPlusPopView * LLvc;
+
+@end
+
+@implementation TBTabBarController
+
+- (void)dealloc
+{
+//    NSLog(@"%@--dealloc",NSStringFromClass(self.class));
+    
+}
+- (void)viewDidLoad {
+    [super viewDidLoad];
+
+    
+    self.view.backgroundColor = [UIColor whiteColor];
+    // 初始化所有控制器
+    [self setUpChildVC];
+   
+//    // 创建tabbar中间的tabbarItem
+    [self setUpMidelTabbarItem];
+    //设置背景色  白色
+    self.tabBar.translucent = NO;
+    self.tabBar.tintColor =[UIColor whiteColor];
+    CGRect rect = CGRectMake(0, 0, kScreenWidth, 1);
+    UIGraphicsBeginImageContext(rect.size);
+    CGContextRef context = UIGraphicsGetCurrentContext();
+    CGContextSetFillColorWithColor(context, [[UIColor clearColor] CGColor]);
+    CGContextFillRect(context, rect);
+    UIImage *img = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    [self.tabBar setBackgroundImage:img];
+    [self.tabBar setShadowImage:img];
+    
+    
+    
+    //这里是去掉 系统tabbar上黑线的方法
+//    self.tabBar.backgroundImage = [[UIImage alloc]init];
+//    self.tabBar.shadowImage = [[UIImage alloc]init];
+    
+    
+}
+
+
+- (void)changIndexToFinishAndStarting
+{
+    self.selectedIndex = 2;
+}
+#pragma mark -创建tabbar中间的tabbarItem 
+
+- (void)setUpMidelTabbarItem {
+
+    TBTabBar *tabBar = [[TBTabBar alloc] init];
+//
+    [self setValue:tabBar forKey:@"tabBar"];
+    
+    __weak typeof(self) weakSelf = self;
+//    [tabBar setDidClickPublishBtn:^{
+//        DLog(@"中间tabbar");
+////樊浦凡
+//        if (!weakSelf.LLvc) {
+//            NSArray *imgs = @[@"add_picture",@"add_vedio"];
+//            NSArray *titles = @[ @"图片", @"视频"];
+//            weakSelf.LLvc  = [[LLWPlusPopView alloc] initWithFrame:CGRectMake(0, 0, kScreenWidth, kScreenHeight - TABs_BAR_SAFE_BOTTOM_MARGIN)];
+//            [weakSelf.LLvc showWithImages:imgs titles:titles selectBlock:^(NSInteger index) {
+//                weakSelf.LLvc=nil;
+//#warning 选择完图片或者视频  跳转到传输 查看上传进度
+//                NSInteger seletIndex = [weakSelf.tabBar.items indexOfObject:weakSelf.tabBar.selectedItem];// 获取到当前是在那一下表点击过来的
+//                if (weakSelf.childViewControllers.count > seletIndex) {
+//                    if (index == 0) {// 图片文件夹
+//                        UIViewController *seletVC = weakSelf.childViewControllers[seletIndex];// 看到
+//                        CreateFolderViewController *createFolder = [[CreateFolderViewController alloc] init];
+//                        createFolder.whatEnum = PictureEnum;
+//                        UINavigationController *navc = [[YLNacigationViewController alloc] initWithRootViewController:createFolder];
+//                        [seletVC presentViewController:navc animated:YES completion:nil];
+//                    } else if (index == 1) {// 相册文件夹
+//                        UIViewController *seletVC = weakSelf.childViewControllers[seletIndex];// 看到
+//                        CreateFolderViewController *createFolder = [[CreateFolderViewController alloc] init];
+//                        createFolder.whatEnum = VideoEnum;
+//                        UINavigationController *navc = [[YLNacigationViewController alloc] initWithRootViewController:createFolder];
+//                        [seletVC presentViewController:navc animated:YES completion:nil];
+//                    }
+//
+//
+//                }
+//            }];
+//        }
+    
+
+        
+//    }];
+
+}
+#pragma mark --- 进入后台 关闭相册弹框
+-(void)applicationDidEnterBackground{
+    
+//    if (self.LLvc) {//关闭
+//        [self.LLvc close];
+//        self.LLvc=nil;
+//    }
+    
+}
+
+#pragma mark -初始化所有控制器 
+
+- (void)setUpChildVC {
+
+    FontViewController *homeVC = [[FontViewController alloc] initWithNibName:@"FontViewController" bundle:nil];
+    [self setChildVC:homeVC title:@"字体" image:@"tab_on_index" selectedImage:@"tab_off_index"];
+    ProductionViewController *fishpidVC = [[ProductionViewController alloc] initWithNibName:@"ProductionViewController" bundle:nil];
+    [self setChildVC:fishpidVC title:@"发布" image:@"tab_on_message" selectedImage:@"tab_off_message"];
+    MyViewController *my  = [[MyViewController alloc] initWithNibName:@"MyViewController" bundle:nil];
+    [self setChildVC:my title:@"我的" image:@"tab_on_my" selectedImage:@"tab_off_my"];
+
+}
+
+- (void) setChildVC:(UIViewController *)childVC title:(NSString *) title image:(NSString *) image selectedImage:(NSString *) selectedImage {
+    
+    childVC.tabBarItem.title = title;
+    NSMutableDictionary *dict = [NSMutableDictionary dictionary];
+    dict[NSForegroundColorAttributeName] = RGBCOLOR(0, 0, 0);
+    dict[NSFontAttributeName] = [UIFont systemFontOfSize:12];
+    
+    
+    NSMutableDictionary *dictHeight = [NSMutableDictionary dictionary];
+    dictHeight[NSForegroundColorAttributeName] = RGBCOLOR(123, 171, 240);
+    dictHeight[NSFontAttributeName] = [UIFont systemFontOfSize:12];
+    
+    [childVC.tabBarItem setTitleTextAttributes:dict forState:UIControlStateNormal];
+    [childVC.tabBarItem setTitleTextAttributes:dictHeight forState:UIControlStateSelected];
+    
+    childVC.tabBarItem.image = [[UIImage imageNamed:image] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
+    childVC.tabBarItem.selectedImage = [[UIImage imageNamed:selectedImage] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
+    YLNacigationViewController *nav = [[YLNacigationViewController alloc] initWithRootViewController:childVC];
+    childVC.tabBarItem.title = title;
+    nav.navigationBar.shadowImage = [UIImage new];
+    [self addChildViewController:nav];
+    
+}
+
+- (void)tabBar:(UITabBar *)tabBar didSelectItem:(UITabBarItem *)item
+{
+    
+    NSLog(@"item name = %@", item.title);
+    NSInteger index = [self.tabBar.items indexOfObject:item];
+//    [self animationWithIndex:index];
+    if([item.title isEqualToString:@"发现"])
+    {
+        // 也可以判断标题,然后做自己想做的事<img alt="得意" src="http://static.blog.csdn.net/xheditor/xheditor_emot/default/proud.gif" />
+    }
+}
+- (void)animationWithIndex:(NSInteger) index {
+    NSMutableArray * tabbarbuttonArray = [NSMutableArray array];
+    for (UIView *tabBarButton in self.tabBar.subviews) {
+        if ([tabBarButton isKindOfClass:NSClassFromString(@"UITabBarButton")]) {
+            [tabbarbuttonArray addObject:tabBarButton];
+        }
+    }
+    CABasicAnimation*pulse = [CABasicAnimation animationWithKeyPath:@"transform.scale"];
+    pulse.timingFunction= [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
+    pulse.duration = 0.2;
+    pulse.repeatCount= 1;
+    pulse.autoreverses= YES;
+    pulse.fromValue= [NSNumber numberWithFloat:0.7];
+    pulse.toValue= [NSNumber numberWithFloat:1.3];
+    [[tabbarbuttonArray[index] layer] 
+     addAnimation:pulse forKey:nil]; 
+}
+
+@end

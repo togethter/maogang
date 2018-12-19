@@ -1,0 +1,668 @@
+//
+//  YLPersonalDetailsPageViewController.m
+//  maoGang
+//
+//  Created by zhangzhen on 2018/11/30.
+//  Copyright © 2018 bilin. All rights reserved.
+//
+
+#import "YLPersonalDetailsPageViewController.h"
+#import "YLPersonalDetailsHeadModel.h"
+#import "CircleItem.h"
+#import "YLACollectionOfPersonalTableViewCell.h"
+#import "YLWorkDetailsViewController.h"
+#import "YLTiJiaoHearingAlertView.h"
+#import "BasicDataViewController.h"
+
+
+@interface YLPersonalDetailsPageViewController() <UITableViewDelegate,UITableViewDataSource>{
+    NSInteger _page;
+    
+}
+@property(nonatomic,strong)UITableView * tableV;
+
+//导航栏  头像
+@property(nonatomic,strong)UIButton * headB;
+//导航栏  姓名
+@property(nonatomic,strong)UILabel * nameL;
+//导航栏  标题
+@property(nonatomic,strong)UILabel * L_icon_title;
+
+//导航栏  粉丝数
+@property(nonatomic,strong)UILabel * fsL;
+//导航栏  关注
+@property(nonatomic,strong)UIButton * gzB;
+
+//导航栏  返回按钮
+@property(nonatomic,strong)UIButton * left;
+
+//头视图  头像
+@property(nonatomic,strong)UIButton * H_headB;
+
+//头视图  关注
+@property(nonatomic,strong)UIButton * H_gzB;
+
+//头视图  粉丝数
+@property(nonatomic,strong)UILabel * H_femsi_Number;
+
+//头视图  律所
+@property(nonatomic,strong)UILabel * H_OfficeAreaL;
+
+//头视图  地址
+@property(nonatomic,strong)UILabel * H_areaL;
+
+//头视图  简介
+@property(nonatomic,strong)UILabel * H_contentL;
+
+@property (nonatomic, strong) UIView *headNV;
+//记录 头视图高度
+@property(nonatomic,assign)CGFloat headVF;
+/**
+ *内容
+ */
+@property (nonatomic, copy) NSString *Intr;
+
+@property(nonatomic,strong)YLPersonalDetailsHeadModel * infoModel;
+
+@end
+
+@implementation YLPersonalDetailsPageViewController
+
+-(UITableView *)tableV{
+    
+    if (!_tableV) {
+        _tableV = [[UITableView alloc]initWithFrame:CGRectZero style:UITableViewStyleGrouped];
+        _tableV.backgroundColor = [UIColor clearColor];
+        _tableV.delegate = self;
+        _tableV.dataSource = self;
+        if (iOS11) {
+            _tableV.estimatedRowHeight = 0;
+            _tableV.estimatedSectionHeaderHeight = 0;
+            _tableV.estimatedSectionFooterHeight = 0;
+        }
+        [_tableV registerNib:[UINib nibWithNibName:@"YLACollectionOfPersonalTableViewCell" bundle:nil] forCellReuseIdentifier:@"YLACollectionOfPersonalTableViewCell"];
+        _tableV.separatorStyle = UITableViewCellSeparatorStyleNone;
+    }
+    return _tableV;
+}
+-(UIView *)headNV{
+    if (!_headNV) {
+        
+                _headNV = [[UIView alloc]initWithFrame:CGRectMake(0, 0, kScreenWidth, TOPBAR_HEIGHT)];
+//        _headNV = [[UIView alloc]initWithFrame:CGRectMake(0, 0, kScreenWidth, 44+22)];
+        _headNV.backgroundColor = [UIColor clearColor];
+
+        self.L_icon_title = [[UILabel alloc]init];
+        self.L_icon_title.text = @"个人资料";
+        self.L_icon_title.textAlignment = NSTextAlignmentCenter;
+        self.L_icon_title.font = [UIFont systemFontOfSize:18];
+        [_headNV addSubview:self.L_icon_title];
+        [self.L_icon_title mas_makeConstraints:^(MASConstraintMaker *make) {
+            make.left.right.bottom.mas_equalTo(_headNV);
+            make.top.mas_equalTo(_headNV).mas_offset(13);
+        }];
+        
+        self.left = [UIButton buttonWithType:UIButtonTypeCustom];
+        [self.left setImage:[UIImage imageNamed:@"btn_fanhui"] forState:UIControlStateNormal];
+        //        left.backgroundColor = [UIColor purpleColor];
+        [self.left addTarget:self action:@selector(leftButtonClicked) forControlEvents:UIControlEventTouchUpInside];
+        
+        [_headNV addSubview:self.left];
+        [self.left mas_makeConstraints:^(MASConstraintMaker *make) {
+            //            if (iPhoneX) {
+            //                 make.top.mas_equalTo(_headNV).mas_offset(28);
+            //            }else{
+            make.top.mas_equalTo(_headNV).mas_offset(13);
+            //            }
+            
+            make.bottom.and.left.mas_equalTo(_headNV);
+            make.width.mas_equalTo(@50);
+        }];
+        
+        self.gzB = [UIButton buttonWithType:UIButtonTypeCustom];
+        [self.gzB setTitle:@"＋关注" forState:UIControlStateNormal];
+        self.gzB.titleLabel.font = [UIFont systemFontOfSize:15 ];
+        self.gzB.backgroundColor =[UIColor colorWithRGB:@"255, 86, 86"];
+        [self.gzB addTarget:self action:@selector(guanzhuButtonClicked:) forControlEvents:UIControlEventTouchUpInside];
+        self.gzB.hidden = YES;
+        [_headNV addSubview:self.gzB];
+        [self.gzB mas_makeConstraints:^(MASConstraintMaker *make) {
+            make.right.mas_equalTo(_headNV).mas_offset(-15);
+            make.centerY.mas_equalTo(self.left);
+            make.height.mas_equalTo(25 );
+            make.width.mas_equalTo(60 );
+        }];
+        self.gzB.layer.cornerRadius = 5.0f;
+        self.gzB.layer.masksToBounds = YES;
+        
+        self.headB = [UIButton buttonWithType:UIButtonTypeCustom];
+        self.headB.hidden = YES;
+        [self.headB setImage:[UIImage imageNamed:@"icon_geren_touxiang"] forState:UIControlStateNormal];
+//        [self.headB addTarget:self action:@selector(headImageButtonClicked) forControlEvents:UIControlEventTouchUpInside];
+        //        [headB setImageEdgeInsets:UIEdgeInsetsMake(0, 10, 0, 0)];
+        //        self.headB.backgroundColor = [UIColor redColor];
+        [_headNV addSubview:self.headB];
+        
+        [self.headB mas_makeConstraints:^(MASConstraintMaker *make) {
+            make.left.mas_equalTo(self.left.mas_right).mas_offset(-8);
+            make.centerY.mas_equalTo(self.left);
+            make.height.and.width.mas_equalTo(@38);
+        }];
+        self.headB.layer.cornerRadius = 19.0f;
+        self.headB.layer.masksToBounds = YES;
+        
+        self.nameL = [[UILabel alloc]init];
+        self.nameL.text = @"律界用户";
+        self.nameL.hidden = YES;
+        self.nameL.font = [UIFont systemFontOfSize:14];
+        self.nameL.textColor = [UIColor colorWithRGB:@"0, 0, 0"];
+        [_headNV addSubview:self.nameL];
+        [self.nameL mas_makeConstraints:^(MASConstraintMaker *make) {
+            make.left.mas_equalTo(self.headB.mas_right).mas_offset(6);
+            make.right.mas_equalTo(self.gzB.mas_left).mas_equalTo(-6);
+            make.centerY.mas_equalTo(self.left).mas_offset(-7);
+            
+        }];
+        self.fsL = [[UILabel alloc]init];
+        self.fsL.text = @"粉丝0";
+        self.fsL.hidden = YES;
+        self.fsL.font = [UIFont systemFontOfSize:12];
+        self.fsL.textColor = [UIColor colorWithRGB:@"109, 109, 109"];
+        [_headNV addSubview:self.fsL];
+        [self.fsL mas_makeConstraints:^(MASConstraintMaker *make) {
+            make.left.mas_equalTo(self.nameL.mas_left);
+            make.centerY.mas_equalTo(self.left).mas_offset(10);
+            
+        }];
+    
+        
+    }
+    return _headNV;
+}
+
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view.
+    _page = 1;
+    [self creatUI];
+    self.view.backgroundColor = [UIColor whiteColor];
+    [self.view addSubview:self.headNV];
+    [self.view bringSubviewToFront:self.headNV];
+  
+    
+}
+-(void)viewWillDisappear:(BOOL)animated{
+    [super viewWillDisappear:animated];
+    [self.navigationController setNavigationBarHidden:NO animated:NO];
+     [self.tableV removeObserver:self forKeyPath:@"contentOffset" context:nil];
+//    [UIApplication sharedApplication].statusBarStyle = UIStatusBarStyleDefault;
+    
+}
+-(void)viewDidDisappear:(BOOL)animated{
+    [super viewDidDisappear:animated];
+//    [UIApplication sharedApplication].statusBarStyle = UIStatusBarStyleDefault;
+    
+}
+
+-(void)viewWillAppear:(BOOL)animated{
+    [super viewWillAppear:animated];
+    [self.navigationController setNavigationBarHidden:YES animated:animated];
+    [self.tableV addObserver:self forKeyPath:@"contentOffset" options:NSKeyValueObservingOptionNew context:nil];
+    [self loadNewData];
+}
+#pragma mark --- 返回按钮
+-(void)leftButtonClicked{
+    [self.navigationController popViewControllerAnimated:YES];
+}
+-(void)creatUI{
+    [self.view addSubview:self.tableV];
+    [self.tableV mas_makeConstraints:^(MASConstraintMaker *make) {
+//        make.edges.mas_equalTo(self.view);
+        
+        make.top.mas_equalTo(self.view).mas_offset(-State_barHeight);
+        make.left.right.bottom.mas_equalTo(self.view);
+    }];
+    
+    self.tableV.mj_header = [MJRefreshNormalHeader headerWithRefreshingTarget:self refreshingAction:@selector(loadNewData)];
+    
+    MJRefreshAutoNormalFooter *footer = [MJRefreshAutoNormalFooter footerWithRefreshingTarget:self refreshingAction:@selector(loadMoreData)];
+    // 禁止自动加载
+    footer.automaticallyRefresh = NO;
+    
+    [footer setTitle:@"" forState:MJRefreshStateIdle];
+    [footer setTitle:@"正在加载..." forState:MJRefreshStateRefreshing];
+    
+    // 设置字体
+    footer.stateLabel.font = [UIFont systemFontOfSize:14];
+    // 设置footer
+    self.tableV.mj_footer = footer;
+    
+    
+    
+    
+}
+-(void)loadNewData{
+    _page = 1;
+    [self.dataArray removeAllObjects];
+    [self loadRequsets];
+    
+}
+-(void)loadMoreData{
+    
+    _page++;
+    [self loadRequsets];
+}
+
+- (void)loadRequsets
+{
+    
+        if (IS_VALID_STRING(self.memberId)) {
+//            if (!isLogin) {
+//                [GiFHUD show:@"请登录~" view:self.view];
+//                return;
+//            }
+            [self netWorkHelperWithPOST:PostesMemberDetails parameters:@{@"memberId":self.memberId,@"page":@(_page),@"token":@""} success:^(id responseObject) {
+                BaseModel * Bmodel = [BaseModel loadModelWithDictionary:responseObject];
+                if ([Bmodel.Result isEqualToString:@"200"]) {
+                    
+                    self.infoModel =[YLPersonalDetailsHeadModel loadModelWithDictionary:responseObject[@"Info"][@"member"]];
+                    NSArray * listArr = responseObject[@"Info"][@"PostList"];
+                    if (IS_VALID_ARRAY(listArr)) {
+                        for (NSDictionary * listDic in listArr) {
+                            CircleItem * model = [CircleItem loadModelWithDictionary:listDic];
+                            [self.dataArray addObject:model];
+                        }
+                    }
+                    [self redreshUI];
+                    [self.tableV.mj_footer endRefreshing];
+                    [self.tableV.mj_header endRefreshing];
+                    [self.tableV reloadData];
+                    
+                }
+//                else{
+//                    [GiFHUD show:Bmodel.message view:self.view];
+//                }
+                
+            } failure:^(NSError *error) {
+                
+            }];
+        
+    
+        }else{
+    
+            [GiFHUD show:@"系统返回错误~" view:self.view];
+        }
+    
+    
+    
+    
+}
+
+-(void)redreshUI{
+    
+    if (IS_VALID_STRING(self.infoModel.IsFollow)&&[self.infoModel.IsFollow isEqualToString:@"1"]) {
+        [self.gzB setTitle:@"已关注" forState:UIControlStateNormal];
+        
+    }else{
+        [self.gzB setTitle:@"＋关注" forState:UIControlStateNormal];
+        
+    }
+    
+    if (IS_VALID_STRING(self.infoModel.MyFansNum)) {
+        
+        self.fsL.text =[NSString stringWithFormat:@"粉丝%@",self.infoModel.MyFansNum];
+    }
+    
+    
+    if (IS_VALID_STRING(self.infoModel.Nick)) {
+        
+        self.nameL.text =self.infoModel.Nick;
+        
+    }
+    
+    if (IS_VALID_STRING(self.infoModel.HeadPic)) {
+        
+        [self.headB setImage:[UIImage imageWithData:[NSData dataWithContentsOfURL:[NSURL URLWithString:self.infoModel.HeadPic]]] forState:UIControlStateNormal];
+    }
+    
+}
+#pragma mark --- 监听 滑动
+//显示上方伪nav
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context{
+    if ([keyPath isEqualToString:@"contentOffset"]){
+        CGPoint offset = [change[NSKeyValueChangeNewKey] CGPointValue];
+        
+        if (offset.y>185-State_barHeight-CGRectGetHeight(self.headNV.frame)) {
+            self.headNV.backgroundColor = RGBACOLOR(255, 255, 255, 1);
+            self.headB.hidden = NO;
+            self.nameL.hidden = NO;
+            self.fsL.hidden = NO;
+            self.gzB.hidden = NO;
+            self.L_icon_title.hidden = YES;
+//            [self.left setImage:[UIImage imageNamed:@"btn_fanhui"] forState:UIControlStateNormal];
+//            [UIApplication sharedApplication].statusBarStyle = UIStatusBarStyleDefault;
+            
+            
+        }else{
+            self.headNV.backgroundColor = [UIColor clearColor];
+            self.headB.hidden = YES;
+            self.nameL.hidden = YES;
+            self.fsL.hidden = YES;
+            self.gzB.hidden = YES;
+            self.L_icon_title.hidden = NO;
+//            [self.left setImage:[UIImage imageNamed:@"fanhui"] forState:UIControlStateNormal];
+//            [UIApplication sharedApplication].statusBarStyle = UIStatusBarStyleLightContent;
+            
+        }
+    }
+}
+
+
+-(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath{
+    
+    return 50+27;
+}
+
+-(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
+    
+    return self.dataArray.count;
+}
+
+-(NSInteger)numberOfSectionsInTableView:(UITableView *)tableView{
+    return 1;
+}
+
+
+- (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section{
+    CGRect rect = CGRectMake(0, 0, 0, floor(600.0f));
+
+    UIView * headerView = [[UIView alloc]initWithFrame:rect];
+    headerView.backgroundColor = [UIColor redColor];
+    
+    UIImageView *headerImage = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, kScreenWidth, 150)];
+    headerImage.image = [UIImage imageNamed:@"zhuye_beijing"];
+    headerImage.contentMode = UIViewContentModeScaleAspectFill;
+    headerImage.userInteractionEnabled = YES;
+    
+    [headerView addSubview:headerImage];
+    
+    UIView * bottonRootV = [[UIView alloc]init];
+    bottonRootV.backgroundColor =[UIColor whiteColor];
+    [headerView addSubview:bottonRootV];
+    
+    
+    UILabel * bgHeadB = [[UILabel alloc]init];
+    bgHeadB.backgroundColor =RGBACOLOR(249, 247, 248, .8);
+    [headerView addSubview:bgHeadB];
+    [bgHeadB mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.mas_equalTo(headerView).mas_offset(28);
+        make.top.mas_equalTo(headerView).mas_offset(116);
+        make.width.and.height.mas_equalTo(@80);
+    }];
+    bgHeadB.layer.cornerRadius = 40.0f;
+    bgHeadB.layer.masksToBounds = YES;
+    
+    self.H_headB = [UIButton buttonWithType:UIButtonTypeCustom];
+    if (IS_VALID_STRING(self.infoModel.HeadPic)) {
+        [self.H_headB setBackgroundImage:[UIImage imageWithData:[NSData dataWithContentsOfURL:[NSURL URLWithString:self.infoModel.HeadPic]]] forState:UIControlStateNormal];
+        
+        
+    }else{
+        [self.H_headB setBackgroundImage:[UIImage imageNamed:@"icon_geren_touxiang"] forState:UIControlStateNormal];
+        
+    }
+    [headerView addSubview:self.H_headB];
+    [self.H_headB mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.center.mas_equalTo(bgHeadB);
+        make.width.and.height.mas_equalTo(@60);
+    }];
+    self.H_headB.layer.cornerRadius = 30.0f;
+    self.H_headB.layer.masksToBounds = YES;
+    
+    
+    self.H_gzB = [UIButton buttonWithType:UIButtonTypeCustom];
+    if (IS_VALID_STRING(self.infoModel.IsFollow)&&[self.infoModel.IsFollow isEqualToString:@"1"]) {
+        
+        [self.H_gzB setTitle:@"已关注" forState:UIControlStateNormal];
+    }else{
+        
+        [self.H_gzB setTitle:@"＋关注" forState:UIControlStateNormal];
+    }
+    
+    
+    self.H_gzB.titleLabel.font = [UIFont systemFontOfSize:15 * XLh];
+    self.H_gzB.backgroundColor = RGBCOLOR(255, 86, 86);
+    [self.H_gzB addTarget:self action:@selector(guanzhuButtonClicked:) forControlEvents:UIControlEventTouchUpInside];
+    [bottonRootV addSubview:self.H_gzB];
+    [self.H_gzB mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.right.mas_equalTo(bottonRootV).mas_offset(-15);
+        make.top.mas_equalTo(bottonRootV).mas_equalTo(15);
+        make.height.mas_equalTo(25 * XLV);
+        make.width.mas_equalTo(60 * XLh);
+    }];
+    self.H_gzB.layer.cornerRadius = 5.0f;
+    self.H_gzB.layer.masksToBounds = YES;
+    
+    UILabel * H_fensi_Icon = [[UILabel alloc]init];
+    H_fensi_Icon.text = @"粉丝";
+    H_fensi_Icon.textColor = RGBCOLOR(109, 109, 109);
+    H_fensi_Icon.font = [UIFont systemFontOfSize:12];
+    [bottonRootV addSubview:H_fensi_Icon];
+    [H_fensi_Icon mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.right.mas_equalTo(self.H_gzB.mas_left).mas_offset(-20);
+        make.centerY.mas_equalTo(self.H_gzB);
+    }];
+    self.H_femsi_Number = [[UILabel alloc]init];
+    if (IS_VALID_STRING(self.infoModel.MyFansNum)) {
+        
+        self.H_femsi_Number.text = self.infoModel.MyFansNum;
+        
+    }else{
+        self.H_femsi_Number.text = @"0";
+    }
+    
+    self.H_femsi_Number.textColor = RGBCOLOR(255, 90, 0);
+    self.H_femsi_Number.font = [UIFont systemFontOfSize:12];
+    [bottonRootV addSubview:self.H_femsi_Number];
+    [self.H_femsi_Number mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.right.mas_equalTo(H_fensi_Icon.mas_left).mas_offset(-5);
+        make.centerY.mas_equalTo(H_fensi_Icon);
+    }];
+    
+    self.H_OfficeAreaL = [[UILabel alloc]init];
+    if (IS_VALID_STRING(self.infoModel.Nick)) {
+        
+        self.H_OfficeAreaL.text =self.infoModel.Nick;
+        
+    }else{
+        self.H_OfficeAreaL.text = @"保密";
+    }
+    self.H_OfficeAreaL.textColor = RGBCOLOR(0, 0, 0);
+    self.H_OfficeAreaL.font = [UIFont systemFontOfSize:18];
+    self.H_OfficeAreaL.numberOfLines = 0;
+    [bottonRootV addSubview:self.H_OfficeAreaL];
+    
+    [self.H_OfficeAreaL mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.mas_equalTo(self.H_headB.mas_bottom).mas_offset(21);
+        make.left.mas_equalTo(bottonRootV).mas_offset(28);
+        make.right.mas_equalTo(bottonRootV).mas_offset(-15);
+        
+    }];
+    
+    self.H_contentL = [[UILabel alloc]init];
+    self.H_contentL.textColor = RGBCOLOR(123, 123, 123);
+    if (IS_VALID_STRING(self.infoModel.Autograph)) {
+        
+        self.H_contentL.text = self.infoModel.Autograph;
+        
+    }
+    
+    self.H_contentL.font = [UIFont systemFontOfSize:12];
+    self.H_contentL.textAlignment = NSTextAlignmentLeft;
+    self.H_contentL.numberOfLines = 0;
+    [bottonRootV addSubview:self.H_contentL];
+    [self.H_contentL mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.mas_equalTo(self.H_OfficeAreaL);
+        make.right.mas_equalTo(bottonRootV).mas_offset(-15);
+        make.top.mas_equalTo(self.H_OfficeAreaL.mas_bottom).mas_offset(@15);
+    }];
+    
+    UILabel * lineL = [[UILabel alloc]init];
+    lineL.backgroundColor = LineBackgroundColor;
+    [bottonRootV addSubview:lineL];
+    [lineL mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.mas_equalTo(self.H_contentL.mas_bottom).mas_offset(15);
+        make.left.mas_equalTo(bottonRootV).mas_offset(20);
+        make.right.mas_equalTo(bottonRootV).mas_offset(-20);
+        make.height.mas_equalTo(@1);
+    }];
+    UILabel * lineL_two = [[UILabel alloc]init];
+    lineL_two.backgroundColor = LineBackgroundColor;
+    [bottonRootV addSubview:lineL_two];
+    [lineL_two mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.mas_equalTo(lineL.mas_bottom).mas_offset(32);
+        make.left.mas_equalTo(lineL);
+        make.right.mas_equalTo(lineL);
+        make.height.mas_equalTo(@1);
+    }];
+    UILabel * title_icon = [[UILabel alloc]init];
+    title_icon.text = @"作品集";
+    title_icon.textColor = RGBCOLOR(255, 86, 86);
+    title_icon.font = [UIFont systemFontOfSize:14];
+    [bottonRootV addSubview:title_icon];
+    [title_icon mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.mas_equalTo(lineL.mas_bottom);
+        make.bottom.mas_equalTo(lineL_two.mas_top);
+        make.left.mas_equalTo(lineL).mas_offset(5);
+        
+    }];
+    
+    UILabel * line_select = [[UILabel alloc]init];
+    line_select.backgroundColor = [UIColor redColor];
+    [bottonRootV addSubview:line_select];
+    [line_select mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.right.mas_equalTo(title_icon);
+        make.bottom.mas_equalTo(lineL_two.mas_top).mas_offset(-1);
+        make.height.mas_equalTo(@1);
+    }];
+    
+    
+    
+    CGSize titleSize = [NSString setSizeSelfH:self.H_contentL.text withSize:CGSizeMake(kScreenWidth-28-15, MAXFLOAT) withDic:@{NSFontAttributeName : [UIFont systemFontOfSize:12]} ];
+    CGSize officArea  = [NSString setSizeSelfH:self.H_OfficeAreaL.text withSize:CGSizeMake(kScreenWidth-28-15, MAXFLOAT) withDic:@{NSFontAttributeName:[UIFont systemFontOfSize:18]}];
+    bottonRootV.frame =CGRectMake(0, 150, kScreenWidth, titleSize.height+35+29+29+32+officArea.height);
+    self.headVF =titleSize.height+150+35+29+29+32+officArea.height;
+    //    DLog(@"%f--- headerView:%f",titleSize.height,(titleSize.height+135+150+64)/2 - titleSize.heigh);
+    
+    return headerView;
+}
+-(CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section{
+    
+   CGSize titleSize = [NSString setSizeSelfH:self.infoModel.Autograph withSize:CGSizeMake(kScreenWidth-28-15, MAXFLOAT) withDic:@{NSFontAttributeName : [UIFont systemFontOfSize:12]} ];
+   CGSize officArea  = [NSString setSizeSelfH:self.infoModel.Nick withSize:CGSizeMake(kScreenWidth-28-15, MAXFLOAT) withDic:@{NSFontAttributeName:[UIFont systemFontOfSize:18]}];
+   return titleSize.height+150+35+29+29+32+officArea.height;
+}
+
+
+-(UITableViewCell*)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
+   
+    YLACollectionOfPersonalTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"YLACollectionOfPersonalTableViewCell" forIndexPath:indexPath];
+    if (self.dataArray.count>indexPath.row) {
+         CircleItem * model = self.dataArray[indexPath.row];
+        [cell addCircleModel:model];
+    }
+   
+    return cell;
+}
+
+-(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
+    if (self.dataArray.count>indexPath.row) {
+        CircleItem * model = self.dataArray[indexPath.row];
+        YLWorkDetailsViewController * vc = [[YLWorkDetailsViewController alloc]init];
+        vc.postId = model.PostId;
+        [self.navigationController pushViewController:vc animated:YES];
+    }
+    
+    
+    
+}
+
+
+#pragma mark  --- 关注
+-(void)guanzhuButtonClicked:(UIButton *)btn{
+   isCanLogin
+    btn.userInteractionEnabled = NO;
+    if (IS_VALID_STRING(self.infoModel.MemberId)) {
+        [[YXHTTPRequst shareInstance]networking:MyPostesFollow parameters:@{@"followMemberId":self.infoModel.MemberId,@"token":TOKEN} method:YXRequstMethodTypePOST success:^(NSDictionary *obj) {
+            btn.userInteractionEnabled = YES;
+            BaseModel * BModel = [BaseModel loadModelWithDictionary:obj];
+            
+            if ([BModel.Result isEqualToString:@"200"]) {
+                
+                NSString * info = [NSString stringWithFormat:@"%@",obj[@"Info"]];
+                 if (IS_VALID_STRING(info)&&[info isEqualToString:@"1"]) {//关注成功
+                    
+                    [self.gzB setTitle:@"已关注" forState:UIControlStateNormal];
+                    [self.H_gzB setTitle:@"已关注" forState:UIControlStateNormal];
+                 }else{//取消关注
+                    
+                    [self.H_gzB setTitle:@"＋关注" forState:UIControlStateNormal];
+                     [self.gzB setTitle:@"＋关注" forState:UIControlStateNormal];
+                    
+                 }
+     
+            }else if ([BModel.Result isEqualToString:@"201"]){//跳转到 完善信息
+                
+                DLog(@"跳转到 完善信息");
+                LRWeakSelf(self)
+                YLTiJiaoHearingAlertView * vc = [[YLTiJiaoHearingAlertView alloc]initWithTitle:@"去完善资料" Iconimage:@"" message:@"完善资料才可使用此功能！" messageTitleCentect:YES cancelBtnTitle:@"否" otherBtnTitle:@"是" clickIndexBlock:^(NSInteger clickIndex) {
+                    DLog(@"-==--%ld",clickIndex);
+                    switch (clickIndex) {
+                        case 239://是
+                        {
+                            BasicDataViewController * vc = [[BasicDataViewController alloc]init];
+                            [weakself.navigationController pushViewController:vc animated:YES];
+                        }
+                            break;
+                            
+                        default:
+                            break;
+                    }
+                    
+                }];
+                [vc showLXAlertView];
+                
+            }
+//            else{
+//                [GiFHUD show:BModel.message view:self.view];
+//            }
+            
+            
+            
+        } failsure:^(NSError * error) {
+            
+            btn.userInteractionEnabled = YES;
+            
+        }];
+        
+    }
+    
+   
+    
+    
+}
+
+
+
+/*
+#pragma mark - Navigation
+
+// In a storyboard-based application, you will often want to do a little preparation before navigation
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    // Get the new view controller using [segue destinationViewController].
+    // Pass the selected object to the new view controller.
+}
+*/
+
+@end

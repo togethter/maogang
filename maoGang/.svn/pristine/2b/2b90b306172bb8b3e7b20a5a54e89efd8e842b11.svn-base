@@ -1,0 +1,57 @@
+//
+//  MaogangDictionaryViewController.m
+//  maoGang
+//
+//  Created by xl on 2018/11/28.
+//  Copyright © 2018年 bilin. All rights reserved.
+//
+
+#import "MaogangDictionaryViewController.h"
+#import "YLScorlControl.h"
+@interface MaogangDictionaryViewController ()
+@property (weak, nonatomic) IBOutlet UIView *TLView;
+@property (weak, nonatomic) IBOutlet UITextField *textField;
+@property (weak, nonatomic) IBOutlet UIView *contentView;
+
+@end
+
+@implementation MaogangDictionaryViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view from its nib.
+    self.navigationItem.title = @"毛钢词典";
+    self.TLView.layer.cornerRadius = 3;
+    self.TLView.layer.masksToBounds = YES;
+    self.TLView.backgroundColor = BACKCOLOR;
+   
+    YLScorlControl *control = [[YLScorlControl alloc] init];
+    control.titleScrolEnabled = NO;
+    const CGFloat midMargin = (kScreenWidth - (32 * 4) - 30 * 2) / 3;
+    control.midMargin = midMargin;
+    control.contentView = self.contentView;
+    [self.contentView addSubview:control];
+    UIViewController  *panVC    = [[UIViewController alloc] init];
+    UIViewController *brushVC  = [[UIViewController alloc] init];
+    UIViewController*NOVC       = [[UIViewController alloc] init];
+    UIViewController*NOVC2       = [[UIViewController alloc] init];
+
+    [control addChildViewController:panVC title:@"逗比"];
+    [control addChildViewController:brushVC title:@"逗比"];
+    [control addChildViewController:NOVC title:@"逗比"];
+    [control addChildViewController:NOVC2 title:@"逗比"];
+
+    [control show];
+}
+
+/*
+#pragma mark - Navigation
+
+// In a storyboard-based application, you will often want to do a little preparation before navigation
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    // Get the new view controller using [segue destinationViewController].
+    // Pass the selected object to the new view controller.
+}
+*/
+
+@end

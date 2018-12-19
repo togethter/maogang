@@ -1,0 +1,700 @@
+//
+//  GroupView.m
+//  maoGang
+//
+//  Created by xl on 2018/11/26.
+//  Copyright © 2018年 bilin. All rights reserved.
+//
+CGFloat const alertViewHeight = 150.f;
+#import "CustomAlertView.h"
+@protocol ColorViewProtocol <NSObject>
+
+- (void)colorViewSelect:(NSInteger)tag;
+
+@end
+@interface ColorView : UIView
+// 是否选择
+@property (nonatomic, assign) BOOL isSelect;
+@property (nonatomic, strong) UIColor *xcolor;
+@property (nonatomic, weak) id<ColorViewProtocol> delegate;
+
+@end
+
+@interface ColorView ()
+@property (nonatomic, strong) UIButton *selectBtn;
+@property (nonatomic, strong) UIView *colorView;
+
+
+@end
+@implementation ColorView
+
+- (void)setXcolor:(UIColor *)xcolor {
+    _xcolor = xcolor;
+    self.colorView.backgroundColor = xcolor;
+}
+
+- (instancetype) initWithFrame:(CGRect)frame {
+    self = [super initWithFrame:frame];
+    if (self) {
+        UIView *midView = [UIView new];
+        self.colorView = [UIView new];
+        UIButton *selectBtn = [UIButton buttonWithType:UIButtonTypeCustom];
+        [selectBtn setImage:[UIImage imageNamed:@"btn_xuanzhong_a"] forState:UIControlStateNormal];
+        [selectBtn addTarget:self action:@selector(btnClickAction:) forControlEvents:UIControlEventTouchUpInside];
+        self.selectBtn = selectBtn;
+        [self addSubview:midView];
+        [self addSubview:self.colorView];
+        [self addSubview:selectBtn];
+        
+        [midView mas_makeConstraints:^(MASConstraintMaker *make) {
+            make.width.and.height.mas_equalTo(15);
+            make.center.mas_equalTo(self);
+        }];
+        
+        [self.colorView mas_makeConstraints:^(MASConstraintMaker *make) {
+            make.width.mas_equalTo(self.mas_width);
+            make.height.mas_equalTo(15);
+            make.centerX.mas_equalTo(midView.mas_centerX);
+            make.bottom.mas_equalTo(midView.mas_top);
+        }];
+        
+        [selectBtn mas_makeConstraints:^(MASConstraintMaker *make) {
+            make.top.mas_equalTo(midView.mas_bottom);
+            make.centerX.mas_equalTo(midView.mas_centerX);
+        }];
+    }
+    return self;
+}
+
+- (void)btnClickAction:(UIButton *)btn {
+    self.isSelect = YES;
+    if (self.delegate && [self.delegate respondsToSelector:@selector(colorViewSelect:)]) {
+        [self.delegate colorViewSelect:self.tag];
+    }
+    [self.selectBtn setImage:[UIImage imageNamed:@"btn_xuanzhong_b"] forState:UIControlStateNormal];// 选中
+}
+
+- (void)setIsSelect:(BOOL)isSelect {
+    if (_isSelect == isSelect) return;
+    _isSelect = isSelect;
+    if (_isSelect == NO) {// 取消选中
+        [self.selectBtn setImage:[UIImage imageNamed:@"btn_xuanzhong_a"] forState:UIControlStateNormal];
+    } else {
+        [self.selectBtn setImage:[UIImage imageNamed:@"btn_xuanzhong_b"] forState:UIControlStateNormal];// 选中
+    }
+    
+}
+
+@end
+
+@implementation CustomAlertView
+- (void)dealloc {
+    DLog(@"%@ - Dealloc",NSStringFromClass(self.class));
+}
+- (instancetype)initWithFrame:(CGRect)frame {
+    self = [super initWithFrame:frame];
+    if (self) {
+        self.backgroundColor = [UIColor whiteColor];
+        [self placeHolderView];
+        [self layoutPlaceViews];
+    }
+    return self;
+}
++ (instancetype)customAlertView {
+    CustomAlertView *alertView = [[[self class] alloc] initWithFrame:CGRectMake(0, 0, kScreenWidth, 300)];
+    return alertView;
+}
+- (void)placeHolderView {
+    
+}
+- (void)layoutPlaceViews
+{
+    self.titleLb.font = [UIFont systemFontOfSize:15];
+    self.titleLb.textColor = RGBCOLOR(22, 22, 22);
+}
+@end
+
+@interface AlpheraAlertView ()
+@property (nonatomic, strong) UISlider *slider;
+
+@end
+@implementation AlpheraAlertView
+
+- (void)setPercent:(CGFloat)percent {
+    _percent = percent;
+    self.slider.value = percent;
+}
+- (void)sliderAction:(UISlider *)slider
+{
+    if (self.alphaBlock) {
+        self.alphaBlock(slider.value);
+    }
+    self.titleLb.text = [NSString stringWithFormat:@"字体透明度:%.2f%%",slider.value * 100];
+}
+- (void)placeHolderView {
+    self.titleLb = [UILabel new];// 创建描述
+    self.titleLb.text = @"字体透明度";
+    UISlider *slider = [[UISlider alloc] initWithFrame:CGRectMake(0, 0, 0, 0)];// 创建滑动控件
+    self.slider = slider;
+    [slider addTarget:self action:@selector(sliderAction:) forControlEvents:UIControlEventValueChanged];
+    [self addSubview:self.titleLb];
+    [self addSubview:slider];
+    
+    [self.titleLb mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.mas_equalTo(self.mas_top).offset(20);
+        make.centerX.mas_equalTo(self.mas_centerX);
+    }];
+    
+    [slider mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.centerY.mas_equalTo(self.mas_centerY).offset(15);
+        make.width.mas_equalTo(kScreenWidth - 70);
+        make.centerX.mas_equalTo(self.mas_centerX);
+        make.height.mas_equalTo(25);
+    }];
+}
+
+@end
+@interface TiziGeAlertView ()
+@property (nonatomic, strong) NSMutableArray *tiziGeArray;
+
+@end
+
+
+@implementation TiziGeAlertView
+
+- (void)setIndextizi:(NSInteger)Indextizi {
+    if (Indextizi >= 100 == NO) return;
+    _Indextizi = Indextizi;
+    UIButton *sender = self.tiziGeArray[Indextizi - 100];
+    [self buttonCongigureWithSender:sender];
+}
+- (NSMutableArray *)tiziGeArray {
+    if (!_tiziGeArray) {
+        _tiziGeArray = [NSMutableArray array];
+    }
+    return _tiziGeArray;
+}
+
+- (void)placeHolderView {
+    self.titleLb = [UILabel new];
+    self.titleLb.text = @"请选择线框样式";
+    [self addSubview:self.titleLb];
+    
+    [self.titleLb mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.mas_equalTo(self.mas_top).mas_offset(20);
+        make.centerX.mas_equalTo(self.mas_centerX);
+    }];
+    NSArray *array = @[@"bian_yangshi_5_a",@"bian_yangshi_4_a",@"bian_yangshi_3_a",@"bian_yangshi_2_a",@"bian_yangshi_1_a"];
+    UIImage *image = [UIImage imageNamed:@"bian_yangshi_5_a"];
+    CGFloat imageWidth = image.size.width;// imageWith宽和高
+    CGFloat fenGeWidth = (kScreenWidth - 5 * imageWidth) / 6;// 间距
+    for (int i = 0; i < array.count; i++) {
+        UIButton *imageview = [UIButton buttonWithType:UIButtonTypeCustom];
+        [imageview setImage:[UIImage imageNamed:array[i]] forState:UIControlStateNormal];
+        [imageview addTarget:self action:@selector(buttonClick:) forControlEvents:UIControlEventTouchUpInside];
+        imageview.tag = 100 + i;
+        imageview.mj_x =  (i+1) *fenGeWidth + i * imageWidth;
+        imageview.mj_w = imageWidth;
+        imageview.mj_h = imageWidth;
+        imageview.mj_y = 70;
+        imageview.tag = 100 + i;
+        [self.tiziGeArray addObject:imageview];
+        [self addSubview:imageview];
+    }
+//    self.backgroundColor = [UIColor redColor];
+
+}
+
+- (void)buttonClick:(UIButton *)sender {
+    if (self.tiziGeBlock) {
+        self.tiziGeBlock(@(sender.tag));
+    }
+    [self buttonCongigureWithSender:sender];
+}
+
+- (void)buttonCongigureWithSender:(UIButton *)sender
+{
+    NSArray *array = @[@"bian_yangshi_5_a",@"bian_yangshi_4_a",@"bian_yangshi_3_a",@"bian_yangshi_2_a",@"bian_yangshi_1_a"];
+    NSArray *selet = @[@"bian_yangshi_5_b",@"bian_yangshi_4_b",@"bian_yangshi_3_b",@"bian_yangshi_2_b",@"bian_yangshi_1_b"];
+    [self.tiziGeArray enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        UIButton *sxender = obj;
+        if ([sender isEqual:sxender]) {// 颜色变化
+            [sxender setImage:[UIImage imageNamed:selet[idx]] forState:UIControlStateNormal];
+        } else {// 颜色变化
+            [sxender setImage:[UIImage imageNamed:array[idx]] forState:UIControlStateNormal];
+        }
+    }];
+}
+
+@end
+@interface FontAlertView ()
+@property (nonatomic, strong) NSMutableArray *fontArray;
+
+@end
+@implementation FontAlertView
+
+- (void)setFontIndex:(NSInteger)fontIndex {
+    _fontIndex = fontIndex;
+    if (fontIndex >=100 == NO) return;
+    UIButton *sender = self.fontArray[fontIndex - 100];
+    [self fontConfigurateWithSende:sender];
+    
+}
+- (NSMutableArray *)fontArray {
+    if (!_fontArray) {
+        _fontArray = [NSMutableArray array];
+    }
+    return _fontArray;
+}
+- (void)placeHolderView {
+    self.titleLb = [UILabel new];
+    self.titleLb.text = @"设置字体大小";
+    
+    [self addSubview:self.titleLb];
+    [self.titleLb mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.mas_equalTo(self.mas_top).offset(20);
+        make.centerX.mas_equalTo(self.mas_centerX);
+    }];
+    NSArray *array = @[@"小",@"中",@"大",@"特大"];
+    CGFloat imageWidth =  60;// imageWith宽和高
+    CGFloat imageHeight = 34;
+    CGFloat fenGeWidth = (kScreenWidth - 4 * imageWidth) / 5;// 间距
+    for (int i = 0; i < array.count; i++) {
+        UIButton *imageview = [UIButton buttonWithType:UIButtonTypeSystem];
+        [imageview setTitle:array[i] forState:UIControlStateNormal];
+        imageview.titleLabel.font = [UIFont systemFontOfSize:15];
+        [imageview setTitleColor:RGBCOLOR(36, 36, 36) forState:UIControlStateNormal];
+        [imageview addTarget:self action:@selector(btnClickAction:) forControlEvents:UIControlEventTouchUpInside];
+        imageview.layer.cornerRadius =  imageHeight / 2.0f;
+        imageview.layer.masksToBounds = YES;
+        [imageview setBackgroundImage:[UIImage createImageWithColor:RGBCOLOR(247, 247, 247)] forState:UIControlStateNormal];
+        imageview.mj_x =  (i+1) *fenGeWidth + i * imageWidth;
+        imageview.mj_w = imageWidth;
+        imageview.mj_h = imageHeight;
+        imageview.mj_y = 70;
+        imageview.tag = 100 + i;
+        [self.fontArray addObject:imageview];
+        [self addSubview:imageview];
+    }
+    
+//    self.backgroundColor = [UIColor greenColor];
+
+}
+
+
+
+- (void)fontConfigurateWithSende:(UIButton *)sender
+{
+    [self.fontArray enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        UIButton *custom = obj;
+        if ([sender isEqual:custom]) {
+            custom.layer.borderWidth = 1;
+            custom.layer.borderColor =  RGBCOLOR(244, 24, 24).CGColor;
+            [custom setTitleColor:RGBCOLOR(224, 24, 24) forState:UIControlStateNormal];
+            [custom setBackgroundImage:[UIImage createImageWithColor:[UIColor whiteColor]] forState:UIControlStateNormal];
+        } else {
+            custom.layer.borderWidth = 0;
+            custom.layer.borderColor = nil;
+            [custom setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+            [custom setBackgroundImage:[UIImage createImageWithColor:RGBCOLOR(247, 247, 247)] forState:UIControlStateNormal];
+        }
+    }];
+}
+- (void)btnClickAction:(UIButton *)sender
+{
+    if (self.fontBlock) {
+        self.fontBlock(sender.tag);
+    }
+    [self fontConfigurateWithSende:sender];
+}
+
+@end
+
+@interface ColorAlertView ()<ColorViewProtocol>
+@property (nonatomic, strong) NSMutableArray *colorArray;
+
+
+@end
+@implementation ColorAlertView
+
+- (NSMutableArray *)colorArray {
+    if (!_colorArray) {
+        _colorArray = [NSMutableArray array];
+    }
+    return _colorArray;
+}
+- (void)setColorIndex:(NSInteger)colorIndex {
+    if (colorIndex >= 100 == NO) return;
+    _colorIndex = colorIndex;
+    [self buttonConfigurateWithSender:colorIndex];
+}
+
+#pragma mark -ColorViewProtocol
+- (void)colorViewSelect:(NSInteger)tag {
+    if (self.colorBlock) {
+        self.colorBlock(@(tag));
+    }
+    [self buttonConfigurateWithSender:tag];
+}
+- (void)buttonConfigurateWithSender:(NSInteger )tag
+{
+    [self.colorArray enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        ColorView *colorView = obj;
+        if (colorView.tag == tag) {
+            colorView.isSelect = YES;
+        } else {
+            colorView.isSelect = NO;
+        }
+    }];
+}
+- (void)placeHolderView {
+    self.titleLb = [UILabel new];
+    self.titleLb.text = @"请选择线框颜色";
+    [self addSubview:self.titleLb];// 添加文字描述
+    [self.titleLb mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.centerX.mas_equalTo(self.mas_centerX);
+        make.top.mas_equalTo(self.mas_top).offset(20);
+    }];
+
+    NSArray *array = @[[UIColor blackColor],[UIColor redColor],[UIColor greenColor],[UIColor darkGrayColor]];
+    CGFloat imageWidth =  60;// imageWith宽和高
+    CGFloat imageHeight = 60;
+    CGFloat fenGeWidth = (kScreenWidth - 4 * imageWidth) / 2;// 间距
+    for (int i = 0; i < array.count; i++) {
+        ColorView *imageview = [[ColorView alloc] initWithFrame:CGRectMake(0, 0, 40, 40)];
+        imageview.xcolor = array[i];
+        imageview.delegate = self;
+        imageview.mj_x =  fenGeWidth + i * imageWidth;
+        imageview.mj_w = imageWidth;
+        imageview.mj_h = imageHeight;
+        imageview.mj_y = 70;
+        imageview.tag = 100 + i;
+        [self.colorArray addObject:imageview];
+        [self addSubview:imageview];
+    }
+
+}
+
+
+@end
+
+@implementation customAlertModel
+
+@end
+@interface CustomAlertPool ()
+@property (nonatomic, strong) NSMutableArray *bttons;
+@property (nonatomic, strong) AlpheraAlertView *alpheraAlert;
+@property (nonatomic, strong) TiziGeAlertView *tiziGeAlertView;
+@property (nonatomic, strong) FontAlertView *fontAlertView;
+@property (nonatomic, strong) ColorAlertView *colorAlertView;
+
+
+@end
+@implementation CustomAlertPool
+
+CGFloat const bottomHeight = 60;
++ (instancetype)customAlertPool
+{
+    CGFloat height = 0.f;
+    (iPhoneXM|| iPhoneXR || iPhoneX) ? (height = 88+ 20):(height = 64);
+    CustomAlertPool *pool = [[CustomAlertPool alloc] initWithFrame:CGRectMake(0, kScreenHeight - alertViewHeight + bottomHeight -height, kScreenWidth, alertViewHeight + bottomHeight)];
+    return pool;
+}
+
+- (CustomAlertPool *)alpha:(void(^)(CGFloat alpha))alphaBlock {
+    self.alpheraAlert.alphaBlock = alphaBlock;
+    return self;
+}
+- (CustomAlertPool *)font:(void(^)(NSInteger font))fontBlock {
+    self.fontAlertView.fontBlock = fontBlock;
+    return self;
+}
+- (CustomAlertPool *)tiziGe:(void(^)(id))tiziGeBlock {
+    self.tiziGeAlertView.tiziGeBlock = tiziGeBlock;
+    return self;
+}
+-(CustomAlertPool *)color:(void(^)(id))colorBlock {
+    self.colorAlertView.colorBlock = colorBlock;
+    return self;
+}
+-(CustomAlertPool *(^)(NSInteger tagesNumber))tagNumber
+{
+    return ^CustomAlertPool *(NSInteger tageNumber) {
+        self.tagesNumber = tageNumber;
+        return self;
+    };
+}
+- (CustomAlertPool *(^)(CGFloat percent))percent {
+    
+    return ^CustomAlertPool *(CGFloat percent) {
+        self.alpheraAlert.percent = percent;
+        return self;
+    };
+}
+- (CustomAlertPool *(^)(NSInteger indeXColor))color {
+    return ^CustomAlertPool *(NSInteger indeXColor) {
+        self.colorAlertView.colorIndex = indeXColor;
+        return self;
+    };
+}
+- (CustomAlertPool *(^)(NSInteger indeXTiziGe))tiziGe {
+    return ^CustomAlertPool *(NSInteger indeXColor) {
+        self.tiziGeAlertView.Indextizi = indeXColor;
+        return self;
+    };
+}
+- (CustomAlertPool *(^)(NSInteger indeXFont))fontSize {
+    return ^CustomAlertPool *(NSInteger indeXFont) {
+        self.fontAlertView.fontIndex = indeXFont;
+        return self;
+    };
+}
+- (void)tapGesRemove:(UITapGestureRecognizer *)tapGes
+{
+    UIView *view = tapGes.view;
+    [self removeFromSuperview];
+    [view removeFromSuperview];
+}
+
+- (CustomAlertPool *)alertShow {
+    
+    UIWindow *window = [UIApplication sharedApplication].delegate.window;
+    UIView *blackView = [UIView new];
+    UITapGestureRecognizer *tapGes = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapGesRemove:)];
+    [blackView addGestureRecognizer:tapGes];
+    blackView.backgroundColor = RGBACOLOR(0, 0, 0, 0.3);
+    [window addSubview:blackView];
+    [window addSubview:self];
+    [blackView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.mas_equalTo(window.mas_top);
+        make.left.mas_equalTo(window.mas_left);
+        make.right.mas_equalTo(window.mas_right);
+        make.bottom.mas_equalTo(self.mas_top);
+    }];
+    [self mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.bottom.mas_equalTo(window.mas_bottom).offset((iPhoneX||iPhoneXR||iPhoneXM)?-20:0);
+        make.left.mas_equalTo(window.mas_left);
+        make.right.mas_equalTo(window.mas_right);
+        make.height.mas_equalTo(alertViewHeight + bottomHeight);
+    }];
+    return self;
+}
+
+- (NSMutableArray *)bttons {
+    if (!_bttons) {
+        _bttons = [NSMutableArray array];
+    }
+    return _bttons;
+}
+- (void)placeHolderView {
+    // 创建视图
+    self.alpheraAlert = [[AlpheraAlertView alloc] initWithFrame:CGRectMake(0, 0, kScreenWidth, alertViewHeight)];
+    self.alpheraAlert.tag = 1001;
+    self.tiziGeAlertView = [[TiziGeAlertView alloc] initWithFrame:CGRectMake(0, 0, kScreenWidth, alertViewHeight)];
+    self.tiziGeAlertView.tag = 1002;
+    self.fontAlertView = [[FontAlertView alloc] initWithFrame:CGRectMake(0, 0, kScreenWidth, alertViewHeight)];
+    self.fontAlertView.tag = 1003;
+    self.colorAlertView = [[ColorAlertView alloc] initWithFrame:CGRectMake(0, 0, kScreenWidth, alertViewHeight)];
+    self.colorAlertView.tag = 1000;
+    UIView *bottomView = [[UIView alloc] initWithFrame:CGRectMake(0, alertViewHeight, kScreenWidth, bottomHeight)];
+    NSArray *array = @[@"bianji_yanse_a",@"bianji_touming_a",@"bianji_yangshi_a",@"bianji_daxiao_a"];
+    const  CGFloat fengeWidth = (kScreenWidth - (4 * 44)) / 5;// 分割距离
+    const CGFloat netY = (bottomHeight - 44) / 2;
+    for (int i = 0; i < 4; i++) {
+        UIButton *button = [UIButton buttonWithType:UIButtonTypeCustom];
+        [button setImage:[UIImage imageNamed:array[i]] forState:UIControlStateNormal];
+        CGFloat netX = fengeWidth *(i + 1) + i * 44;
+        button.frame = CGRectMake(netX, netY, 44, 44);
+        button.tag = 100 + i;
+        [button addTarget:self action:@selector(buttionClick:) forControlEvents:UIControlEventTouchUpInside];
+        [bottomView addSubview:button];
+        [self.bttons  addObject:button];
+    }
+    
+    [self addSubview:self.alpheraAlert];
+    [self addSubview:self.tiziGeAlertView];
+    [self addSubview:self.fontAlertView];
+    [self addSubview:self.colorAlertView];
+    [self addSubview:bottomView];
+    
+    self.backgroundColor = [UIColor whiteColor];
+}
+- (void)buttionClick:(UIButton *)sender
+{
+    [self setTagesNumber:sender.tag];
+}
+
+
+- (void)setTagesNumber:(NSInteger)tagesNumber {
+    _tagesNumber = tagesNumber;
+    NSString *tageStr = [NSString stringWithFormat:@"%d",tagesNumber];
+    NSString *lastStr = [tageStr substringFromIndex:(tageStr.length - 1)];
+    NSInteger lastnumber = lastStr.integerValue;
+    UIView *view = [self viewWithTag:1000 + lastnumber];
+    [self bringSubviewToFront:view];
+    [self configurateWithTagesNumber:_tagesNumber];
+}
+
+- (void)configurateWithTagesNumber:(NSInteger)tag {
+    NSArray *unSelect = @[@"bianji_yanse_a",@"bianji_touming_a",@"bianji_yangshi_a",@"bianji_daxiao_a"];
+    NSArray *select = @[@"bianji_yanse_b",@"bianji_touming_b",@"bianji_yangshi_b",@"bianji_daxiao_b"];
+    [self.bttons enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        UIButton *btn = (UIButton *)obj;
+        if (btn.tag == tag) {
+            // 这个设置成
+            [btn setImage:[UIImage imageNamed:select[btn.tag - 100]] forState:UIControlStateNormal];
+        } else {
+            [btn setImage:[UIImage imageNamed:unSelect[btn.tag - 100]] forState:UIControlStateNormal];
+        }
+    }];
+}
+@end
+
+#import "CustomSizeCell.h"
+@interface CustomSize ()<UITableViewDataSource,UITableViewDelegate>
+@property (nonatomic, strong) UITableView *tableView;
+@property (nonatomic, strong) UILabel *des;
+@property (nonatomic, strong) NSIndexPath *indexPath;
+@property (nonatomic, strong) NSMutableArray *sizeArray;
+@property (nonatomic, strong) UIView *blackView;
+
+@property (nonatomic, copy) void(^selectSizeBlock)(NSInteger index);
+
+@end
+CGFloat const customSizeHeight = 68 * 3 + 130;
+@implementation CustomSize
+
+
++ (instancetype)customSizeAlertPool {
+    CustomSize *custom = [[CustomSize alloc] initWithFrame:CGRectMake(0, 0, kScreenWidth, 68 * 3 + 100)];
+    return custom;
+}
+
+- (CustomSize *(^)(NSInteger index))index {
+    return ^CustomSize *(NSInteger index) {
+        self.indexPath = [NSIndexPath indexPathForRow:index inSection:0];
+        [self.tableView reloadData];
+        return self;
+    };
+}
+- (CustomSize *)selectIndex:(void(^)(NSInteger index))selectSizeBlock {
+    self.selectSizeBlock = selectSizeBlock;
+    return self;
+}
+
+- (CustomSize *)alertShow {
+    const CGFloat height = ((iPhoneX||iPhoneXM||iPhoneXR)?20:0);
+    UIWindow *window = [UIApplication sharedApplication].delegate.window;
+    UIView *blackView = [UIView new];
+    blackView.frame = CGRectMake(0, 0, kScreenWidth, kScreenHeight - height);
+    blackView.backgroundColor =  RGBACOLOR(0, 0, 0, 0.3);
+    self.blackView = blackView;
+    
+    [window addSubview:blackView];
+    [window addSubview:self];
+    self.frame = CGRectMake(0, kScreenHeight,kScreenWidth , customSizeHeight);
+    
+    [UIView animateWithDuration:0.25 animations:^{
+        self.frame = CGRectMake(0, kScreenHeight - customSizeHeight - height ,kScreenWidth, customSizeHeight);
+    }];
+    
+    return self;
+}
+- (NSMutableArray *)sizeArray {
+    if (!_sizeArray) {
+        _sizeArray = [NSMutableArray arrayWithObjects:
+  @{@"name":@"A4",@"size":@"210 X 297"},
+  @{@"name":@"B2",@"size":@"500 X 707"},
+  @{@"name":@"C0",@"size":@"917 X 1297"}, nil];
+    }
+    return _sizeArray;
+}
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    return 3;
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    CustomSizeCell *cell = [tableView dequeueReusableCellWithIdentifier:@"CustomSizeCell" forIndexPath:indexPath];
+    NSDictionary *dic = self.sizeArray[indexPath.row];
+    cell.nameL.text = dic[@"name"];
+    cell.sizeLa.text = dic[@"size"];
+    if ((!self.indexPath &&indexPath.row == 0)||self.indexPath.row == indexPath.row) {
+        cell.selectImage.image = [UIImage imageNamed:@"btn_xuanzhong_b"];
+    } else {
+        cell.selectImage.image = [UIImage imageNamed:@"btn_xuanzhong_a"];
+    }
+    return cell;
+}
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    self.indexPath = indexPath;
+    [self.tableView reloadData];
+}
+
+- (void)cancleAction:(UIButton *)sender {
+    [UIView animateWithDuration:0.25 animations:^{
+        self.frame = CGRectMake(0, kScreenHeight, kScreenWidth, customSizeHeight);
+    } completion:^(BOOL finished) {
+        [self removeFromSuperview];
+        [self.blackView removeFromSuperview];
+    }];
+    
+}
+
+
+- (void)placeHolderView {
+    UIButton *cancleBtn = [UIButton buttonWithType:UIButtonTypeCustom];
+    [cancleBtn setImage:[UIImage imageNamed:@"icon_shouqi_c"] forState:UIControlStateNormal];
+    [cancleBtn addTarget:self action:@selector(cancleAction:) forControlEvents:UIControlEventTouchUpInside];
+    self.titleLb = [UILabel new];
+    self.titleLb.text = @"字帖尺寸";
+    UILabel *des = [UILabel new];
+    self.des = des;
+    des.text = @"纸张尺寸 (单位: mm)";
+    
+    self.tableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 0, kScreenWidth, 68 * 3) style:UITableViewStylePlain];
+    [self.tableView registerNib:[UINib nibWithNibName:@"CustomSizeCell" bundle:nil] forCellReuseIdentifier:@"CustomSizeCell"];
+    self.tableView.bounces = NO;
+    self.tableView.delegate = self;
+    self.tableView.dataSource = self;
+    [self addSubview:self.tableView];
+    self.tableView.rowHeight = 68;
+    [self addSubview:self.titleLb];
+    [self addSubview:des];
+    [self addSubview:cancleBtn];
+    
+    
+    
+    [self.titleLb mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.mas_equalTo(self.mas_top).offset(114/2.f);
+        make.left.mas_equalTo(self.mas_left).offset(114/2.f);
+    }];
+    
+    [self.des mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.centerY.mas_equalTo(self.titleLb.mas_centerY);
+        make.left.mas_equalTo(self.titleLb.mas_right).offset(20);
+    }];
+
+    [self.tableView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.mas_equalTo(self.titleLb.mas_bottom).offset(20);
+        make.left.mas_equalTo(self.mas_left);
+        make.right.mas_equalTo(self.mas_right);
+        make.height.mas_equalTo(68 * 3);
+    }];
+    
+    [cancleBtn mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.mas_equalTo(self.mas_top).offset(25);;
+        make.right.mas_equalTo(self.mas_right).offset(-30);
+    }];
+    
+}
+- (void)layoutPlaceViews {
+    self.titleLb.font       = [UIFont systemFontOfSize:16];
+    self.titleLb.textColor  = RGBCOLOR(0, 0, 0);
+    self.des.font = [UIFont systemFontOfSize:12];
+    self.des.textColor = RGBCOLOR(180, 180, 180);
+    
+}
+
+
+@end

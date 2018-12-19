@@ -1,0 +1,345 @@
+//
+//  RequestURLHeader.h
+//  XLDemo
+//
+//  Created by bilin on 16/8/11.
+//  Copyright © 2016年 bilin. All rights reserved.
+//请求连接的URL
+
+#ifndef RequestURLHeader_h
+#define RequestURLHeader_h
+
+
+#define KUser2 @"http://192.168.0.155:9051/"
+
+//#define KUser2 @"http://api.zhengzheng.cn"
+
+/***************************************1.0.0  ^^^^^^^^^^^^^^^^^  *******************************************/
+
+
+
+
+
+
+
+
+
+//Auth/MemberReg 注册
+//phone    手机号    是    [string]
+//2    password    密码    是    [string]
+//3    code    验证码    是    [string]
+//4    phoneType    手机类型（1=苹果 10=安卓）    是    [string]
+//5    phoneModel    手机型号（如：iphone7）    是    [string]
+//6    province    省份    是    [string]
+//7    city    城市    是    [string]
+//8    area    区    是    [string]
+#define Reginster [NSString stringWithFormat:@"%@%@",KUser2,@"Auth/MemberReg"]
+
+
+//Auth/SendPhoneRegCode 注册发送短信
+//phone    手机号    是    [string]
+//2    sign    签名（和律界一样：code）    是    [string]
+//3    time    时间戳    是    [string]
+#define ReginsterSendRegCode [NSString stringWithFormat:@"%@%@",KUser2,@"Auth/SendPhoneRegCode"]
+//Auth/Login 登陆
+//phone    手机号    是    [string]
+//2    password    密码    是    [string]
+#define loginin [NSString stringWithFormat:@"%@%@",KUser2,@"Auth/Login"]
+
+
+
+//Auth/BackPassword 找回密码
+//phone    手机号    是    [string]
+//2    password    密码    是    [string]
+//3    code    手机验证码    是    [string]
+#define backPassword [NSString stringWithFormat:@"%@%@",KUser2,@"Auth/BackPassword"]
+//Auth/SendBackCode找回密码发送短信
+//phone    手机号    是    [string]
+//2    sign    签名（如登陆一直）    是    [string]
+//3    time    时间戳    是    [string]
+#define SendBackCode [NSString stringWithFormat:@"%@%@",KUser2,@"Auth/SendBackCode"]
+
+
+//Member/EditPassword 修改密码
+//token        是    [string]
+//2    oldPassword    原密码    是    [string]
+//3    newPassword    新密码    是    [string]
+#define EditPassword [NSString stringWithFormat:@"%@%@",KUser2,@"Member/EditPassword"]
+//my 我的
+//token        是    [string]
+#define MyMY [NSString stringWithFormat:@"%@%@",KUser2,@"my"]
+
+//Member/GetBasicInfo 获取用户基本信息
+//token        是    [string]
+#define GetBasicInfo [NSString stringWithFormat:@"%@%@",KUser2,@"Member/GetBasicInfo"]
+//Member/EditBasicInfo 编辑用户信息
+//token        是    [string]
+//2    nick    昵称    是    [string]
+//3    autograph    签名    是    [string]
+//4    imageFile    头像    是    [stri
+#define EditBasicInfo [NSString stringWithFormat:@"%@%@",KUser2,@"Member/EditBasicInfo"]
+
+//My/MyMsg
+//我的消息
+//token        是    [string]
+//    page        是    [string]
+#define MyMyMsg [NSString stringWithFormat:@"%@%@",KUser2,@"My/MyMsg"]
+
+
+
+//WeChat/OAuth
+//微信授权
+//openId
+#define WeChatOAuthOpenId  [NSString stringWithFormat:@"%@%@",KUser2,@"WeChat/OAuth"]
+
+
+//Member/BindWeChat
+//绑定微信
+#define MemberBindWeChat    [NSString stringWithFormat:@"%@%@",KUser2,@"Member/BindWeChat"]
+
+//Member/UnbindWeChat
+//取消微信绑定
+#define MemberUnbindWeChat    [NSString stringWithFormat:@"%@%@",KUser2,@"Member/UnbindWeChat"]
+
+
+//WeChat/RegSkip
+//微信注册账号跳过手机验证码（返回和普通注册一致）
+#define WeChatRegSkip [NSString stringWithFormat:@"%@%@",KUser2,@"WeChat/RegSkip"]
+
+
+//WeChat/Reg
+//微信授权后注册（返回和普通普通注册一致）
+#define WeChatReg [NSString stringWithFormat:@"%@%@",KUser2,@"WeChat/Reg"]
+
+
+//QQ/OAuth
+//QQ授权
+#define QQOAuthOpenid [NSString stringWithFormat:@"%@%@",KUser2,@"QQ/OAuth"]
+
+
+
+//QQ/RegSkip
+//QQ注册账号跳过手机验证码（返回和普通注册一致）
+#define QQRegSkip [NSString stringWithFormat:@"%@%@",KUser2,@"QQ/RegSkip"]
+
+
+//QQ/Reg
+//QQ授权后注册（返回和普通普通注册一致）
+#define QQReg [NSString stringWithFormat:@"%@%@",KUser2,@"QQ/Reg"]
+
+//Member/BindQQ
+//绑定QQ
+#define MemberBindQQ [NSString stringWithFormat:@"%@%@",KUser2,@"Member/BindQQ"]
+
+//Member/UnbindQQ
+//POST
+//取消绑定QQ
+#define MemberUnbindQQ [NSString stringWithFormat:@"%@%@",KUser2,@"Member/UnbindQQ"]
+
+
+//Member/BindPhone
+//POST
+//绑定手机
+//token        是    [string]
+//2    phone    手机号    是    [string]
+//3    password    密码    是    [string]
+//4    code    验证码
+#define MemberBindPhone [NSString stringWithFormat:@"%@%@",KUser2,@"Member/BindPhone"]
+
+//Member/BindPhoneSendCode
+//发送绑定手机验证码
+//token        是    [string]
+//2    phone    手机号    是    [string]
+//3    sign    签名    是    [string]
+//4    time    时间戳    是    [string]
+#define MemberBindPhoneSendCode     [NSString stringWithFormat:@"%@%@",KUser2,@"Member/BindPhoneSendCode"]
+
+//Member/GetBindInfo
+//是否绑定信息（手机、微信、qq）
+//token
+//result
+//Info        是    [object]
+//2     IsPhone    是否绑定手机 （1=绑定 0=未绑定）    是    [string]    查看
+//3     IsWechat    是否绑定微信 （1=绑定 0=未绑定）    是    [string]    查看
+//4     IsQQ    是否绑定qq （1=绑定 0=未绑定）    是    [string]    查看
+//5    Result
+#define MemberGetBindInfo     [NSString stringWithFormat:@"%@%@",KUser2,@"Member/GetBindInfo"]
+
+
+//My/ReadMsg
+//设置已读
+//token        是    [string]
+//2    msgId
+#define MyReadMsg     [NSString stringWithFormat:@"%@%@",KUser2,@"My/ReadMsg"]
+
+//Basics/TypefacesType
+//获取字体
+//penType    笔类（1=钢笔 2=毛笔）    是    [string]
+#define BasicsTypefacesType [NSString stringWithFormat:@"%@%@",KUser2,@"Basics/TypefacesType"]
+
+
+//Basics/PoetrysTypes
+//获取字典分类
+#define BasicsPoetrysTypes [NSString stringWithFormat:@"%@%@",KUser2,@"Basics/PoetrysTypes"]
+
+//Basics/PoetrysList
+//获取诗词列表
+//typeId    类型编号    是    [string]
+//2    page
+#define BasicsPoetrysList [NSString stringWithFormat:@"%@%@",KUser2,@"Basics/PoetrysList"]
+
+
+
+//Basics/PoetryContentByPoetryId
+//获取诗词内容
+//poetryId    诗词编号    是    [string]
+//2    page
+#define BasicsPoetryContentByPoetryId [NSString stringWithFormat:@"%@%@",KUser2,@"Basics/PoetryContentByPoetryId"]
+
+
+//Basics/PoetryContentByContentId
+//根绝内容编号获取下级内容
+//contentId    内容编号    是    [string]
+//2    page
+#define BasicsPoetryContentByContentId [NSString stringWithFormat:@"%@%@",KUser2,@"Basics/PoetryContentByContentId"]
+
+
+
+
+/***************************************1.0.0  ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓   LE  ↓↓↓↓↓↓↓↓↓↓↓  *******************************************/
+
+//作品列表
+//page     token未登录不要填写
+#define Postes  [NSString stringWithFormat:@"%@%@",KUser2,@"Postes"]
+
+//我关注的人发布的作品（返回和作品一样）
+//page          token
+#define PostesMyFollows  [NSString stringWithFormat:@"%@%@",KUser2,@"Postes/MyFollows"]
+
+//点赞/取消点赞
+//postId 帖子编号      token未登录不要填写
+#define MyPostesLikes  [NSString stringWithFormat:@"%@%@",KUser2,@"MyPostes/Likes"]
+
+//收藏帖子/取消收藏
+//postId 帖子编号      token未登录不要填写
+#define MyPostesCollection  [NSString stringWithFormat:@"%@%@",KUser2,@"MyPostes/Collection"]
+//回复列表
+//postId 帖子编号      page
+#define PostesReplyList  [NSString stringWithFormat:@"%@%@",KUser2,@"Postes/ReplyList"]
+
+//回复帖子
+//postId 帖子编号      atMemberId 要@的人（没有可以不填写，或者填写0）  content内容   token
+#define MyPostesReplys  [NSString stringWithFormat:@"%@%@",KUser2,@"MyPostes/Replys"]
+
+//用户详情
+//memberId 用户编号     page    token
+#define PostesMemberDetails  [NSString stringWithFormat:@"%@%@",KUser2,@"Postes/MemberDetails"]
+
+//关注用户/取消关注
+//followMemberId 关注人编号         token
+#define MyPostesFollow  [NSString stringWithFormat:@"%@%@",KUser2,@"MyPostes/Follow"]
+
+//做品详情
+//postId 作品编号         token
+#define PostesPostDetails  [NSString stringWithFormat:@"%@%@",KUser2,@"Postes/PostDetails"]
+
+//删除帖子
+//postId 作品编号         token
+#define MyPostesDelete  [NSString stringWithFormat:@"%@%@",KUser2,@"MyPostes/Delete"]
+
+//删除帖子
+//postId 作品编号         token
+#define MyPostesDelete  [NSString stringWithFormat:@"%@%@",KUser2,@"MyPostes/Delete"]
+
+//我的作品集列表
+//postId 作品编号         token
+#define MyMyPost  [NSString stringWithFormat:@"%@%@",KUser2,@"my/MyPost"]
+
+//发布朋友圈
+//content 内容    imageFiles图片（可以多个）     token
+#define MyPostesPostMessage  [NSString stringWithFormat:@"%@%@",KUser2,@"MyPostes/PostMessage"]
+
+//我的粉丝
+//page   token
+#define MyMyFans  [NSString stringWithFormat:@"%@%@",KUser2,@"My/MyFans"]
+
+//我的关注
+//page   token
+#define MyMyFollow  [NSString stringWithFormat:@"%@%@",KUser2,@"My/MyFollow"]
+
+//我的收藏
+//page   token
+#define MyMyCollection  [NSString stringWithFormat:@"%@%@",KUser2,@"My/MyCollection"]
+
+
+
+
+
+
+
+
+
+
+
+
+/***************************************1.0.0   ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑  LE ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑  *******************************************/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/***************************************本地保存*******************************************/
+//定位
+#define LONGITUDEKEY @"longitude"
+#define LATITUDEKEY @"latitude"
+#define LONGITUDE1  ([NSString stringWithFormat:@"%lf", ([CityAndLocationManager location].coordinate.longitude)])
+#define LATITUDE1  ([NSString stringWithFormat:@"%lf", ([CityAndLocationManager location].coordinate.latitude)])
+
+#define CITYKEY @"city"
+#define CITY  [CityAndLocationManager byLocatonCityGetLocalNumber]
+
+
+
+//删除档案
+#define DeleteFileKEY @"DeleteFile"
+#define DeleteFile  [[NSUserDefaults standardUserDefaults]objectForKey:DeleteFileKEY]
+
+#define YLSetAppIcon @"SetAppIcon"
+#define YLEquipmentRegistrationKEY @"YLEquipmentRegistration"//设备是否注册  有值注册
+
+#define WIFIDownloadSet @"WIFIDownloadSet"//是否允许4g下 下载    1允许  2不允许（没有值也是不允许）
+
+
+#endif /* RequestURLHeader_h */

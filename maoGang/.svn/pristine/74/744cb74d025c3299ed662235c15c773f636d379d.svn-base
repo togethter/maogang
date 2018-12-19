@@ -1,0 +1,28 @@
+//
+//  HeaderCell.m
+//  maoGang
+//
+//  Created by xl on 2018/11/29.
+//  Copyright © 2018年 bilin. All rights reserved.
+//
+
+#import "HeaderCell.h"
+
+@implementation HeaderCell
+
+- (void)awakeFromNib {
+    [super awakeFromNib];
+    // Initialization code
+    self.header.layer.cornerRadius = 75/ 2.f;
+    self.header.layer.masksToBounds = YES;
+}
+
+- (void)setSelected:(BOOL)selected animated:(BOOL)animated {
+    [super setSelected:selected animated:animated];
+
+    // Configure the view for the selected state
+}
+
+
+
+@end

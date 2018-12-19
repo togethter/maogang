@@ -1,0 +1,18 @@
+//
+//  YLPushUMModel.h
+//  maoGang
+//
+//  Created by zhangzhen on 2018/12/13.
+//  Copyright © 2018 bilin. All rights reserved.
+//
+
+#import "BaseModel.h"
+
+NS_ASSUME_NONNULL_BEGIN
+
+@interface YLPushUMModel : BaseModel
+@property(nonatomic,copy)NSString * psy;
+
+@end
+
+NS_ASSUME_NONNULL_END

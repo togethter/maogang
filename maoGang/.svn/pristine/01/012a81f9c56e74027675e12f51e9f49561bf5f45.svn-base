@@ -1,0 +1,65 @@
+//
+//  MyViewController.m
+//  maoGang
+//
+//  Created by xl on 2018/11/13.
+//  Copyright © 2018年 bilin. All rights reserved.
+//
+
+#import "MyViewController.h"
+#import "LoginViewController.h"
+@interface MyViewController ()
+
+@end
+
+@implementation MyViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view from its nib.
+    self.view.backgroundColor = [UIColor yellowColor];
+    
+    NSArray *titleArray = @[@"登录",@"退出"];
+    for (int i = 0; i <2; i++) {
+        UIButton *sender = [UIButton buttonWithType:UIButtonTypeSystem];
+        sender.tag = i + 1000;
+        [sender setTitle:titleArray[i] forState:UIControlStateNormal];
+        [sender addTarget:self action:@selector(senderAction:) forControlEvents:UIControlEventTouchUpInside];
+        sender.frame = CGRectMake(100 ,100 *i + 100, 100, 100);
+        
+        [self.view addSubview:sender];
+    }
+    
+}
+- (void)senderAction:(UIButton *)sender {
+    switch (sender.tag) {
+            case 1000:
+            [self login:sender];
+            break;
+            case 1001:
+            [self exit:sender];
+        default:
+            break;
+    }
+}
+
+- (void)login:(UIButton *)sender
+{
+    LoginViewController *login = [[LoginViewController alloc] init];
+    [self.navigationController pushViewController:login animated:YES];
+}
+- (void)exit:(UIButton *)sender
+{
+    
+}
+/*
+#pragma mark - Navigation
+
+// In a storyboard-based application, you will often want to do a little preparation before navigation
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    // Get the new view controller using [segue destinationViewController].
+    // Pass the selected object to the new view controller.
+}
+*/
+
+@end

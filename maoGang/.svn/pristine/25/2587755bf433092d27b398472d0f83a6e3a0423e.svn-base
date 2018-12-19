@@ -1,0 +1,206 @@
+//
+//  MyViewController.m
+//  maoGang
+//
+//  Created by xl on 2018/11/13.
+//  Copyright © 2018年 bilin. All rights reserved.
+//
+
+#import "MyViewController.h"
+#import "LoginViewController.h"
+#import "HeaderCell.h"
+#import "AdvertisementCell.h"
+#import "MyCustomCell.h"
+#import "SetViewController.h"
+#import "MessageViewController.h"
+#import "MyModel.h"
+@interface MyViewController ()<UITableViewDelegate,UITableViewDataSource>
+@property (weak, nonatomic) IBOutlet UITableView *myTableView;
+@property (nonatomic, strong) MyModel *myMode;
+
+@end
+
+@implementation MyViewController
+
+- (void)viewDidLoad {
+    self.noAddBackBtn  = YES;
+    [super viewDidLoad];
+    // Do any additional setup after loading the view from its nib.
+    self.view.backgroundColor = [UIColor yellowColor];
+    UIBarButtonItem *setBarbutton = [[UIBarButtonItem alloc] initWithImage:[[UIImage imageNamed:@"shezhi"]imageWithRenderingMode:(UIImageRenderingModeAlwaysOriginal)] style:UIBarButtonItemStylePlain target:self action:@selector(setAction:)];
+                                                                            
+    UIBarButtonItem *messageBarbutton = [[UIBarButtonItem alloc] initWithImage:[[UIImage imageNamed:@"xiaoxi-3"]imageWithRenderingMode:(UIImageRenderingModeAlwaysOriginal)] style:UIBarButtonItemStylePlain target:self action:@selector(messageAction:)];
+    self.navigationItem.rightBarButtonItems = @[setBarbutton,messageBarbutton];
+    self.myTableView.delegate = self;
+    self.myTableView.dataSource = self;
+    [self.myTableView registerNib:[UINib nibWithNibName:@"HeaderCell" bundle:nil] forCellReuseIdentifier:@"HeaderCell"];
+    [self.myTableView registerNib:[UINib nibWithNibName:@"MyCustomCell" bundle:nil] forCellReuseIdentifier:@"MyCustomCell"];
+    [self.myTableView registerNib:[UINib nibWithNibName:@"AdvertisementCell" bundle:nil] forCellReuseIdentifier:@"AdvertisementCell"];
+    self.myTableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+    
+    
+}
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    [self networkAction];
+}
+- (void)networkAction {
+    NSString *token = TOKEN;
+    if (IS_VALID_STRING(token)) {
+        [[YXHTTPRequst shareInstance] networking:MyMY parameters:@{@"token":token} method:(YXRequstMethodTypePOST) success:^(NSDictionary *dic) {
+            BaseModel *model = [BaseModel loadModelWithDictionary:dic];
+            if ([model.Result isEqualToString:@"200"]) {
+                MyModel *myModel = [MyModel loadModelWithDictionary:dic[@"Info"][@"member"]];
+                self.myMode = myModel;
+                [self.myTableView reloadData];
+            }
+        } failsure:^(NSError *error) {
+            
+        }];
+    } else {// 没有登录 清空数据
+        [self.myTableView reloadData];
+    }
+   
+}
+
+- (void)setAction:(UIBarButtonItem *)setBarButton {
+    isCanLogin
+    SetViewController *setVC = [[SetViewController alloc] init];
+    [self.navigationController pushViewController:setVC animated:YES];
+}
+
+
+- (void)messageAction:(UIBarButtonItem *)messageBarButton {
+    isCanLogin
+    MessageViewController *messageVC = [[MessageViewController alloc] init];
+    [self.navigationController pushViewController:messageVC animated:YES];
+}
+
+
+
+
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    return 4;
+}
+#pragma mark - 收藏
+- (void)collectionAction:(UIButton *)sender {
+    
+}
+#pragma mark - 关注
+- (void)founseAction:(UIButton *)sender {
+    
+}
+#pragma mark - 粉丝
+- (void)fansAction:(UIButton *)sender {
+    
+}
+#pragma mark - 我的资料
+- (void)mySelfAction {
+    
+}
+#pragma mark - 我的作品
+- (void)myZuoPin {
+    
+}
+#pragma mark - 我的字帖
+- (void)myZitie {
+    
+}
+#pragma mark - 我的广告
+- (void)myAdvertis {
+    
+}
+
+
+
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    
+    UITableViewCell *cell = nil;
+    if (indexPath.row == 0) {
+            cell = [tableView dequeueReusableCellWithIdentifier:@"HeaderCell" forIndexPath:indexPath];
+        HeaderCell *header = (HeaderCell *)cell;
+        if (self.myMode) {
+            header.nameL.text = self.myMode.Nick;
+            header.desL.text = self.myMode.Autograph;
+            header.collectionCountL.text = self.myMode.MyCollectionNum;
+            header.founseCountL.text = self.myMode.MyFollowNum;
+            header.fanCountL.text = self.myMode.MyFansNum;
+            [header.header sd_setImageWithURL:[NSURL URLWithString:self.myMode.HeadPic] placeholderImage:[UIImage imageNamed:@"touxiang_moren"]];
+        } else {
+            header.nameL.text = @"";
+            header.desL.text = @"";
+            header.collectionCountL.text = @"";
+            header.founseCountL.text = @"";
+            header.fanCountL.text = @"";
+        }
+     
+        
+        
+        [header.collectionBtn addTarget:self action:@selector(collectionAction:) forControlEvents:UIControlEventTouchUpInside];
+        [header.founseBtn addTarget:self action:@selector(founseAction:) forControlEvents:UIControlEventTouchUpInside];
+        [header.fansBtn addTarget:self action:@selector(fansAction:) forControlEvents:UIControlEventTouchUpInside];
+
+    } else if (indexPath.row == 1) {
+            cell = [tableView dequeueReusableCellWithIdentifier:@"AdvertisementCell" forIndexPath:indexPath];
+    } else if (indexPath.row == 2) {
+            cell = [tableView dequeueReusableCellWithIdentifier:@"MyCustomCell" forIndexPath:indexPath];
+        ((MyCustomCell *)cell).nameL.text = @"我的字帖";
+        ((MyCustomCell *)cell).desL.text = @"";
+
+
+    } else {
+            cell = [tableView dequeueReusableCellWithIdentifier:@"MyCustomCell" forIndexPath:indexPath];
+        ((MyCustomCell *)cell).nameL.text = @"作品集";
+        ((MyCustomCell *)cell).desL.text = @"查看全部";
+
+    }
+    cell.selectionStyle = UITableViewCellSelectionStyleNone;
+    return cell;
+    
+}
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    isCanLogin;
+    if (indexPath.row == 0) {
+        [self mySelfAction];
+    } else if (indexPath.row == 1) {
+        [self myAdvertis];
+    } else if (indexPath.row == 2) {
+        [self myZitie];
+    } else if (indexPath.row == 3) {
+        [self myZuoPin];
+    }
+}
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
+    if (indexPath.row == 0) {
+        return 202.5f;
+    } else if (indexPath.row == 1) {
+        return 80.5f;
+    } else if (indexPath.row == 2) {
+        return 48.f;
+    } else if (indexPath.row == 3) {
+        return 48.f;
+    }
+    return 0.f;
+}
+
+
+
+
+
+
+
+
+/*
+#pragma mark - Navigation
+
+// In a storyboard-based application, you will often want to do a little preparation before navigation
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    // Get the new view controller using [segue destinationViewController].
+    // Pass the selected object to the new view controller.
+}
+*/
+
+@end

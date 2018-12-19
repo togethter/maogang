@@ -1,0 +1,114 @@
+//
+//  SetViewController.m
+//  maoGang
+//
+//  Created by xl on 2018/11/29.
+//  Copyright © 2018年 bilin. All rights reserved.
+//
+
+#import "SetViewController.h"
+#import "ChangeXPassWordViewController.h"
+@interface SetViewController ()
+@property (weak, nonatomic) IBOutlet UILabel *vLable;
+@property (weak, nonatomic) IBOutlet UILabel *cacheSizeL;
+@property (nonatomic, strong) NSFileManager * fileManger;
+
+@property (weak, nonatomic) IBOutlet UIButton *extBtn;
+@property (weak, nonatomic) IBOutlet UIButton *weBtn;
+@property (weak, nonatomic) IBOutlet UIButton *qqBtn;
+@property (weak, nonatomic) IBOutlet UIButton *phoneBtn;
+
+@end
+
+@implementation SetViewController
+
+- (NSFileManager *)fileManger {
+    if (!_fileManger) {
+        _fileManger = [NSFileManager defaultManager];
+    }
+    return _fileManger;
+}
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    self.extBtn.layer.cornerRadius = 4;
+    self.extBtn.layer.masksToBounds = YES;
+    NSString *cahcePath = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) lastObject];
+    dispatch_async(dispatch_get_global_queue(0, 0), ^{
+        int64_t size =  [NSString folderSizeAtPath: cahcePath];
+        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+            if (size >= 1024 * 1024) {
+                self.vLable.text = [NSString stringWithFormat:@"%.2fM",size/1024.f/1024.f];
+            } else {
+                self.vLable.text = [NSString stringWithFormat:@"%.2fkb",size/1024.f];
+            }
+        }];
+        
+    });
+    
+}
+- (IBAction)sender:(UIButton *)sender {
+    
+    switch (sender.tag) {
+        case 100: {// 修改密码
+            ChangeXPassWordViewController *chaVC = [[ChangeXPassWordViewController alloc] init];
+            [self.navigationController pushViewController:chaVC animated:YES];
+        }
+            break;
+       
+        case 102: {// 关于我们
+            WorshipTheJudgeNetworkViewController *vc = [[WorshipTheJudgeNetworkViewController alloc] init];
+            vc.webType =  EWebTypeAbout;
+            [self.navigationController pushViewController:vc animated:YES];
+        }
+            
+            break;
+        case 103: {// 清楚缓存
+            NSString *cahcePath = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) lastObject];
+            [[SDImageCache sharedImageCache] clearMemory];
+           BOOL isok = [self.fileManger removeItemAtPath:cahcePath error:nil];
+            if (isok) {
+                self.vLable.text = @"0.0KB";
+            }
+            
+        }
+            
+            break;
+        default:
+            break;
+    }
+}
+
+#pragma mark - 退出登录
+- (IBAction)existSender:(UIButton *)sender {
+    
+}
+
+
+#pragma mark - 微信绑定Or解绑
+
+- (IBAction)wechat:(UIButton *)sender {
+    
+}
+#pragma mark - QQ绑定Or解绑
+
+- (IBAction)qq:(UIButton *)sender {
+    
+}
+#pragma mark - 手机绑定Or解绑
+
+- (IBAction)phone:(UIButton *)sender {
+    
+}
+
+
+/*
+#pragma mark - Navigation
+
+// In a storyboard-based application, you will often want to do a little preparation before navigation
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    // Get the new view controller using [segue destinationViewController].
+    // Pass the selected object to the new view controller.
+}
+*/
+
+@end

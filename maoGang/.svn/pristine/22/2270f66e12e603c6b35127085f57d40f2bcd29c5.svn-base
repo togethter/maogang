@@ -1,0 +1,147 @@
+//
+//  FriendCircleViewModel.m
+//  gaofangPenYouQuan
+//
+//  Created by zhangzhen on 2018/11/19.
+//  Copyright © 2018 zhangzhen. All rights reserved.
+//
+
+#import "FriendCircleViewModel.h"
+#import "CircleItem.h"
+#import "SectionHeaderView.h"
+//#import "SKYStringManager.h"
+#import "NSString+SKYExtension.h"
+#import "LikeUserTableViewCell.h"
+#import <UIKit/UIKit.h>
+
+#import "YLReplyPostModel.h"
+#import "YLLikeMemberModel.h"
+
+
+
+@implementation FriendCircleViewModel
+
+- (NSMutableArray *)loadDatasDic:(NSDictionary *)dic {
+    
+//    NSData *messagesData = [NSData dataWithContentsOfURL:[NSURL fileURLWithPath:[[NSBundle mainBundle] pathForResource:@"data" ofType:@"json"]]];
+//    NSDictionary *JSONDic = [NSJSONSerialization JSONObjectWithData:messagesData options:NSJSONReadingAllowFragments error:nil];
+    NSMutableArray *muArray = [NSMutableArray array];
+    for (NSDictionary *eachDic in dic) {
+                CircleItem *item = [[CircleItem alloc]initWithDictionary:eachDic];
+                item.nameLabelHeight = SectionHeaderNameLabelHeight;
+                item.contentLabelHeight = [self calculateStringHeight:item.PostContent];
+                item.imgBgViewHeight = [self getImgBgViewHeight:item];
+                [self calculateItemHeight:item];
+                [muArray addObject:item];
+    }
+
+    return muArray;
+}
+- (NSMutableArray *)loadDatasDetails {
+    NSData *messagesData = [NSData dataWithContentsOfURL:[NSURL fileURLWithPath:[[NSBundle mainBundle] pathForResource:@"data的副本" ofType:@"json"]]];
+    NSDictionary *JSONDic = [NSJSONSerialization JSONObjectWithData:messagesData options:NSJSONReadingAllowFragments error:nil];
+    NSMutableArray *muArray = [NSMutableArray array];
+    for (NSDictionary *eachDic in JSONDic[@"data"][@"rows"]) {
+        CircleItem *item = [[CircleItem alloc]initWithDictionary:eachDic];
+        item.nameLabelHeight = SectionHeaderNameLabelHeight;
+        item.contentLabelHeight = [self calculateStringHeight:item.PostContent];
+        item.imgBgViewHeight = [self getImgBgViewHeight:item];
+        [self calculateItemHeight:item];
+        [muArray addObject:item];
+    }
+    return muArray;
+}
+- (void)calculateItemHeight:(CircleItem *)item {
+    if (item.contentLabelHeight == 0) {
+        item.headerHeight = SectionHeaderTopSpace + SectionHeaderVerticalSpace + SectionHeaderBottomSpace + item.nameLabelHeight + item.imgBgViewHeight + SectionHeaderTimeLabelHeight;
+    } else if (item.contentLabelHeight <= SectionHeaderMaxContentHeight){
+        item.headerHeight = SectionHeaderTopSpace + SectionHeaderVerticalSpace * 2 + SectionHeaderBottomSpace + item.nameLabelHeight + item.contentLabelHeight + item.imgBgViewHeight + SectionHeaderTimeLabelHeight;
+    } else {
+        item.headerHeight = [self getHeaderHeight:item];
+    }
+    item.likerHeight = [self calculateLikeUserCellHeight:item];
+    item.commentHeightArr = [self calculateCellHeight:item];
+    if (item.replys.count <= 0 && item.LikeList.count <= 0) {
+        item.footerHeight = 12 - SectionHeaderBottomSpace - 2;
+    } else {
+        item.footerHeight = 12;
+    }
+}
+
+- (CGFloat)calculateLikeUserCellHeight:(CircleItem *)item {
+    NSArray *likeUserArr = item.LikeList;
+    if (item.LikeList.count <= 0) {
+        return 0;
+    }
+    NSString *str = [prefixStr copy];
+    for (int i = 0; i < likeUserArr.count; i++) {
+        NSString *userName = [likeUserArr[i] valueForKey:@"LikeMemberNick"];
+        str = [str stringByAppendingString:userName];
+        if (i != likeUserArr.count - 1) {
+            str = [str stringByAppendingString:@", "];
+        }
+    }
+    return ceil([str contentSizeWithWidth:kScreenWidth - SectionHeaderHorizontalSpace * 3 - SectionHeaderHeaderImageHeight-SectionHeaderHeaderImageLeftWidth-SectionHeaderHeaderLiketNameLeftWidth*2 font:[UIFont systemFontOfSize:12] lineSpacing:SectionHeaderLineSpace].height) + 6+6;
+}
+
+- (CGFloat)calculateStringHeight:(NSString *)text {
+    return ceil([text contentSizeWithWidth:kScreenWidth - SectionHeaderHorizontalSpace * 3 - SectionHeaderHeaderImageHeight-SectionHeaderHeaderImageLeftWidth font:[UIFont systemFontOfSize:SectionHeaderBigFontSize] lineSpacing:SectionHeaderLineSpace].height);
+}
+
+- (NSMutableArray *)calculateCellHeight:(CircleItem *)item {
+    NSMutableArray *muArr = [NSMutableArray array];
+    if (IS_VALID_ARRAY(item.replys)) {
+        for (NSDictionary *dic in item.replys) {
+            YLReplyPostModel * model = [YLReplyPostModel loadModelWithDictionary:dic];
+            NSString *text = nil;
+            if (!IS_VALID_STRING(model.AtMemberNick) ||![model.AtMemberId isEqualToString:item.MemberId]) {
+                text = [NSString stringWithFormat:@"%@: %@", model.ReplyMemberNick, model.ReplyContent];
+            } else {
+                text = [NSString stringWithFormat:@"%@回复%@: %@", model.ReplyMemberNick,model.AtMemberNick, model.ReplyContent];
+            }
+            CGFloat height = ceil([text contentSizeWithWidth:SCREEN_MIN_LENGTH - ( SectionHeaderHeaderImageLeftWidth+SectionHeaderHeaderImageHeight+SectionHeaderLineSpace + 5) - SectionHeaderHorizontalSpace font:[UIFont systemFontOfSize:12] lineSpacing:SectionHeaderLineSpace].height) + 6+6;
+            [muArr addObject:@(height)];
+        }
+   
+    }
+    
+    return muArr;
+}
+
+- (CGFloat)getImgBgViewHeight:(CircleItem *)item {
+    switch (item.ThumbnailPic.count) {
+        case 0:
+            return 0;
+        case 1:
+            return SectionHeaderOnePictureHeight + SectionHeaderVerticalSpace;
+        case 2:
+            
+        case 3:
+            return SectionHeaderSomePicturesHeight + SectionHeaderVerticalSpace;
+        case 4:
+            
+        case 5:
+            
+        case 6:
+            return SectionHeaderSomePicturesHeight * 2 + SectionHeaderPictureSpace + SectionHeaderVerticalSpace;
+        case 7:
+            
+        case 8:
+            
+        case 9:
+            return SectionHeaderSomePicturesHeight * 3 + SectionHeaderPictureSpace * 2 + SectionHeaderVerticalSpace;
+        default:
+            return 0;
+    }
+}
+
+- (CGFloat)getHeaderHeight:(CircleItem *)item {
+    CGFloat height = 0;
+    if (item.isSpread) {
+        height = SectionHeaderTopSpace + SectionHeaderVerticalSpace * 2+SectionHeaderVerticalSpace /2 + SectionHeaderBottomSpace + item.nameLabelHeight + item.contentLabelHeight + item.imgBgViewHeight + SectionHeaderTimeLabelHeight + SectionHeaderMoreBtnHeight;
+    } else {
+        height = SectionHeaderTopSpace + SectionHeaderVerticalSpace * 2 +SectionHeaderVerticalSpace /2+ SectionHeaderBottomSpace + item.nameLabelHeight + SectionHeaderMaxContentHeight + item.imgBgViewHeight + SectionHeaderTimeLabelHeight + SectionHeaderMoreBtnHeight;
+    }
+    return height;
+}
+@end
