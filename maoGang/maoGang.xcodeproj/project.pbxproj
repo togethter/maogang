@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		7602E04F21CE18A300FE9F21 /* XLFontCollectionCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 7602E04D21CE18A300FE9F21 /* XLFontCollectionCell.m */; };
 		7606F37221AF776A00B8BDB6 /* HeaderCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 7606F37021AF776A00B8BDB6 /* HeaderCell.m */; };
 		7606F37321AF776A00B8BDB6 /* HeaderCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 7606F37121AF776A00B8BDB6 /* HeaderCell.xib */; };
 		7606F37721AF77B700B8BDB6 /* AdvertisementCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 7606F37521AF77B700B8BDB6 /* AdvertisementCell.m */; };
@@ -302,6 +303,8 @@
 /* Begin PBXFileReference section */
 		537432BA76C0A01B2B914F2E /* libPods-maoGang.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-maoGang.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		74B3126F0E0E4DF4F6CCAF75 /* Pods-maoGang.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-maoGang.debug.xcconfig"; path = "Pods/Target Support Files/Pods-maoGang/Pods-maoGang.debug.xcconfig"; sourceTree = "<group>"; };
+		7602E04D21CE18A300FE9F21 /* XLFontCollectionCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = XLFontCollectionCell.m; sourceTree = "<group>"; };
+		7602E04E21CE18A300FE9F21 /* XLFontCollectionCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XLFontCollectionCell.h; sourceTree = "<group>"; };
 		7606F36F21AF776A00B8BDB6 /* HeaderCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HeaderCell.h; sourceTree = "<group>"; };
 		7606F37021AF776A00B8BDB6 /* HeaderCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = HeaderCell.m; sourceTree = "<group>"; };
 		7606F37121AF776A00B8BDB6 /* HeaderCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = HeaderCell.xib; sourceTree = "<group>"; };
@@ -1477,6 +1480,8 @@
 		7633D83021ABBF8700FEBEC7 /* views */ = {
 			isa = PBXGroup;
 			children = (
+				7602E04E21CE18A300FE9F21 /* XLFontCollectionCell.h */,
+				7602E04D21CE18A300FE9F21 /* XLFontCollectionCell.m */,
 				760CE28621C262B7002F1D18 /* GXWaterCVCell.h */,
 				760CE28721C262B8002F1D18 /* GXWaterCVCell.m */,
 				760CE28821C262B8002F1D18 /* GXWaterCVCell.xib */,
@@ -2583,6 +2588,7 @@
 				7622987A219AB1D9003C6952 /* NSString+AvoidCrash.m in Sources */,
 				76229880219AB1D9003C6952 /* NSMutableAttributedString+AvoidCrash.m in Sources */,
 				7622924D219AAB7B003C6952 /* TBTabBarController.m in Sources */,
+				7602E04F21CE18A300FE9F21 /* XLFontCollectionCell.m in Sources */,
 				C19E0CB921A64C5300CD7F8F /* MLMSegmentScroll.m in Sources */,
 				762B7A2121AE239E00DD64C0 /* FontDaquanCell.m in Sources */,
 				C19E0CB621A64C5300CD7F8F /* MLMSegmentManager.m in Sources */,

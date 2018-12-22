@@ -9,7 +9,6 @@
 #import "WhiteViewController.h"
 #import "CustomAlertView.h"
 #import "GXWaterCollectionViewLayout.h"
-#import "GXWaterCVCell.h"
 #import "CustomAlertView.h"
 @interface BlankFontDetailsModel : BaseModel
 
@@ -57,16 +56,18 @@
 - (void)setDefaultModel:(BlankFontDetailsModel *)defaultModel {
     if (!defaultModel || _defaultModel == defaultModel) return;
     _defaultModel = defaultModel;
-    [SVProgressHUD show];
+    [GiFHUD hideHUDForView:self.PicImageView];
+    [GiFHUD setGifWithMBProgress:@"" toView:self.PicImageView];
     dispatch_async(dispatch_get_global_queue(0, 0), ^{
         NSData *data = [NSData dataWithContentsOfURL:[NSURL URLWithString:defaultModel.PicPath]];
         UIImage *image = [UIImage imageWithData:data];
         dispatch_async(dispatch_get_main_queue(), ^{
-            self.PicImageView.image = image;
-            [SVProgressHUD dismiss];
+            self.PicImageView.image = [image imageByScalingAndCroppingForSize:self.PicImageView.frame.size];
+            [GiFHUD hideHUDForView:self.PicImageView];
         });
     });
 }
+
 - (void)viewDidLoad {
     [super viewDidLoad];
     iPhoneXR||iPhoneXM||iPhoneX?(self.bottomMargin.constant = 20):0;
@@ -77,7 +78,9 @@
     self.PicImageView.contentMode =  UIViewContentModeScaleAspectFit;
     self.paperArray = [NSMutableArray array];
     [self network];
-    
+    self.view.backgroundColor = BACKCOLOR;
+    self.PicImageView.backgroundColor = [UIColor whiteColor];
+    self.bottomView.backgroundColor = LineBackgroundColor;
 }
 
 - (void)network {
@@ -99,12 +102,12 @@
                 if ([detailModel.IsDefault isEqualToString:@"1"]) {// 如果是1的话 显示该模型的
                     // 子线程请求数据
                     self.defaultModel = detailModel;
-                   
+                    
                 }
-            
+                
                 [self.listArray addObject:detailModel];
             }
-           
+            
         }
         
     } failure:^(NSError *error) {
@@ -153,10 +156,11 @@
             if (isCopy) {
                 UIPasteboard*pasteboard = [UIPasteboard generalPasteboard];
                 pasteboard.string= weakSelf.defaultModel.FilePath;
+                [[NSNotificationCenter defaultCenter] postNotificationName:@"backRootAction" object:self];
             }
         } urlString:self.defaultModel.FilePath];
     }];
-   
+    
     UIAlertAction *action3 = [UIAlertAction actionWithTitle:@"继续编辑" style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
         
     }];
@@ -166,13 +170,13 @@
     [self.navigationController presentViewController:alertVC animated:YES completion:nil];
 }
 /*
-#pragma mark - Navigation
-
-// In a storyboard-based application, you will often want to do a little preparation before navigation
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    // Get the new view controller using [segue destinationViewController].
-    // Pass the selected object to the new view controller.
-}
-*/
+ #pragma mark - Navigation
+ 
+ // In a storyboard-based application, you will often want to do a little preparation before navigation
+ - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+ // Get the new view controller using [segue destinationViewController].
+ // Pass the selected object to the new view controller.
+ }
+ */
 
 @end

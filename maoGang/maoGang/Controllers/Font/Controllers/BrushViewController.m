@@ -43,13 +43,13 @@
     self.brushTableView.delegate = self;
     self.brushTableView.dataSource = self;
     self.brushTableView.separatorStyle = UITableViewCellSeparatorStyleNone;
-
+    
     if (iOS11) {
         self.brushTableView.estimatedSectionFooterHeight = 0;
         self.brushTableView.estimatedSectionFooterHeight = 0;
         self.brushTableView.estimatedRowHeight = 0;
     }
-
+    
     [self.brushTableView registerNib:[UINib nibWithNibName:@"PenCell" bundle:nil] forCellReuseIdentifier:@"PenCell"];
     self.nodataView = [NODataView noDataViewWithImage:@"bar_wushuju" withDescription:@"暂无数据"];
     self.nodataView.hidden = YES;
@@ -58,7 +58,7 @@
         make.centerX.mas_equalTo(self.brushTableView);
         make.centerY.mas_equalTo(self.brushTableView.mas_centerY).offset(-70);
     }];
-    
+    [self downRefsh];
 }
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
@@ -76,7 +76,8 @@
 }
 
 - (void)fontNetwork {
-    [self downRefsh];
+    //    [self downRefsh];
+    [self.brushTableView reloadData];
 }
 - (void)network {
     
@@ -104,6 +105,14 @@
     __weak typeof(self)weakSelf = self;
     if ([FontMnager  fontPathisExist:model.DownloadUrl])  {// 下载过了直接将字体替换掉
         [[FontMnager fontInstance] registerFontWithPath:[[FontMnager fontInstance]fileURLWithUrlPath:model.DownloadUrl]];
+        
+        if (self.brushArray.count > indexPath.row) {
+            FontModel *fontModel = self.brushArray[indexPath.row];
+            EditionController *vc = [[EditionController alloc] initWithNibName:@"EditionController" bundle:nil titleName:fontModel.TypefaceName];
+            vc.fontModel = fontModel;
+            vc.fontModelArray = self.brushArray;
+            [self.navigationController pushViewController:vc animated:YES];
+        }
         return;
     }
     [TipAlert centerAlertShowtipAlertisSureBlock:^(BOOL isSure) {
@@ -144,9 +153,9 @@
             [[FontMnager fontInstance] registerFontWithPath:filePath];
             dispatch_async(dispatch_get_main_queue(), ^{
                 [weakSelf.AddbookVc close];
-                _AddbookVc = nil;
+                weakSelf.AddbookVc = nil;
                 [weakSelf.brushTableView reloadData];
-
+                
             });
             
         }];
@@ -177,23 +186,19 @@
 
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-    
     if (self.brushArray.count > indexPath.row) {
         FontModel *fontModel = self.brushArray[indexPath.row];
-        EditionController *vc = [[EditionController alloc] initWithNibName:@"EditionController" bundle:nil titleName:fontModel.TypefaceName];
-        vc.fontModel = fontModel;
-        vc.fontModelArray = self.brushArray;
-        [self.navigationController pushViewController:vc animated:YES];
+        [self downLoadFontWithCell:nil model:fontModel IndexPath:indexPath];
     }
 }
 /*
-#pragma mark - Navigation
-
-// In a storyboard-based application, you will often want to do a little preparation before navigation
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    // Get the new view controller using [segue destinationViewController].
-    // Pass the selected object to the new view controller.
-}
-*/
+ #pragma mark - Navigation
+ 
+ // In a storyboard-based application, you will often want to do a little preparation before navigation
+ - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+ // Get the new view controller using [segue destinationViewController].
+ // Pass the selected object to the new view controller.
+ }
+ */
 
 @end

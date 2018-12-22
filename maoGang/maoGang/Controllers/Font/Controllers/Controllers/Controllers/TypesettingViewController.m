@@ -11,6 +11,7 @@
 #import "FontModel.h"
 #import "GXWaterCVCell.h"
 #import "GXWaterCollectionViewLayout.h"
+#import "XLFontCollectionCell.h"
 @interface TypesettingViewController ()<UICollectionViewDelegate, UICollectionViewDataSource,GXWaterCollectionViewLayoutDelegate>
 @property (weak, nonatomic) IBOutlet UIView *contentView;
 @property (weak, nonatomic) IBOutlet NSLayoutConstraint *bottomMargin;
@@ -101,7 +102,8 @@
 
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
     
-    GXWaterCVCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"GXWaterCVCell" forIndexPath:indexPath];
+    GXWaterCVCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"XLFontCollectionCell" forIndexPath:indexPath];
+    
     cell.indexPath = indexPath;
     cell.array = self.textArray;
     cell.alertModel = self.customAlertModel;
@@ -122,7 +124,7 @@
     _sender3.tag = 103;
     _sender3.layer.cornerRadius = 30.f/2;
     _sender3.layer.masksToBounds = YES;
-
+    
     [self.senderArray addObjectsFromArray:@[_sender0,_sender1,_sender2]];
     __weak typeof(self)weakSelf = self;
     GXWaterCollectionViewLayout *waterLayout = [[GXWaterCollectionViewLayout alloc] init];
@@ -130,11 +132,11 @@
     waterLayout.delegate = self;
     self.waterLayout.lineSpacing = 0;
     self.waterLayout.interitemSpacing = 0;
-    self.waterLayout.sectionInset = UIEdgeInsetsMake(20, 20, 20, 20);
+    self.waterLayout.sectionInset = UIEdgeInsetsMake(20, 0, 20, 20);
     self.waterLayout.scrollDirection = UICollectionViewScrollDirectionVertical;
     self.contentView.backgroundColor = BACKCOLOR;
     self.collectionView = [[UICollectionView alloc] initWithFrame:self.collectionView.bounds collectionViewLayout:waterLayout];
-    [self.collectionView registerNib:[UINib nibWithNibName:@"GXWaterCVCell" bundle:nil] forCellWithReuseIdentifier:@"GXWaterCVCell"];
+    [self.collectionView registerClass:[XLFontCollectionCell class] forCellWithReuseIdentifier:@"XLFontCollectionCell"];
     self.collectionView.dataSource = self;
     self.collectionView.backgroundColor = [UIColor whiteColor];
     
@@ -148,9 +150,9 @@
     iPhoneXR||iPhoneXM||iPhoneX?(weakSelf.bottomMargin.constant = 20):0;
     self.collectionView.showsVerticalScrollIndicator = NO;
     self.collectionView.showsHorizontalScrollIndicator = NO;
-
+    
     self.customAlertModel.order = @(1);
-    [self senderAction:self.senderArray[1]];
+    [self senderAction:self.senderArray[0]];
     self.view.backgroundColor = [UIColor whiteColor];
     self.bottomLab.textColor = RGBCOLOR(131, 131, 131);
     self.bottomLab.font = [UIFont systemFontOfSize:12];
@@ -161,7 +163,7 @@
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [self configurateNumberOfColumns:self.numberOfColumns numberLineCount:self.numberLineCount vertical:YES successBlock:^{
             dispatch_async(dispatch_get_main_queue(), ^{
-                  weakSelf.bottomLab.text = [NSString stringWithFormat:@"共%d个文字,占用%d张%@打印纸",weakSelf.customAlertModel.txt.length,weakSelf.textArray.count,weakSelf.customAlertModel.a3orA4];
+                weakSelf.bottomLab.text = [NSString stringWithFormat:@"共%d个文字,占用%d张%@打印纸",weakSelf.customAlertModel.txt.length,weakSelf.textArray.count,weakSelf.customAlertModel.a3orA4];
                 [SVProgressHUD dismiss];
                 [weakSelf.collectionView reloadData];
             });
@@ -178,9 +180,9 @@
 - (NSString *)getChineseStringWithString:(NSString *)string
 {
     NSRegularExpression *predicate = [NSRegularExpression regularExpressionWithPattern:@"[a-zA-Z\u4e00-\u9fa5]+" options:0 error:NULL];// 中文的
-   __block NSMutableString *chines = @"".mutableCopy;
+    __block NSMutableString *chines = @"".mutableCopy;
     [predicate enumerateMatchesInString:string options:0 range:NSMakeRange(0, string.length) usingBlock:^(NSTextCheckingResult * _Nullable result, NSMatchingFlags flags, BOOL * _Nonnull stop) {
-       NSString *str = [string substringWithRange:result.range];
+        NSString *str = [string substringWithRange:result.range];
         [chines appendString:str];
     }];
     return chines;
@@ -189,12 +191,12 @@
 
 // 自动填满
 - (void )manAction {
-//     分区个数
+    //     分区个数
     NSInteger section = self.textArray.count;
-//     每个分区的个数
+    //     每个分区的个数
     NSInteger row = self.numberLineCount * self.numberOfColumns;
     
-//    总的个数
+    //    总的个数
     if (section > 1) {// 多个分区
         // 最后一个分区的分区号
         NSInteger lastSection = section - 1;
@@ -235,7 +237,7 @@
             [self.collectionView reloadData];
         }
     }
-     self.bottomLab.text = [NSString stringWithFormat:@"共%d个文字,占用%d张%@self纸",self.contentStr.length,self.textArray.count,self.customAlertModel.a3orA4];
+    self.bottomLab.text = [NSString stringWithFormat:@"共%d个文字,占用%d张%@纸",section * row,self.textArray.count,self.customAlertModel.a3orA4];
 }
 
 
@@ -245,20 +247,9 @@
     if (IS_VALID_STRING(penType) && [penType isEqualToString:@"1"]) {// 钢笔
         self.numberLineCount = 18;
         self.numberOfColumns = 12;  // 216
-       NSInteger fontsize = self.customAlertModel.fontSizeIndex - 100;
-        UIEdgeInsets inset = UIEdgeInsetsMake(20, 0, 20, 0);
-        if (fontsize == 0) {// 小
-            inset.left  =   20 * XLh;
-            inset.right =   20 * XLh;
-        } else if (fontsize == 1) {// 中
-            inset.left  =   18 * XLh;
-            inset.right =   18 * XLh;
-        } else if (fontsize == 2) {// 大
-            inset.left  =   10 * XLh;
-            inset.right =   10 * XLh;
-        }
+        UIEdgeInsets inset = UIEdgeInsetsMake(20, 20, 20, 20);
         self.waterLayout.sectionInset = inset;
-
+        
     } else {
         if ([self.customAlertModel.a3orA4 isEqualToString:@"A4"]) {// A4
             switch (self.customAlertModel.fontSizeIndex - 100) {
@@ -266,23 +257,24 @@
                 {
                     self.numberLineCount = 6;
                     self.numberOfColumns = 4;//24
-                    self.waterLayout.sectionInset = UIEdgeInsetsMake(20, 90 * XLh, 20, 90 * XLh);
+                    self.waterLayout.sectionInset = UIEdgeInsetsMake(20, 20, 20, 20);
+                    
                 }
                     break;
                 case 1:// 中
                 {
                     self.numberLineCount = 4;
                     self.numberOfColumns = 3;//12
-                    self.waterLayout.sectionInset = UIEdgeInsetsMake(20, 120 * XLh, 20, 120 * XLh);
-
+                    self.waterLayout.sectionInset = UIEdgeInsetsMake(20, 20, 20, 20 );
+                    
                 }
                     break;
                 case 2:// 大
                 {
                     self.numberLineCount = 3;
                     self.numberOfColumns = 2;// 6
-                    self.waterLayout.sectionInset = UIEdgeInsetsMake(20, 135 * XLh, 20, 135 * XLh);
-
+                    self.waterLayout.sectionInset = UIEdgeInsetsMake(20, 20 , 20, 20 );
+                    
                 }
                     break;
                 default:
@@ -294,23 +286,23 @@
                 {
                     self.numberLineCount = 7;
                     self.numberOfColumns = 10;//70
-                    self.waterLayout.sectionInset = UIEdgeInsetsMake(20, 20 * XLh, 20, 20 * XLh);
-
+                    self.waterLayout.sectionInset = UIEdgeInsetsMake(20, 20 , 20, 20);
+                    
                 }
                     break;
                 case 1:// 中
                 {
                     self.numberLineCount = 5;
                     self.numberOfColumns = 8;// 40
-                    self.waterLayout.sectionInset = UIEdgeInsetsMake(20, 40 * XLh, 20, 40 * XLh);
-
+                    self.waterLayout.sectionInset = UIEdgeInsetsMake(20, 20 , 20, 20);
+                    
                 }
                     break;
                 case 2:// 大
                 {
                     self.numberLineCount = 3;
                     self.numberOfColumns = 5;// 15
-                    self.waterLayout.sectionInset = UIEdgeInsetsMake(20, 80 * XLh, 20, 80 * XLh);
+                    self.waterLayout.sectionInset = UIEdgeInsetsMake(20, 20 , 20, 20);
                 }
                     break;
                 default:
@@ -321,8 +313,8 @@
     
 }
 - (void)dealloc {
-
-
+    
+    
 }
 - (void)shareAction:(UIBarButtonItem *)share {
     DLog(@"shareAction");
@@ -350,13 +342,13 @@
 - (void)restAction:(void(^)(void))successBlock {
     __weak typeof(self)weakSelf = self;
     [self configurateNumberOfColumns:self.numberOfColumns numberLineCount:self.numberLineCount vertical:self.waterLayout.vertical successBlock:^{
-            dispatch_async(dispatch_get_main_queue(), ^{
-                weakSelf.bottomLab.text = [NSString stringWithFormat:@"共%d个文字,占用%d张%@打印纸",weakSelf.customAlertModel.txt.length,weakSelf.textArray.count,weakSelf.customAlertModel.a3orA4];
-                [SVProgressHUD dismiss];
-                if (successBlock) {
-                    successBlock();
-                }
-            });
+        dispatch_async(dispatch_get_main_queue(), ^{
+            weakSelf.bottomLab.text = [NSString stringWithFormat:@"共%d个文字,占用%d张%@打印纸",weakSelf.customAlertModel.txt.length,weakSelf.textArray.count,weakSelf.customAlertModel.a3orA4];
+            [SVProgressHUD dismiss];
+            if (successBlock) {
+                successBlock();
+            }
+        });
     }];// 横向
 }
 - (IBAction)senderAction:(UIButton *)sender {
@@ -378,18 +370,24 @@
             [WordsSet congigureLookFontsSetBlockFillWords:self.autoFillWords autoClearPunctuation:self.autoClearPunctuation setBlock:^(BOOL autoFillWords, BOOL autoClearPunctuation) {
                 self.autoClearPunctuation = autoClearPunctuation;
                 self.autoFillWords = autoFillWords;
+                [SVProgressHUD show];
                 if (autoFillWords && autoClearPunctuation) {// 去掉标点符号自动填充
                     [weakSelf filterPunctuationActionBlock:^{
                         [weakSelf manAction];
                     }];
+                    
                 } else if (autoFillWords && !autoClearPunctuation) {// 自动填充
                     weakSelf.contentStr = [self.customAlertModel.txt copy];
                     [weakSelf restAction:^{
                         [weakSelf manAction];
                     }];
+                    
                 } else if (autoClearPunctuation && !autoFillWords) {// 去掉标点符号
-                    [weakSelf filterPunctuationActionBlock:^{
-                        [weakSelf.collectionView reloadData];
+                    weakSelf.contentStr = [self.customAlertModel.txt copy];
+                    [weakSelf restAction:^{
+                        [weakSelf filterPunctuationActionBlock:^{
+                            [weakSelf.collectionView reloadData];
+                        }];
                     }];
                 } else {// 原始值
                     weakSelf.contentStr = [self.customAlertModel.txt copy];
@@ -398,28 +396,32 @@
                     }];
                 }
                 
-                
+                [SVProgressHUD dismiss];
             }];
             
         }
             break;
         case 101:// 左右 1
         {
+            [SVProgressHUD show];
             self.customAlertModel.order = @(1);
             self.waterLayout.vertical = YES;
             [self.collectionView reloadData];
-           
+            [SVProgressHUD dismiss];
+            
             
         }
             break;
         case 102:// 上下 2
         {
+            [SVProgressHUD show];
             self.customAlertModel.order = @(2);
             self.waterLayout.vertical = NO;
             [self.collectionView reloadData];
+            [SVProgressHUD dismiss];
             break;
         }
-            case 103:
+        case 103:
         {
             // 生成字帖
             isCanLogin;
@@ -437,7 +439,7 @@
                                                   @"FullScreen":fullScren,
                                                   @"token":token,
                                                   @"content":@""
-
+                                                  
                                                   }.mutableCopy;
             } else {
                 // 需要穿content
@@ -449,7 +451,7 @@
                                                   }.mutableCopy;
                 
             }
-           
+            
             [newParm addEntriesFromDictionary:parm];
             [SVProgressHUD show];
             [self netWorkHelperWithPOST:CopybookCreate parameters:newParm success:^(id responseObject) {
@@ -463,6 +465,7 @@
                             if (isCopy) {
                                 UIPasteboard*pasteboard = [UIPasteboard generalPasteboard];
                                 pasteboard.string= url;
+                                [[NSNotificationCenter defaultCenter] postNotificationName:@"backRootAction" object:self];
                             }
                         } urlString:url];
                     }];
@@ -470,16 +473,16 @@
                         
                     }];
                     [alertVC addAction:action1];
-//                    [alertVC addAction:action2];
+                    //                    [alertVC addAction:action2];
                     [alertVC addAction:action3];
                     
                     [self.navigationController presentViewController:alertVC animated:YES completion:nil];
                 }
             } failure:^(NSError *error) {
                 [SVProgressHUD dismiss];
-
+                
             }];
-           
+            
         }
             
             break;

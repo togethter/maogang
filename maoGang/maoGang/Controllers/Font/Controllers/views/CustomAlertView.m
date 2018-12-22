@@ -170,10 +170,10 @@ CGFloat const alertViewHeight = 150.f;
 - (void)sliderAction:(UISlider *)slider
 {
     // 检车滑动的范围
-//    0.2---0.4
-//    0.4---0.6
-//    0.6---0.8
-//    0.8----1
+    //    0.2---0.4
+    //    0.4---0.6
+    //    0.6---0.8
+    //    0.8----1
     
     bool isok = YES;
     NSMutableArray *array = [NSMutableArray array];
@@ -289,14 +289,14 @@ CGFloat const alertViewHeight = 150.f;
         [self.tiziGeArray addObject:imageview];
         [self addSubview:imageview];
     }
-//    self.backgroundColor = [UIColor redColor];
-
+    //    self.backgroundColor = [UIColor redColor];
+    
 }
 
 - (void)buttonClick:(UIButton *)sender {
-//    if (self.tiziGeBlock) {
-//        self.tiziGeBlock(@(sender.tag));
-//    }
+    //    if (self.tiziGeBlock) {
+    //        self.tiziGeBlock(@(sender.tag));
+    //    }
     [self buttonCongigureWithSender:sender];
 }
 
@@ -422,9 +422,9 @@ CGFloat const alertViewHeight = 150.f;
 
 #pragma mark -ColorViewProtocol
 - (void)colorViewSelect:(NSInteger)tag {
-//    if (self.colorBlock) {
-//        self.colorBlock(@(tag));
-//    }
+    //    if (self.colorBlock) {
+    //        self.colorBlock(@(tag));
+    //    }
     [self buttonConfigurateWithSender:tag];
 }
 - (void)buttonConfigurateWithSender:(NSInteger )tag
@@ -454,7 +454,7 @@ CGFloat const alertViewHeight = 150.f;
         make.centerX.mas_equalTo(self.mas_centerX);
         make.top.mas_equalTo(self.mas_top).offset(20);
     }];
-
+    
     NSArray *array = @[[UIColor blackColor],[UIColor redColor],[UIColor greenColor],[UIColor darkGrayColor]];
     CGFloat imageWidth =  60;// imageWith宽和高
     CGFloat imageHeight = 60;
@@ -471,7 +471,7 @@ CGFloat const alertViewHeight = 150.f;
         [self.colorArray addObject:imageview];
         [self addSubview:imageview];
     }
-
+    
 }
 
 
@@ -499,7 +499,7 @@ CGFloat const alertViewHeight = 150.f;
     }
     FontModel *fontModel = self.fontTypeArray[self.fontType.integerValue];
     NSString *fontType = [NSString stringWithFormat:@"%@",fontModel.TypefaceId];// 7 字体类型 xl编码
-        return @{@"typefaceId":fontType,// 字体编号!!!
+    return @{@"typefaceId":fontType,// 字体编号!!!
              @"wordLattice":tianziGeLeixing,// 字格!!
              @"WordColour":tianziGeYanSe,//字格颜色!!!
              @"Transparency":alpha,//透明度!!
@@ -526,25 +526,25 @@ CGFloat const alertViewHeight = 150.f;
                                @"2":@"",
                                @"3":@""
                                },
-                             @{@"0": @"gezi_huizige_b",
-                               @"1":@"gezi_huizige_a",
-                               @"2":@"gezi_huizige_c",
-                               @"3":@"gezi_huizige_d"
+                             @{@"0": @"gezi_huizige_b_2",
+                               @"1":@"gezi_huizige_a_2",
+                               @"2":@"gezi_huizige_c_2",
+                               @"3":@"gezi_huizige_d_2"
                                },
-                             @{@"0": @"gezi_fangge_b",
-                               @"1":@"gezi_fangge_a",
-                               @"2":@"gezi_fangge_c",
-                               @"3":@"gezi_fangge_d"
+                             @{@"0": @"gezi_fangge_b_2",
+                               @"1":@"gezi_fangge_a_2",
+                               @"2":@"gezi_fangge_c_2",
+                               @"3":@"gezi_fangge_d_2"
                                },
-                             @{@"0": @"gezi_tianzige_b",
-                               @"1":@"gezi_tianzige_a",
-                               @"2":@"gezi_tianzige_c",
-                               @"3":@"gezi_tianzige_d"
+                             @{@"0": @"gezi_tianzige_b_2",
+                               @"1":@"gezi_tianzige_a_2",
+                               @"2":@"gezi_tianzige_c_2",
+                               @"3":@"gezi_tianzige_d_2"
                                },
-                             @{@"0": @"gezi_mizige_b",
-                               @"1":@"gezi_mizige_a",
-                               @"2":@"gezi_mizige_c",
-                               @"3":@"gezi_mizige_d"
+                             @{@"0": @"gezi_mizige_b_2",
+                               @"1":@"gezi_mizige_a_2",
+                               @"2":@"gezi_mizige_c_2",
+                               @"3":@"gezi_mizige_d_2"
                                }
                              ];
     }
@@ -553,12 +553,12 @@ CGFloat const alertViewHeight = 150.f;
 - (NSDictionary *)alphaDic {
     if (!_alphaDic) {
         _alphaDic = @{
-                        @"1.00":@"#484848",
-                        @"0.80":@"#767676",
-                        @"0.60":@"#A5A5A5",
-                        @"0.40":@"#CFCFCF",
-                        @"0.20":@"#EBEBEB"
-                        };
+                      @"1.00":@"#606060",
+                      @"0.80":@"#9d9d9d",
+                      @"0.60":@"#c2c2c2",
+                      @"0.40":@"#e3e3e3",
+                      @"0.20":@"#f1f1f1"
+                      };
         
     }
     return _alphaDic;
@@ -566,14 +566,14 @@ CGFloat const alertViewHeight = 150.f;
 
 - (NSString *)description {
     return [NSString stringWithFormat:@"percent =%.2f\n  \
-                            线框颜色下表colorIndex=%@\n       \
-                            田字格下表tiziGeIndex=%@\n   \
-                            字体大小下表fontSizeIndex=%ld\n \
-                            纸张大小papersizeIndex=%@\n \
-                            线框颜色colorNameArray=%@\n \
-                            字体的类型fontType=%@\n \
-                            文字txt=%@\n \
-                            文字排序order=%@",
+            线框颜色下表colorIndex=%@\n       \
+            田字格下表tiziGeIndex=%@\n   \
+            字体大小下表fontSizeIndex=%ld\n \
+            纸张大小papersizeIndex=%@\n \
+            线框颜色colorNameArray=%@\n \
+            字体的类型fontType=%@\n \
+            文字txt=%@\n \
+            文字排序order=%@",
             self.percent,
             self.colorIndex,
             self.tiziGeIndex,
@@ -815,8 +815,8 @@ CGFloat const customSizeHeight = 68 * 3 + 130;
 - (NSMutableArray *)sizeArray {
     if (!_sizeArray) {
         _sizeArray = [NSMutableArray arrayWithObjects:
-  @{@"name":@"A3",@"size":@"210 X 297"},
-  @{@"name":@"A4",@"size":@"500 X 707"},nil];
+                      @{@"name":@"A3",@"size":@"210 X 297"},
+                      @{@"name":@"A4",@"size":@"500 X 707"},nil];
     }
     return _sizeArray;
 }
@@ -838,15 +838,15 @@ CGFloat const customSizeHeight = 68 * 3 + 130;
         NSDictionary *dic = self.sizeArray[indexPath.row];
         cell.nameL.text = dic[@"name"];
         cell.sizeLa.text = dic[@"size"];
-       
+        
     } else {
-      NSString *paper=  self.PaperTypeArray[indexPath.row];
+        NSString *paper=  self.PaperTypeArray[indexPath.row];
         [self configureWithPapaer:paper cell:cell];
         if (self.PaperTypeArray.count == 1) {
             cell.selectImage.image = [UIImage imageNamed:@"btn_xuanzhong_b"];
         }
     }
-   
+    
     return cell;
 }
 - (void)configureWithPapaer:(NSString *)papaer cell:(CustomSizeCell *)cell{
@@ -912,7 +912,7 @@ CGFloat const customSizeHeight = 68 * 3 + 130;
         make.centerY.mas_equalTo(self.titleLb.mas_centerY);
         make.left.mas_equalTo(self.titleLb.mas_right).offset(20);
     }];
-
+    
     [self.tableView mas_makeConstraints:^(MASConstraintMaker *make) {
         make.top.mas_equalTo(self.titleLb.mas_bottom).offset(20);
         make.left.mas_equalTo(self.mas_left);
@@ -940,6 +940,18 @@ CGFloat const customSizeHeight = 68 * 3 + 130;
 - (void)buttonAction:(UIButton *)sender {
     if (self.selectSizeBlock) {
         if (self.indexPath) {// indexPath
+            if (self.PaperTypeArray) {
+                NSString *papaer = self.PaperTypeArray[self.indexPath.row];
+                if ([papaer isEqualToString:@"1"]) {// A3
+                    self.selectSizeBlock(@"A3");
+                    
+                } else if ([papaer isEqualToString:@"2"]) {// A4
+                    self.selectSizeBlock(@"A4");
+                    
+                }
+                [self cancleAction:nil];
+                return;
+            }
             NSDictionary *dic = self.sizeArray[self.indexPath.row];
             NSString *A3orA4 = dic[@"name"];
             self.selectSizeBlock(A3orA4);
@@ -963,7 +975,7 @@ CGFloat const customSizeHeight = 68 * 3 + 130;
 - (void)placeHolderView {
     
     self.titleLb = [UILabel new];
-    NSString *labelText = @"是否确定下载该字体?";
+    NSString *labelText = @"下载后方可预览，是否下载此字体?";
     NSMutableAttributedString *attributedString = [[NSMutableAttributedString alloc] initWithString:labelText];
     NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle alloc] init];
     [paragraphStyle setLineSpacing:14];
@@ -974,7 +986,7 @@ CGFloat const customSizeHeight = 68 * 3 + 130;
     [attributedString addAttribute:NSForegroundColorAttributeName value:color range:NSMakeRange(0, [labelText length])];
     self.titleLb.attributedText = attributedString;
     self.titleLb.textAlignment  = NSTextAlignmentCenter;
-
+    
     self.placeImageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"tishi_a"]];
     UIView *lineView = [UIView new];
     lineView.backgroundColor = LineBackgroundColor;
@@ -1205,21 +1217,21 @@ CGFloat const customSizeHeight = 68 * 3 + 130;
 
 
 + (void)centerAlertShowtipAlertisSureBlock:(void(^)(BOOL isCopy))sureBlock urlString:(NSString *)urlString;
- {
+{
     
     TipCopyAlert *tipAlertView = [[TipCopyAlert alloc] initWithFrame:CGRectMake(0, 0, 300, 340.5)];
-//    tipAlertView.urlLabel.text = urlString;
-     NSString *labelText = urlString;
-     NSMutableAttributedString *attributedString = [[NSMutableAttributedString alloc] initWithString:labelText];
-     NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle alloc] init];
-     [paragraphStyle setLineSpacing:7];
-     [attributedString addAttribute:NSParagraphStyleAttributeName value:paragraphStyle range:NSMakeRange(0, [labelText length])];
-     UIFont *font = [UIFont systemFontOfSize:15];
-     UIColor *color = RGBCOLOR(32, 179, 255);
-     [attributedString addAttribute:NSFontAttributeName value:font range:NSMakeRange(0, [labelText length])];
-     [attributedString addAttribute:NSForegroundColorAttributeName value:color range:NSMakeRange(0, [labelText length])];
-     tipAlertView.urlLabel.attributedText = attributedString;
-     
+    //    tipAlertView.urlLabel.text = urlString;
+    NSString *labelText = urlString;
+    NSMutableAttributedString *attributedString = [[NSMutableAttributedString alloc] initWithString:labelText];
+    NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle alloc] init];
+    [paragraphStyle setLineSpacing:7];
+    [attributedString addAttribute:NSParagraphStyleAttributeName value:paragraphStyle range:NSMakeRange(0, [labelText length])];
+    UIFont *font = [UIFont systemFontOfSize:15];
+    UIColor *color = RGBCOLOR(32, 179, 255);
+    [attributedString addAttribute:NSFontAttributeName value:font range:NSMakeRange(0, [labelText length])];
+    [attributedString addAttribute:NSForegroundColorAttributeName value:color range:NSMakeRange(0, [labelText length])];
+    tipAlertView.urlLabel.attributedText = attributedString;
+    
     tipAlertView.urlString = urlString;
     tipAlertView.coyBlock = sureBlock;
     UIView *blackView = [UIView new];
@@ -1266,7 +1278,7 @@ CGFloat const customWordsSetHeight = 302.f/2 + 50;
     [window addSubview:setView];
     setView.blackView.frame = CGRectMake(0, 0, kScreenWidth, kScreenHeight - height);
     setView.frame = CGRectMake(0, kScreenHeight,kScreenWidth , customWordsSetHeight);
-     // 4.0 动画
+    // 4.0 动画
     [UIView animateWithDuration:0.25 animations:^{
         setView.frame = CGRectMake(0, kScreenHeight - customWordsSetHeight - height ,kScreenWidth, customWordsSetHeight);
     }];
@@ -1278,7 +1290,6 @@ CGFloat const customWordsSetHeight = 302.f/2 + 50;
     [UIView animateWithDuration:0.25 animations:^{
         weakSelf.frame = CGRectMake(0, kScreenHeight, kScreenWidth, customWordsSetHeight);
     } completion:^(BOOL finished) {
-        weakSelf.WordsSetBlock(weakSelf.autoFillWords, weakSelf.autoClearPunctuation);
         [weakSelf removeFromSuperview];
         [weakSelf.blackView removeFromSuperview];
     }];
@@ -1307,7 +1318,7 @@ CGFloat const customWordsSetHeight = 302.f/2 + 50;
 - (void)placeHolderView {
     //1.0 创建顶部视图
     UIView *topview = [[UIView alloc] initWithFrame:CGRectMake(0, 0, kScreenWidth, 50)];
-//    topview.backgroundColor = [UIColor whiteColor];
+    //    topview.backgroundColor = [UIColor whiteColor];
     //1.0.1创建取消按钮
     self.cancleBtn = [UIButton buttonWithType:UIButtonTypeCustom];
     [self.cancleBtn setImage:[UIImage imageNamed:@"icon_shouqi_c"] forState:UIControlStateNormal];
@@ -1334,7 +1345,7 @@ CGFloat const customWordsSetHeight = 302.f/2 + 50;
     
     //2.0 创建底部视图
     UIView *contentView = [UIView new];
-//    contentView.backgroundColor = [UIColor whiteColor];
+    //    contentView.backgroundColor = [UIColor whiteColor];
     //2.0.1创建自动填满空白字格
     UILabel *conteLabel1 = [UILabel new];
     conteLabel1.font = [UIFont systemFontOfSize:15];
@@ -1372,6 +1383,7 @@ CGFloat const customWordsSetHeight = 302.f/2 + 50;
     [_cancleBtn mas_makeConstraints:^(MASConstraintMaker *make) {
         make.left.mas_equalTo(topview.mas_left).offset(20);
         make.centerY.mas_equalTo(topview);
+        make.width.height.mas_equalTo(35);
     }];
     [label mas_makeConstraints:^(MASConstraintMaker *make) {
         make.center.mas_equalTo(topview);

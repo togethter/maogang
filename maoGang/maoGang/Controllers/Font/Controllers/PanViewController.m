@@ -11,7 +11,6 @@
 #import "EditionController.h"
 #import "FontModel.h"
 #import "NODataView.h"
-#import "FYFontManager.h"
 #import "CustomAlertView.h"
 #import "YLAlertAddBookTool.h"
 #import "AFURLSessionManager.h"
@@ -41,34 +40,14 @@
     return _panArray;
 }
 - (void)fontNetwork {
-    [self downRefsh];
-
+    //    [self downRefsh];
+    [self.panTableView reloadData];
 }
 - (void)viewDidLoad {
     [super viewDidLoad];
     self.panTableView.delegate = self;
     self.panTableView.dataSource = self;
     self.panTableView.separatorStyle = UITableViewCellSeparatorStyleNone;
-    if (iOS11) {
-        self.panTableView.estimatedSectionFooterHeight = 0;
-        self.panTableView.estimatedSectionFooterHeight = 0;
-        self.panTableView.estimatedRowHeight = 0;
-    }
-//    self.panTableView.mj_header = [MJRefreshNormalHeader headerWithRefreshingTarget:self refreshingAction:@selector(downRefsh)];
-//
-//    MJRefreshAutoGifFooter * footer = [MJRefreshAutoGifFooter footerWithRefreshingTarget:self refreshingAction:@selector(laodMoreRefsh)];
-//    // 设置文字
-//    [footer setTitle:@"" forState:MJRefreshStateIdle];
-//    [footer setTitle:@"正在加载 ..." forState:MJRefreshStateRefreshing];
-//    [footer setTitle:@"没有更多内容" forState:MJRefreshStateNoMoreData];
-//
-//    // 设置字体
-//    footer.stateLabel.font = [UIFont fontWithName:FontName size:14];
-//
-//
-//    // 设置颜色
-//    footer.stateLabel.textColor = [UIColor blackColor];
-//    self.panTableView.mj_footer = footer;
     self.nodataView = [NODataView noDataViewWithImage:@"bar_wushuju" withDescription:@"暂无数据"];
     self.nodataView.hidden = YES;
     [self.panTableView addSubview:self.nodataView];
@@ -78,6 +57,7 @@
     }];
     
     [self.panTableView registerNib:[UINib nibWithNibName:@"PenCell" bundle:nil] forCellReuseIdentifier:@"PenCell"];
+    [self downRefsh];
 }
 
 
@@ -93,18 +73,15 @@
 }
 
 - (void)network {
-    NSMutableArray *fontURLArray = @[].mutableCopy;
-    FYFontManager.fileURLStrings = fontURLArray;
+    
     [self netWorkHelperWithPOST:BasicsTypefacesType parameters:@{@"penType":@"1"} success:^(id responseObject) {
         FontModel *model = [FontModel loadModelWithDictionary:responseObject];
         if ([model.Result isEqualToString:@"200"]) {
-          NSArray *fontArray =  responseObject[@"Info"];
+            NSArray *fontArray =  responseObject[@"Info"];
             for (NSDictionary *fontDic in fontArray) {
                 FontModel *fontModel = [FontModel loadModelWithDictionary:fontDic];
                 [self.panArray addObject:fontModel];
-                [fontURLArray addObject:fontModel.DownloadUrl];
             }
-            FYFontManager.fileURLStrings = fontURLArray;
             self.nodataView.hidden = self.panArray.count;
             [self.panTableView reloadData];
         }
@@ -117,6 +94,15 @@
     __weak typeof(self)weakSelf = self;
     if ([FontMnager  fontPathisExist:model.DownloadUrl])  {// 下载过了直接将字体替换掉
         [[FontMnager fontInstance] registerFontWithPath:[[FontMnager fontInstance]fileURLWithUrlPath:model.DownloadUrl]];
+        
+        if (self.panArray.count > indexPath.row) {
+            FontModel *fontModel = self.panArray[indexPath.row];
+            EditionController *vc = [[EditionController alloc] initWithNibName:@"EditionController" bundle:nil titleName:fontModel.TypefaceName];
+            vc.fontModel = fontModel;
+            vc.fontModelArray = self.panArray;
+            [self.navigationController pushViewController:vc animated:YES];
+            
+        }
         return;
     }
     [TipAlert centerAlertShowtipAlertisSureBlock:^(BOOL isSure) {
@@ -127,10 +113,10 @@
         NSString *fonPath = [path stringByAppendingPathComponent:@"XLFont"];
         NSFileManager *fileManger = [NSFileManager defaultManager];
         BOOL isDirectory = NO;
-      BOOL isFileExists =  [fileManger fileExistsAtPath:fonPath isDirectory:&isDirectory];
+        BOOL isFileExists =  [fileManger fileExistsAtPath:fonPath isDirectory:&isDirectory];
         if (!isFileExists && isDirectory == NO) {
-        [[NSFileManager defaultManager] createDirectoryAtPath:fonPath withIntermediateDirectories:YES attributes:nil error:nil];
-        
+            [[NSFileManager defaultManager] createDirectoryAtPath:fonPath withIntermediateDirectories:YES attributes:nil error:nil];
+            
         }
         NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration defaultSessionConfiguration];
         AFURLSessionManager *manager = [[AFURLSessionManager alloc] initWithSessionConfiguration:configuration];
@@ -149,7 +135,7 @@
                 weakSelf.AddbookVc.progressView.progress =  downloadProgress.completedUnitCount / downloadProgress.totalUnitCount;
                 weakSelf.AddbookVc.numberProgressL.text = [NSString stringWithFormat:@"%d%%", (int)floor(weakSelf.AddbookVc.progressView.progress * 100)];
             });
-
+            
         } destination:^NSURL *(NSURL *targetPath, NSURLResponse *response) {
             NSURL *documentsDirectoryURL = [NSURL fileURLWithPath:[fonPath stringByAppendingPathComponent:baseUrl.md5]];
             return documentsDirectoryURL;
@@ -158,13 +144,13 @@
             [[FontMnager fontInstance] registerFontWithPath:filePath];
             dispatch_async(dispatch_get_main_queue(), ^{
                 [weakSelf.AddbookVc close];
-                _AddbookVc = nil;
+                weakSelf.AddbookVc = nil;
                 [weakSelf.panTableView reloadData];
             });
-
+            
         }];
         [downloadTask resume];
-   }];
+    }];
     
 }
 
@@ -182,7 +168,6 @@
         [cell.penImageView sd_setImageWithURL:[NSURL URLWithString:fontModel.HomePic] placeholderImage:nil];
         cell.desLabel.text = fontModel.TypefaceName;
         cell.model = fontModel;
-        BOOL isok = [FontMnager fontPathisExist:fontModel.DownloadUrl];
         cell.downLoadBtn.hidden = [FontMnager fontPathisExist:fontModel.DownloadUrl];
     }
     return cell;
@@ -196,22 +181,19 @@
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     if (self.panArray.count > indexPath.row) {
         FontModel *fontModel = self.panArray[indexPath.row];
-        EditionController *vc = [[EditionController alloc] initWithNibName:@"EditionController" bundle:nil titleName:fontModel.TypefaceName];
-        vc.fontModel = fontModel;
-        vc.fontModelArray = self.panArray;
-        [self.navigationController pushViewController:vc animated:YES];
+        [self downLoadFontWithCell:nil model:fontModel IndexPath:indexPath];
     }
-   
+    
 }
 
 /*
-#pragma mark - Navigation
-
-// In a storyboard-based application, you will often want to do a little preparation before navigation
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    // Get the new view controller using [segue destinationViewController].
-    // Pass the selected object to the new view controller.
-}
-*/
+ #pragma mark - Navigation
+ 
+ // In a storyboard-based application, you will often want to do a little preparation before navigation
+ - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+ // Get the new view controller using [segue destinationViewController].
+ // Pass the selected object to the new view controller.
+ }
+ */
 
 @end

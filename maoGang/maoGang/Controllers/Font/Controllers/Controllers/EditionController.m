@@ -15,7 +15,7 @@
 #import "GXWaterCVCell.h"
 #import "YLAlertAddBookTool.h"
 #import "AFURLSessionManager.h"
-NSString const *textStr = @"";
+#import "XLFontCollectionCell.h"
 @interface EditionController ()<EditionAddViewControllerDelegate,UICollectionViewDelegate, UICollectionViewDataSource,GXWaterCollectionViewLayoutDelegate>
 {
     
@@ -49,7 +49,6 @@ NSString const *textStr = @"";
 @end
 
 
-//@"SIMKAI",@"方正瘦金书GBK_宋徵宗瘦金体",@"报隶-简常规体",@"德彪钢笔行书字库",@"方正苏新诗柳楷简体",@"李旭科书法"
 @implementation EditionController
 
 
@@ -71,7 +70,6 @@ NSString const *textStr = @"";
     [TipAlert centerAlertShowtipAlertisSureBlock:^(BOOL isSure) {
         if (!isSure) return;
         [weakSelf.AddbookVc show];
-        
         NSString *path = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) lastObject];
         NSString *fonPath = [path stringByAppendingPathComponent:@"XLFont"];
         NSFileManager *fileManger = [NSFileManager defaultManager];
@@ -89,10 +87,8 @@ NSString const *textStr = @"";
         }else{
             baseUrl = [model.DownloadUrl stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet characterSetWithCharactersInString:@"`#%^{}\"[]|\\<>"].invertedSet];
         }
-        
         NSURL *URL = [NSURL URLWithString:baseUrl];
         NSURLRequest *request = [NSURLRequest requestWithURL:URL];
-        
         NSURLSessionDownloadTask *downloadTask = [manager downloadTaskWithRequest:request progress:^(NSProgress * _Nonnull downloadProgress) {
             dispatch_async(dispatch_get_main_queue(), ^{
                 weakSelf.AddbookVc.progressView.progress =  downloadProgress.completedUnitCount / downloadProgress.totalUnitCount;
@@ -103,11 +99,10 @@ NSString const *textStr = @"";
             NSURL *documentsDirectoryURL = [NSURL fileURLWithPath:[fonPath stringByAppendingPathComponent:baseUrl.md5]];
             return documentsDirectoryURL;
         } completionHandler:^(NSURLResponse *response, NSURL *filePath, NSError *error) {
-            NSLog(@"File downloaded to: %@", filePath);
             [[FontMnager fontInstance] registerFontWithPath:filePath];
             dispatch_async(dispatch_get_main_queue(), ^{
                 [weakSelf.AddbookVc close];
-                _AddbookVc = nil;
+                weakSelf.AddbookVc = nil;
                 [weakSelf.collectionView reloadData];
             });
             
@@ -138,8 +133,6 @@ NSString const *textStr = @"";
     [self downLoadFontWithCellmodel:fontModel];
     [self.ttpView sd_setImageWithURL:[NSURL URLWithString:fontModel.SwitchPic] placeholderImage:nil];
     [self.collectionView reloadData];
-    #pragma mark -- 执行javarscrip
-
 }
 
 
@@ -194,30 +187,32 @@ NSString const *textStr = @"";
     self.rightBtn = [UIButton buttonWithType:UIButtonTypeCustom];
     [self.rightBtn setImage:[UIImage imageNamed:@"xiayibu_a"] forState:UIControlStateNormal];
     [self.rightBtn addTarget:self action:@selector(netAction:) forControlEvents:UIControlEventTouchUpInside];
-
+    
     
     GXWaterCollectionViewLayout *waterLayout = [[GXWaterCollectionViewLayout alloc] init];
     self.waterLayout = waterLayout;
     waterLayout.delegate = self;
     self.waterLayout.lineSpacing = 10;
     self.waterLayout.interitemSpacing = 10;
-    self.waterLayout.sectionInset = UIEdgeInsetsMake(20, 20, 20, 20);
+    self.waterLayout.sectionInset = UIEdgeInsetsMake(1, 1, 1, 1);
     self.waterLayout.scrollDirection = UICollectionViewScrollDirectionVertical;
     self.collectionView = [[UICollectionView alloc] initWithFrame:self.collectionView.bounds collectionViewLayout:waterLayout];
-    [self.collectionView registerNib:[UINib nibWithNibName:@"GXWaterCVCell" bundle:nil] forCellWithReuseIdentifier:@"GXWaterCVCell"];
+    [self.collectionView registerClass:[XLFontCollectionCell class] forCellWithReuseIdentifier:@"XLFontCollectionCell"];
     self.collectionView.dataSource = self;
     self.collectionView.backgroundColor = [UIColor whiteColor];
     self.collectionView.showsVerticalScrollIndicator = NO;
     self.collectionView.showsHorizontalScrollIndicator = NO;
     [self.contentView addSubview:self.collectionView];
     [self.contentView addSubview:self.rightBtn];
+    self.contentView.backgroundColor = BACKCOLOR;
     [self.collectionView mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.left.mas_equalTo(weakSelf.contentView.mas_left).offset(5);
-        make.right.mas_equalTo(weakSelf.contentView.mas_right).offset(-5);
-        make.top.mas_equalTo(weakSelf.contentView.mas_top);
-        make.bottom.mas_equalTo(weakSelf.bottomContentView.mas_top);
+        make.left.mas_equalTo(weakSelf.contentView.mas_left).offset(19);
+        make.right.mas_equalTo(weakSelf.contentView.mas_right).offset(-19);
+        make.top.mas_equalTo(weakSelf.contentView.mas_top).offset(19);
+        make.bottom.mas_equalTo(weakSelf.bottomContentView.mas_top).offset(-19);
         iPhoneXR||iPhoneXM||iPhoneX?(weakSelf.bottomMargin.constant = 20):0;
     }];
+    self.collectionView.backgroundColor = BACKCOLOR;
     [self.rightBtn mas_makeConstraints:^(MASConstraintMaker *make) {
         make.right.mas_equalTo(self.contentView).offset(-21);
         make.bottom.mas_equalTo(self.bottomContentView.mas_top).offset(-40);
@@ -226,7 +221,7 @@ NSString const *textStr = @"";
     customAlertModel.fontTypeArray = self.fontModelArray;
     customAlertModel.colorIndex = @(101);
     customAlertModel.tiziGeIndex = @(103);
-    customAlertModel.percent = 1.00f;
+    customAlertModel.percent = 0.60f;
     if ([self.fontModel.PenType isEqualToString:@"1"]) {
         customAlertModel.a3orA4 = @"A4";
     } else {
@@ -239,8 +234,8 @@ NSString const *textStr = @"";
     self.customAlertModel = customAlertModel;
     UIBarButtonItem *rightBarbutton = [[UIBarButtonItem alloc] initWithImage:[[UIImage imageNamed:@"cidian"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal] style:UIBarButtonItemStylePlain target:self action:@selector(rightItemAction:)];
     self.navigationItem.rightBarButtonItem = rightBarbutton;
-    [self configurateNumberOfColumns:7 numberLineCount:4 vertical:YES];
-
+    [self configurateNumberOfColumns:5 numberLineCount:4 vertical:YES];
+    
 }
 
 - (void)rightItemAction:(UIBarButtonItem *)rightBarbutton {
@@ -252,7 +247,7 @@ NSString const *textStr = @"";
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
     if (self) {
         NSAssert(titlename, @"描述不能为空");
-        self.navigationItem.title = titlename;
+        self.navigationItem.title = @"字体编辑";
     }
     return self;
 }
@@ -262,7 +257,7 @@ NSString const *textStr = @"";
     if (loop) {// 循环的话
         NSMutableString *mutableStr = [NSMutableString stringWithString:txt];
         while (mutableStr.length < 20) {
-             [mutableStr appendString:txt];
+            [mutableStr appendString:txt];
         }
         txt = [mutableStr copy];
     }
@@ -270,24 +265,26 @@ NSString const *textStr = @"";
 }
 
 - (void)setText:(NSString *)text {
-    if ([_text isEqualToString:text])return;
     @synchronized (self) {
+        if ([_text isEqualToString:text])return;
         dispatch_async(dispatch_get_global_queue(0, 0), ^{
-            self.customAlertModel.txt = [self noWhiteSpaceString:text];
-            _text = [self noWhiteSpaceString:text];
-           NSInteger yushu = _text.length % 7;
-            self.wenziCount = 0;
-            if (yushu != 0) {
-                self.wenziCount += (7 - yushu + self.text.length);
+            @autoreleasepool {
+                self.customAlertModel.txt = [self noWhiteSpaceString:text];
+                _text = [self noWhiteSpaceString:text];
+                //           NSInteger yushu = _text.length % 7;
+                //            self.wenziCount = 0;
+                //            if (yushu != 0) {
+                //                self.wenziCount += (7 - yushu + self.text.length);
+                //            }
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [self.collectionView reloadData];
+                });
             }
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [self.collectionView reloadData];
-            });
         });
     }
-        
     
-
+    
+    
 }
 
 #pragma mark -  编辑文字
@@ -313,13 +310,19 @@ NSString const *textStr = @"";
     if ([self.customAlertModel.maoGangType.stringValue isEqualToString:@"1"]) { // 钢笔
         array = @[@"2"];
         selectIndex = 0;
-
+        
     } else if ([self.customAlertModel.maoGangType.stringValue isEqualToString:@"2"]) {// 毛笔
         array = @[@"1",@"2"];
     }
     [[[CustomSize customSizeAlertPool].index(selectIndex).paper(array) selectIndex:^(NSString *A3orA4) {
         if (!IS_VALID_STRING(weakSelf.customAlertModel.txt)) {
-            [AlertPool alertMessage:@"请输入文字后再操作！" xlViewController:weakSelf WithBlcok:nil];
+            [AlertPool alertMessage:@"请输入需要临摹的文字或从词典中选择范本" xlViewController:weakSelf WithBlcok:nil];
+            return;
+        }
+        
+        FontModel *fontModel  =  self.fontModelArray[self.fontTypeIndex];
+        if (![FontMnager  fontPathisExist:fontModel.DownloadUrl]) {
+            [AlertPool alertMessage:@"没有下载字体不能预览" xlViewController:weakSelf WithBlcok:nil];
             return;
         }
         weakSelf.customAlertModel.a3orA4 =  A3orA4;
@@ -338,77 +341,27 @@ NSString const *textStr = @"";
     __weak typeof(self)weakSelf = self;
     [[[[[[CustomAlertPool customAlertPool].tagNumber(sender.tag) alpha:^(CGFloat alpha) {
         weakSelf.customAlertModel.percent = alpha;
-        NSString *xalpha = self.customAlertModel.alphaDic[[NSString stringWithFormat:@"%.2f",alpha]];
-        NSString *alphaTXT = [NSString stringWithFormat:@"color('%@')",xalpha];
         [weakSelf.collectionView reloadData];
-//        [weakSelf.wkWebView evaluateJavaScript:alphaTXT completionHandler:^(id _Nullable result, NSError * _Nullable error) {
-//
-//        }];
+        
     }] color:^(NSNumber *colorIndex) {
         weakSelf.customAlertModel.colorIndex = colorIndex;
-        NSInteger backgroundView = weakSelf.customAlertModel.tiziGeIndex.integerValue;// 田子
-        NSString *backTXT = [NSString stringWithFormat:@"background('%@','%@')",[NSString stringWithFormat:@"%ld",backgroundView - 100 + 1] ,[NSString stringWithFormat:@"%@",weakSelf.customAlertModel.colorNameArray[colorIndex.integerValue-100]]];
-//        [weakSelf.wkWebView evaluateJavaScript:backTXT completionHandler:^(id _Nullable result, NSError * _Nullable error) {
-//            DLog(@"%@ %@",result,error);
-//        }];
         [weakSelf.collectionView reloadData];
         
     }] tiziGe:^(NSNumber *tiziIndex) {
         weakSelf.customAlertModel.tiziGeIndex = tiziIndex;
-        NSInteger colorIndex = weakSelf.customAlertModel.colorIndex.integerValue;
-        NSString *backTXT = [NSString stringWithFormat:@"background('%@','%@')",[NSString stringWithFormat:@"%ld",tiziIndex.integerValue - 100 + 1] ,self.customAlertModel.colorNameArray[colorIndex-100]];
-//        [weakSelf.wkWebView evaluateJavaScript:backTXT completionHandler:^(id _Nullable result, NSError * _Nullable error) {
-//            DLog(@"%@ %@",result,error);
-//        }];
         [weakSelf.collectionView reloadData];
         
     }] font:^(NSInteger font) {
         weakSelf.customAlertModel.fontSizeIndex = font;
-        NSString *backTXT = [NSString stringWithFormat:@"fontSize('%@')",[NSString stringWithFormat:@"%ld",font - 100 + 1]];
-//        [weakSelf.wkWebView evaluateJavaScript:backTXT completionHandler:^(id _Nullable result, NSError * _Nullable error) {
-//            DLog(@"%@ %@",result,error);
-//        }];
-        //
         [weakSelf.collectionView reloadData];
-        
     }].color(self.customAlertModel.colorIndex.integerValue).percent(self.customAlertModel.percent).tiziGe(self.customAlertModel.tiziGeIndex.integerValue).fontSize(self.customAlertModel.fontSizeIndex) alertShow];
 }
 
 
 
-- (void)configureWebText:(NSString *)text {
-    text = IS_VALID_STRING(text)?text:@"";
-    NSString *jsTxt = [NSString stringWithFormat:@"text('%@')",text];
-    __weak typeof(self)weakSelf = self;
-#pragma mark -- 执行javarscrip
-//    [self.wkWebView evaluateJavaScript:jsTxt completionHandler:^(id _Nullable result, NSError * _Nullable error) {
-//        DLog(@"%@ %@",result,error);
-//        weakSelf.fontTypeIndex = weakSelf.fontTypeIndex;;// 设置字体
-//    }];
-}
 
-- (void)configureProerty:(CustomAlertModel *)customAlertModel {
-    NSInteger colorIndex = customAlertModel.colorIndex.integerValue -100;
-    NSInteger tianziGeLeiXing = customAlertModel.tiziGeIndex.intValue - 100 + 1;
-    NSString *backTXT = [NSString stringWithFormat:@"background('%@','%@')",@(tianziGeLeiXing),self.customAlertModel.colorNameArray[colorIndex]];
-//    [self.wkWebView evaluateJavaScript:backTXT completionHandler:^(id _Nullable result, NSError * _Nullable error) {
-//        DLog(@"%@ %@",result,error);
-//    }];
-    #pragma mark -- 执行javarscrip
-    NSInteger fontIndex =  customAlertModel.fontSizeIndex - 100;
-    NSString *fonbackTXT = [NSString stringWithFormat:@"fontSize('%@')",[NSString stringWithFormat:@"%ld",fontIndex - 100 + 1]];
-//    [self.wkWebView evaluateJavaScript:fonbackTXT completionHandler:^(id _Nullable result, NSError * _Nullable error) {
-//        DLog(@"%@ %@",result,error);
-//    }];
-    #pragma mark -- 执行javarscrip
-    NSString *alpha = self.customAlertModel.alphaDic[[NSString stringWithFormat:@"%.2f",customAlertModel.percent]];
-    
-    NSString *alphaTXT = [NSString stringWithFormat:@"color('%@')",alpha];
-//    [self.wkWebView evaluateJavaScript:alphaTXT completionHandler:^(id _Nullable result, NSError * _Nullable error) {
-//
-//    }];
-    #pragma mark -- 执行javarscrip
-}
+
+
 
 
 
@@ -417,13 +370,13 @@ NSString const *textStr = @"";
 }
 
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
-
-    return self.wenziCount;
+    
+    return self.text.length;
 }
 
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
     
-    GXWaterCVCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"GXWaterCVCell" forIndexPath:indexPath];
+    GXWaterCVCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"XLFontCollectionCell" forIndexPath:indexPath];
     cell.indexPath = indexPath;
     cell.alertModel = self.customAlertModel;
     return cell;

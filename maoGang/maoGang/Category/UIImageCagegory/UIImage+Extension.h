@@ -47,5 +47,5 @@
 + (instancetype)imageViewWithImageName:(NSString *)imageName;
 + (id)createRoundedRectImage:(UIImage*)image size:(CGSize)size radius:(NSInteger)r;
 - (UIImage *)squareImageFromImage:(UIImage *)image scaledToSize:(CGFloat)newSize;
-
+- (UIImage*)imageByScalingAndCroppingForSize:(CGSize)targetSize;
 @end
